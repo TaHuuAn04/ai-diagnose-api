@@ -1,0 +1,11 @@
+export enum PLATFORM_EMBEDDED {
+  ZALO = 'ZALO',
+  MESSENGER = 'MESSENGER',
+  WHATSAPP = 'WHATSAPP',
+  // TODO: add more platforms
+}
+
+export enum PLATFORM_EMBEDDED_STATUS {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}

@@ -1,0 +1,197 @@
+Table users {
+  id uuid [pk]
+  role text // admin, client, ...
+  username text [unique] 
+  email text [unique]
+
+  indexes {
+    (username, email) [unique] // Ensure both username and email are unique together
+    role // Index on role for faster queries filtering by role
+  }
+}
+
+Table platforms {
+  id uuid [pk]
+  name text // telegram, whatsapp, discord, ...
+  description text
+
+  indexes {
+    name [unique] // Ensure platform names are unique
+  }
+}
+
+Table developer_apps {
+  id uuid [pk]
+  user_id uuid [ref: > users.id]
+  platform_id uuid [ref: > platforms.id]
+  name text
+  description text
+  status text // Added: "active", "inactive", "suspended"
+
+  indexes {
+    (user_id, platform_id, name) [unique] // Ensure unique apps per user per platform
+    status // Index on status for faster filtering
+  }
+}
+
+Table app_credential_keys {
+  id uuid [pk]
+  platform_id uuid [ref: > platforms.id]
+  name text // api_key, api_secret, access_token, access_secret, client_id, client_secret, webhook_url, bot_token, app_id, app_hash
+  description text
+  required boolean
+  
+  indexes {
+    (platform_id, name) [unique]
+  }
+}
+
+Table app_credentials {
+  id uuid [pk]
+  developer_app_id uuid [ref: > developer_apps.id]
+  app_credential_key_id uuid [ref: > app_credential_keys.id]
+  value text
+  // status text // "active", "revoked"
+  // environment text // "development", "production"
+  // expiration_date timestamp
+
+  indexes {
+    (developer_app_id, app_credential_key_id) [unique] // Ensure one credential per key per app
+  }
+}
+
+Table bots {
+  id uuid [pk]
+  ai_id uuid [ref: > ais.id] // Optional
+  developer_app_id uuid [ref: > developer_apps.id] // Changed from external_id for clarity
+  // platform_id uuid [ref: > platforms.id]
+  platform_bot_id text // uuid | number | text, ... Each platform will have difference definition
+  identifier text // @bot_1, @bot_test ...
+  token text // the token for the bot to use the platform features
+  name text
+  description text
+  status varchar // Added: "active", "inactive", "suspended"
+  last_active_at timestamp // Added for tracking last active time
+
+  indexes {
+    (developer_app_id, platform_bot_id) [unique] // Ensure unique bots per app per platform
+    identifier [unique] // Ensure unique bot identifiers
+    status // Index on status for faster filtering
+    last_active_at // Index for faster queries on last active time
+  }
+}
+
+Table bot_settings {
+    id uuid [pk]
+    bot_id uuid [ref: > bots.id]
+    name text // e.g., "welcome_message", "response_delay", "max_conversation_length"
+    value text // e.g., "Hello! How can I assist you today?", "2000", "10"
+
+    indexes {
+      (bot_id, name) [unique] // Ensure unique settings per bot
+    }
+}
+
+Table ais {
+  id uuid [pk]
+  user_id uuid [ref: > users.id]
+  name text
+  model text // GPT, Gemini
+  status text // active, inactive, suspended
+
+  indexes {
+    (user_id, name) [unique] // Ensure unique AI names per user
+    status // Index on status for faster filtering
+  }
+}
+
+Table ai_settings {
+    id uuid [pk]
+    ai_id uuid [ref: > ais.id]
+    name text // e.g., "temperature", "max_tokens", "top_p"
+    value text // e.g., "0.5", "100", "0.9"
+
+    indexes {
+      (ai_id, name) [unique] // Ensure unique settings per AI
+    }
+}
+
+Table ai_feature_types {
+  id uuid [pk]
+  name text
+  description text
+  default_enabled boolean
+  default_config jsonb
+
+  indexes {
+    name [unique] // Ensure unique feature names
+  }
+}
+
+Table ai_features {
+  ai_id uuid [pk, ref: > ais.id]
+  feature_type_id uuid [pk, ref: > ai_feature_types.id]
+  enabled boolean
+  config jsonb // Store feature-specific configuration
+
+  indexes {
+    (ai_id, feature_type_id) [unique] // Ensure unique feature assignments per ai
+    enabled // Index on enabled status for faster filtering
+  }
+}
+
+Table bot_feature_types {
+  id uuid [pk]
+  name text
+  description text
+  default_enabled boolean
+  default_config jsonb
+
+  indexes {
+    name [unique] // Ensure unique feature names
+  }
+}
+
+Table bot_features {
+  bot_id uuid [pk, ref: > bots.id]
+  feature_type_id uuid [pk, ref: > bot_feature_types.id]
+  enabled boolean
+  config jsonb // Store feature-specific configuration
+
+  indexes {
+    (bot_id, feature_type_id) [unique] // Ensure unique feature assignments per bot
+    enabled // Index on enabled status for faster filtering
+  }
+}
+
+// // Example data for bot_feature_types
+// Enum feature_name {
+//   parse_cv
+//   chat_with_user
+//   schedule_meeting
+//   sentiment_analysis
+//   language_translation
+// }
+
+// // Example data
+// TableData bot_feature_types {
+//   id | name | description | default_enabled | default_config
+//   "ft1" | "parse_cv" | "Extract information from CVs" | true | { "max_file_size": 5000000, "supported_formats": ["pdf", "docx"] }
+//   "ft2" | "chat_with_user" | "Engage in conversation with users" | true | { "max_conversation_length": 50, "idle_timeout_minutes": 30 }
+//   "ft3" | "schedule_meeting" | "Schedule meetings with users" | false | { "min_notice_hours": 24, "max_duration_minutes": 60 }
+//   "ft4" | "sentiment_analysis" | "Analyze sentiment of user messages" | true | { "threshold": 0.7, "languages": ["en", "es", "fr"] }
+//   "ft5" | "language_translation" | "Translate messages between languages" | false | { "max_chars_per_request": 1000, "supported_languages": ["en", "es", "fr", "de", "it"] }
+// }
+
+// // Example data for bot_features
+// TableData bot_features {
+//   bot_id | feature_type_id | enabled | config
+//   "bot1" | "ft1" | true | { "max_file_size": 10000000 }
+//   "bot1" | "ft2" | true | { "max_conversation_length": 100 }
+//   "bot1" | "ft3" | false | null
+//   "bot1" | "ft4" | true | { "threshold": 0.8 }
+//   "bot1" | "ft5" | true | { "max_chars_per_request": 2000 }
+//   "bot2" | "ft1" | false | null
+//   "bot2" | "ft2" | true | { "idle_timeout_minutes": 45 }
+//   "bot2" | "ft3" | true | { "min_notice_hours": 12 }
+// }
