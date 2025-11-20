@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -19,7 +19,8 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 import {
     AppointmentListInfo,
     MedicalRecords,
-    PatientInfoDto
+    PatientInfoDto,
+    PatientUpdateDto,
 } from './dtos';
 
 @ApiTags('Patient')
@@ -33,7 +34,7 @@ export class PatientController {
   ) {}
 
   
-  @Get('info/{id}')
+  @Get('{id}')
   @ApiOperation({ summary: "API returns patient's personal information" })
   @ApiResponse({
       status: 200,
@@ -49,6 +50,22 @@ export class PatientController {
         return await mockResult();
     }
     
+    @Put()
+    @ApiOperation({ summary: "Implement personal profile update feature" })
+    @ApiResponse({
+        status: 200,
+        description: "Personal profile updated successfully.",
+        type: PatientInfoDto
+      })
+      @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+      @ApiResponse( { status: 500, description: "An error occurred during processing; failed to update information."})
+    async update(
+      @CurrentUser() user: User,
+      @Body() input: PatientUpdateDto
+    ): Promise<PatientInfoDto> {
+          return await mockResult();
+  }
+  
     @Get('medical-history/{id}')
     @ApiOperation({ summary: "Retrieve patient's medical history" })
     @ApiResponse({
@@ -79,4 +96,5 @@ export class PatientController {
   ): Promise<AppointmentListInfo> {
     return await mockResult();
   }
+
 }

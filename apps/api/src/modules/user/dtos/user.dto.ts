@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
   IsBoolean,
+  IsEmail,
   IsOptional,
   IsString,
   MaxLength,
@@ -46,10 +47,10 @@ export class UserInfoDto {
 }
 
 export class UpdateUserDto {
-  // @IsOptional()
-  // @IsEmail()
-  // @ApiProperty({ example: 'newemail@example.com' })
-  // email?: string;
+  @IsOptional()
+  @IsEmail()
+  @ApiProperty({ example: 'newemail@example.com' })
+  email?: string;
 
   @IsOptional()
   @IsString()
