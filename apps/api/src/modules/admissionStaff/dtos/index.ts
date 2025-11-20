@@ -1,3 +1,3 @@
-export * from './list-appointment.dto'
+export * from './shift-setting.dto'
 export * from './rebooking.dto'
 export * from './uploadSchedule.dto'

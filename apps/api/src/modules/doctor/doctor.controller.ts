@@ -16,9 +16,7 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
   return result;
 }
 
-import {
-    ShiftListInfo
-} from './dtos';
+import { ShiftListInfo } from '../schedule/dtos';
 
 @ApiTags('Doctor')
 @UseGuards(JwtAuthGuard)

@@ -8,7 +8,6 @@ import { JwtAuthGuard } from '@api/guards';
 import { CurrentUser } from '@app/core/decorators';
 
 import { User } from '../../infrastructure/database/typeorm-nest/entities';
-import { ListScheduleInfo } from '../admissionStaff/dtos';
 // import {  } from '@app/core/domain/entities';
 
 async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 150): Promise<T> {
@@ -16,6 +15,9 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
   return result;
 }
 
+import {
+  ListScheduleInfo
+} from './dtos'
 
 @ApiTags('Schedule')
 @UseGuards(JwtAuthGuard)

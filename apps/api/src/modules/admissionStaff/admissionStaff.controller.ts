@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -14,12 +14,15 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
   return result;
 }
 
+import { AppointmentListInfo } from '../appointment/dtos';
+import { ListScheduleInfo, ShiftListInfo } from '../schedule/dtos';
+
 import {
-    AppointmentListInfo,
-    ListScheduleInfo,
     RebookingAppointmentDto,
     ScheduleFileRequestDto,
+    ShiftSettingDto,
 } from './dtos';
+
 
 @ApiTags('Admission Staff')
 @UseGuards(JwtAuthGuard)
@@ -72,8 +75,8 @@ export class AdmissionStaffController {
       return await mockResult();
     }
 
- @Post('upload-schedule')
-  @ApiOperation({ summary: "Reception staff uploads doctors' work schedules to the system" })
+  @Post('upload-schedule')
+  @ApiOperation({ summary: "Admission staff uploads doctors' work schedules to the system" })
   @ApiResponse({
     status: 200,
     description: "Appointment schedule uploaded to the system.", 
@@ -89,6 +92,24 @@ export class AdmissionStaffController {
     @Body() input: ScheduleFileRequestDto,
   ): Promise<ListScheduleInfo> {
       return await mockResult();
-    }
+  }
+  
+  @Post('shift-setting')
+  @ApiOperation({ summary: "Admission staff use the feature to break down work shifts" })
+  @ApiResponse({
+    status: 200,
+    description: "Shifts were divided in the system.", 
+    type: ShiftListInfo
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({
+    status: 500,
+    description: "An error occurred during processing; failed to divide schedule into shifts.",
+  })
+  async uploadShift(
+    @Body() input: ShiftSettingDto,
+  ): Promise<ListScheduleInfo> {
+      return await mockResult();
+  }
   
 }

@@ -4,14 +4,46 @@ import { Expose } from 'class-transformer';
 
 import { statusShift } from '@app/core/domain/enums';
 
-import { ScheduleDto } from '../../schedule/dtos';
-
 export class ShiftDto {
     @Expose()
-    @ApiProperty({ type: ScheduleDto })
-    schedule: ScheduleDto
+    @ApiProperty({ type: String, format: 'date', example: '2025-11-14', description: 'Date (YYYY-MM-DD)' })
+    date: Date
+
+    @Expose()
+    @ApiProperty({ type: String, example: '08:30:00', description: 'Start time (HH:mm:ss)' })
+    from: string
+
+    @Expose()
+    @ApiProperty({ type: String, example: '09:00:00', description: 'End time (HH:mm:ss)' })
+    to: string
+
+    @Expose()
+    @ApiProperty({ example: "Nguyễn Cao Tuấn"})
+    doctorName: string
 
     @Expose()
     @ApiProperty({ example: 'AVAILABLE'})
     status: statusShift
+}
+
+export class ShiftListInfo{
+    @Expose()
+    @ApiProperty({ type: ShiftDto, isArray: true })
+    shifts: ShiftDto[]
+
+    @Expose()
+    @ApiProperty({ example: 100 })
+    totalRecords: number
+
+    @Expose()
+    @ApiProperty({ example: 1 })
+    currentPage: number
+
+    @Expose()
+    @ApiProperty({ example: 10 })
+    pageSize: number
+
+    @Expose()
+    @ApiProperty({ example: 10 })
+    totalPages: number
 }

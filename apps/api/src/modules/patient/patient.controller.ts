@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '@api/guards';
 import { CurrentUser } from '@app/core/decorators';
 
 import { User } from '../../infrastructure/database/typeorm-nest/entities';
+import { AppointmentListInfo } from '../appointment/dtos';
 
 // import {  } from '@app/core/domain/entities';
 
@@ -17,7 +18,6 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 }
 
 import {
-    AppointmentListInfo,
     MedicalRecords,
     PatientAvatarDto,
     PatientInfoDto,
