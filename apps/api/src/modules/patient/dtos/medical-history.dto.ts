@@ -4,7 +4,7 @@ import { Expose } from 'class-transformer';
 
 import { ConsultationDto } from '../../consultation/dtos';
 
-export class MedicalRecordsInfo{
+export class MedicalRecords{
     @Expose()
     @ApiProperty({ type: ConsultationDto, isArray: true })
     consultations: ConsultationDto[]

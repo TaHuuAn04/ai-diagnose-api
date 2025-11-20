@@ -14,12 +14,12 @@ export class BookAppointmentDto {
     @IsString()
     @IsNotEmpty()
     @ApiProperty({ example: 'acde070d-8c4c-4f0d-9d8a-162843c10333' })
-    doctor_id: string;
+    doctorId: string;
 
     @IsString()
     @IsNotEmpty()
     @ApiProperty({ example: 'acde070d-8c4c-4f0d-9d8a-162843c10333' })
-    shift_id: string;
+    shiftId: string;
 
     @IsString()
     @IsOptional()
