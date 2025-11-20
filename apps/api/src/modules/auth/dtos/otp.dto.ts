@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsNumberString, IsUUID } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
 export class RequestOtpRequestDto {
   @IsNotEmpty()
@@ -27,7 +27,7 @@ export class VerifyOtpRequestDto {
   @ApiProperty({ example: 1111 })
   otp: string;
 
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   @ApiProperty({ example: '04b65d85-7c56-43fe-b0ef-7287256ec94d' })
   sessionId: string;

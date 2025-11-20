@@ -33,6 +33,11 @@ export class RegisterRequestDto {
 
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({ example: 'password' })
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
   @MaxLength(25)
   @ApiProperty({ example: 'John' })
   firstName: string;
@@ -61,26 +66,34 @@ export class RegisterRequestDto {
 @Exclude()
 export class RegisterResponseDto {
   @Expose()
+  @ApiProperty({example: 'bf1b85cf-d188-4e3c-8963-bdca8fe029bd'})
   id: string;
 
   @Expose()
+  @ApiProperty({ example: '2qBbV@example.com' })
   email: string;
 
   @Expose()
+  @ApiProperty({ example: 'Nguyễn Cao' })
   firstName: string;
 
   @Expose()
+  @ApiProperty({ example: 'Tuấn' })  
   lastName: string;
 
   @Expose()
+  @ApiProperty({ example: 'DOCTOR'})
   role: UserRole;
 
   @Expose()
+  @ApiProperty({ example: '+84' })
   phoneCode: string;
 
   @Expose()
+  @ApiProperty({ example: '123456789' })
   phoneNumber: string;
 
   @Expose()
+  @ApiProperty({ example: 'bf1b85cf-d188-4e3c-8963-bdca8fe029bd' })  
   sessionId: string;
 }
