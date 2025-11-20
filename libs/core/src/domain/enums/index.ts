@@ -14,3 +14,5 @@ export * from './platform-embedded.enum';
 export * from './oauth-provider.enum';
 export * from './oauth-state.enum';
 export * from './industry-type.enum';
+export * from './status-shift.enum';
+export * from './severity-level.enum'
