@@ -17,6 +17,7 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 }
 
 import {
+    AppointmentListInfo,
     MedicalRecords,
     PatientInfoDto
 } from './dtos';
@@ -62,5 +63,20 @@ export class PatientController {
         @Param('id') id: string
     ): Promise<MedicalRecords> {
       return await mockResult();
-    }
+  }
+  
+  @Get('list-appointment')
+  @ApiOperation({ summary: "Retrieve patient's list of appointments" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: AppointmentListInfo
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getListApointment(
+    @CurrentUser() user: User,
+  ): Promise<AppointmentListInfo> {
+    return await mockResult();
+  }
 }

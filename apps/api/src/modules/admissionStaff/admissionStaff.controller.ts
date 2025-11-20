@@ -31,7 +31,7 @@ export class AdmissionStaffController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Get('list-appointment')
+  @Get('list-appointment-all')
   @ApiOperation({ summary: "Summarize patient appointment registrations" })
   @ApiQuery({ name: 'date', required: false, description: 'Date to filter by' })  
   @ApiQuery({ name: 'search', required: false, description: 'Search keyword' })
