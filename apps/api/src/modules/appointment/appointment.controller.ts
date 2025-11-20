@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -52,7 +52,7 @@ export class AppointmentController {
       return await mockResult();
     }
 
-  @Delete('cancel/{id}')
+  @Patch('cancel/{id}')
   @ApiOperation({ summary: "Cancel a recently booked appointment (pending status)" })
   @ApiResponse({
     status: 200,

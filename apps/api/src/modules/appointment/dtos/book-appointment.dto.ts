@@ -10,6 +10,8 @@ import {
 } from 'class-validator';
 import { HasMimeType, IsFile, MaxFileSize, MemoryStoredFile } from 'nestjs-form-data'
 
+import { AppointmentStatus } from '@app/core/domain/enums';
+
 export class BookAppointmentDto {
     @IsString()
     @IsNotEmpty()
@@ -66,6 +68,10 @@ export class AppointmentDetailDto {
       description: 'End time (ISO 8601, date-time)'
     })
     to: Date
+  
+    @Expose()
+    @ApiProperty({ example: "Pending" })
+    status: AppointmentStatus
 
     @Expose()
     @ApiProperty({ example: 'Elderly patient, please be gentle'})
