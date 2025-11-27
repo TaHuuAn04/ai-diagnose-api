@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -38,7 +38,8 @@ export class DoctorController {
     @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
     @ApiResponse( { status: 500, description: "An error occurred during processing; failed to display the schedule."})
     async getInfo(
-    @CurrentUser() user: User
+      @CurrentUser() user: User,
+      @Param('date') date: Date,
     ): Promise<ShiftListInfo> {
           return await mockResult();
   }

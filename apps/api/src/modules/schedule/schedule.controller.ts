@@ -16,7 +16,8 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 }
 
 import {
-  ListScheduleInfo
+  ListScheduleInfo,
+  ShiftBookingListInfo,
 } from './dtos'
 
 @ApiTags('Schedule')
@@ -45,4 +46,19 @@ export class ScheduleController {
         return await mockResult();
     }
     
+  
+  @Get('shift-book')
+  @ApiOperation({ summary: "Shift infomation to booking" })
+  @ApiResponse({
+      status: 200,
+      description: "Information retrieved successfully.",
+      type: ShiftBookingListInfo
+    })
+    @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+    @ApiResponse( { status: 500, description: "An error occurred during processing; failed to retrieve information."})
+  async getShiftInfo(
+      @CurrentUser() user: User,
+  ): Promise<ShiftBookingListInfo> {
+        return await mockResult();
+    }
 }

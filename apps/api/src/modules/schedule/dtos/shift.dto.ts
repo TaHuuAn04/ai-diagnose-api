@@ -4,6 +4,8 @@ import { Expose } from 'class-transformer';
 
 import { statusShift } from '@app/core/domain/enums';
 
+import { UserInfoDto } from '../../user/dtos';
+
 export class ShiftDto {
     @Expose()
     @ApiProperty({ type: String, format: 'date', example: '2025-11-14', description: 'Date (YYYY-MM-DD)' })
@@ -24,6 +26,10 @@ export class ShiftDto {
     @Expose()
     @ApiProperty({ example: 'AVAILABLE'})
     status: statusShift
+
+    @Expose()
+    @ApiProperty({ type: UserInfoDto})
+    patientInfo?: UserInfoDto
 }
 
 export class ShiftListInfo{
@@ -46,4 +52,10 @@ export class ShiftListInfo{
     @Expose()
     @ApiProperty({ example: 10 })
     totalPages: number
+}
+
+export class ShiftBookingListInfo extends ShiftListInfo {
+    @Expose()
+    @ApiProperty({ type: Date, example: '27/12/2025' })
+    date: Date
 }

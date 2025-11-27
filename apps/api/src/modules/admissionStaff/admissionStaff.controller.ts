@@ -20,7 +20,6 @@ import { ListScheduleInfo, ShiftListInfo } from '../schedule/dtos';
 import {
     RebookingAppointmentDto,
     ScheduleFileRequestDto,
-    ShiftSettingDto,
 } from './dtos';
 
 
@@ -90,24 +89,6 @@ export class AdmissionStaffController {
   @ApiConsumes('multipart/form-data')
   async uploadSchedule(
     @Body() input: ScheduleFileRequestDto,
-  ): Promise<ListScheduleInfo> {
-      return await mockResult();
-  }
-  
-  @Post('shift-setting')
-  @ApiOperation({ summary: "Admission staff use the feature to break down work shifts" })
-  @ApiResponse({
-    status: 200,
-    description: "Shifts were divided in the system.", 
-    type: ShiftListInfo
-  })
-  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
-  @ApiResponse({
-    status: 500,
-    description: "An error occurred during processing; failed to divide schedule into shifts.",
-  })
-  async uploadShift(
-    @Body() input: ShiftSettingDto,
   ): Promise<ListScheduleInfo> {
       return await mockResult();
   }
