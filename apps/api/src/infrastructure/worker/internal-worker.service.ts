@@ -10,35 +10,13 @@ import { fetchDto } from '@app/core/http';
 import { User } from '../database/typeorm-nest/entities';
 
 import {
-  CreateNovuUserDto,
-  PostSendSupportEscalationTicketDto,
-  SendSupportEscalationTicketInputDto,
-  SendSupportEscalationTicketResponseDto,
+  CreateNovuUserDto
 } from './dtos';
 
 @Injectable()
 export class InternalWorkerService {
   constructor(private readonly httpService: HttpService) {}
 
-  async sendSupportEscalationTicketEmail(
-    input: SendSupportEscalationTicketInputDto,
-  ) {
-    try {
-      const dto = new PostSendSupportEscalationTicketDto(input);
-      const response = await fetchDto<SendSupportEscalationTicketResponseDto>({
-        dto,
-        httpService: this.httpService,
-      });
-
-      if (!response.status) {
-        throw new InternalServerErrorException(response.message);
-      }
-
-      return response.data;
-    } catch (error) {
-      ExceptionHandler.handleErrorException(error, 'Error sending support escalation ticket email');
-    }
-  }
   async sendRegisterOtp(otp: string, email: string): Promise<void> {
     try {
       const url = `${INTERNAL_WORKER_API_URL}/mail/send-register-otp`;
