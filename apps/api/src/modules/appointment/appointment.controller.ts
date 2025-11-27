@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -18,6 +18,7 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 
 import {
   AppointmentDetailDto,
+  AppointmentUpdateDto,
   BookAppointmentDto,
 } from './dtos';
 
@@ -68,4 +69,21 @@ export class AppointmentController {
       return await mockResult();
     }
   
+  @Put('/{id}')
+  @ApiOperation({ summary: "Change images and description in appointment" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment attached infomation changes successfully.",
+    type: AppointmentDetailDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing." })
+  @ApiConsumes('multipart/form-data')
+  async updateAppointment(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() input: AppointmentUpdateDto,
+  ): Promise<AppointmentDetailDto> {
+      return await mockResult();
+    }
 }

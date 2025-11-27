@@ -39,6 +39,23 @@ export class BookAppointmentDto {
 
 }
 
+export class AppointmentUpdateDto {
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ example: 'Elderly patient, please be gentle' })
+    description?: string;
+
+    @IsFile()
+    @IsArray()
+    @HasMimeType(['image/jpeg', 'image/png'])
+    @MaxFileSize(ATTACHMENT_MAX_FILE_SIZE)
+    @IsOptional()
+    @ApiProperty({
+        type: 'array', items: { type: 'string', format: 'binary'} })
+    images: MemoryStoredFile;
+
+}
+
 @Exclude()
 export class AppointmentDetailDto {
     @Expose()

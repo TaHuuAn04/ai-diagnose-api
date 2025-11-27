@@ -36,3 +36,26 @@ export class MedicalRecordInfoDto {
     appointment: ConsultationDto
 }
 
+export class MedicalRecords{
+    @Expose()
+    @ApiProperty({ type: ConsultationDto, isArray: true })
+    consultations: ConsultationDto[]
+
+    @Expose()
+    @ApiProperty({ example: 100 })
+    totalRecords: number
+
+    @Expose()
+    @ApiProperty({ example: 1 })
+    currentPage: number
+
+    @Expose()
+    @ApiProperty({ example: 10 })
+    pageSize: number
+
+    @Expose()
+    @ApiProperty({ example: 10 })
+    totalPages: number
+}
+
+
