@@ -1,0 +1,89 @@
+import { Body, Controller, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+// import { plainToInstance } from 'class-transformer';
+import { JwtAuthGuard } from '@api/guards';
+
+import { CurrentUser } from '@app/core/decorators';
+
+import { User } from '../../infrastructure/database/typeorm-nest/entities';
+
+// import {  } from '@app/core/domain/entities';
+
+async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 150): Promise<T> {
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+  return result;
+}
+
+import {
+  AppointmentDetailDto,
+  AppointmentUpdateDto,
+  BookAppointmentDto,
+} from './dtos';
+
+@ApiTags('Appointment')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('access-token')
+@Controller('appointment')
+export class AppointmentController {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Post('book')
+  @ApiOperation({ summary: "Endpoint for booking patient appointments" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment booked successfully.",
+    schema: { example: { Status: true } }
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({
+    status: 500,
+    description: "An error occurred during processing or the appointment slot has already been taken.",
+    schema: { example: { Status: false } }
+  })
+  @ApiConsumes('multipart/form-data')
+  async bookAppointment(
+    @CurrentUser() user: User,
+    @Body() input: BookAppointmentDto,
+  ): Promise<true> {
+      return await mockResult();
+    }
+
+  @Patch('cancel/{id}')
+  @ApiOperation({ summary: "Cancel a recently booked appointment (pending status)" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment canceled successfully.",
+    type: AppointmentDetailDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse( { status: 500, description: "An error occurred during processing."})
+  async cancelAppointment(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+  ): Promise<AppointmentDetailDto> {
+      return await mockResult();
+    }
+  
+  @Put('/{id}')
+  @ApiOperation({ summary: "Change images and description in appointment" })
+  @ApiResponse({
+    status: 200,
+    description: "Appointment attached infomation changes successfully.",
+    type: AppointmentDetailDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing." })
+  @ApiConsumes('multipart/form-data')
+  async updateAppointment(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() input: AppointmentUpdateDto,
+  ): Promise<AppointmentDetailDto> {
+      return await mockResult();
+    }
+}

@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { plainToInstance } from 'class-transformer';
 
@@ -28,6 +28,9 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: "API to register patient user information" })
+  @ApiResponse({ status: 200, description: "Registration successful" })
+  @ApiResponse( { status: 500, description: "An error occurred during processing or the user could not be registered"})
   @IsPublic()
   async register(
     @Body() input: RegisterRequestDto,
@@ -55,6 +58,9 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({ summary: "API to authenticate user login credentials" })
+  @ApiResponse({ status: 200, description: "Login successful" })
+  @ApiResponse({ status: 500, description: "An error occurred during processing or the user is not allowed to log in" })
   @IsPublic()
   async login(@Body() dto: LoginBodyDto): Promise<LoginResponseDto> {
     const token = await this.authService.login(dto);

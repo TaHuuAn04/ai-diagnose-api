@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
   IsBoolean,
+  IsEmail,
   IsOptional,
   IsString,
   MaxLength,
@@ -13,35 +14,43 @@ import { UserRole } from '@app/core/domain/enums';
 
 export class UserInfoDto {
   @Expose()
+  @ApiProperty({ example: 'acde070d-8c4c-4f0d-9d8a-162843c10333'})
   id: string;
 
   @Expose()
+  @ApiProperty({ example: 'newemail@example.com' })
   email: string;
 
   @Expose()
+  @ApiProperty({ example: 'PATIENT'})
   role: UserRole;
 
   @Expose()
+  @ApiProperty({ example: 'Nguyễn Cao '})
   firstName: string;
 
   @Expose()
+  @ApiProperty({ example: 'Tuấn'})
   lastName: string;
 
   @Expose()
+  @ApiProperty({ example: '+84' })
   phoneCode: string;
 
   @Expose()
+  @ApiProperty({ example: '123456789' })
   phoneNumber: string;
 
   @Expose()
+  @ApiProperty({ example: true })
   isOnBoardingCompleted: boolean;
 }
 
 export class UpdateUserDto {
-  // @IsOptional()
-  // @IsEmail()
-  // @ApiProperty({ example: 'newemail@example.com' })
-  // email?: string;
+  @IsOptional()
+  @IsEmail()
+  @ApiProperty({ example: 'newemail@example.com' })
+  email?: string;
 
   @IsOptional()
   @IsString()
