@@ -16,6 +16,10 @@ export class ChatQueryDto {
 @Exclude()
 export class ChatResponseDto {
     @Expose()
+    @ApiProperty({ example: 'Keep track of your examination schedule' })
+    title: string;
+
+    @Expose()
     @ApiProperty({ example: 'What day is it today?' })
     query: string;
    
@@ -31,4 +35,15 @@ export class ChatResponseDto {
       example: '2025-11-13T14:30:00.000Z',
     })
     datetime: Date
+}
+
+@Exclude()
+export class ChatResponseListInfo{
+    @Expose()
+    @ApiProperty({ type: ChatResponseDto, isArray: true })
+    messages: ChatResponseDto[]
+
+    @Expose()
+    @ApiProperty({ example: 10 })
+    totalMessages: number
 }

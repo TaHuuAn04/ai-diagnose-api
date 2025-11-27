@@ -1,6 +1,6 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 // import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '@api/guards';
@@ -17,8 +17,10 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
 }
 
 import {
+    AIListDto,
     ChatQueryDto,
     ChatResponseDto,
+    ChatResponseListInfo,
     ConsultationRequestDto,
     ConsultationResponseDto,
 } from './dtos';
@@ -31,7 +33,45 @@ export class AIController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
-  ) {}
+  ) { }
+  
+  @Get('list')
+  @ApiOperation({ summary: "AI list will be listed in this feature" })
+  @ApiQuery({ name: 'type', required: true, description: 'type of API to get list' })
+  @ApiResponse({
+    status: 200,
+    description: "AI list retrived successfully.",
+    type: AIListDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({
+    status: 500,
+    description: "An error occurred during processing to retrive the list of AI.",
+  })
+  async getList(
+    @CurrentUser() user: User,
+    @Query('type') type: string,
+  ): Promise<AIListDto> {
+      return await mockResult();
+  }
+  
+  @Get('chatbot/history')
+  @ApiOperation({ summary: "Query list of chatbot will be listed in this feature" })
+  @ApiResponse({
+    status: 200,
+    description: "Chatbot query list retrived successfully.",
+    type: ChatResponseListInfo
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({
+    status: 500,
+    description: "An error occurred during processing to retrive the list of chatbot query.",
+  })
+  async history(
+    @CurrentUser() user: User,
+  ): Promise<ChatResponseListInfo> {
+      return await mockResult();
+    }
 
   @Post('chatbot/chat')
   @ApiOperation({ summary: "Patient's conversation with the chatbot is processed here" })
@@ -70,6 +110,5 @@ export class AIController {
       @Body() input: ConsultationRequestDto,
     ): Promise<ConsultationResponseDto> {
         return await mockResult();
-      }
-  
+  }
 }

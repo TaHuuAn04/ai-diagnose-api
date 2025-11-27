@@ -7,8 +7,6 @@ import { JwtAuthGuard } from '@api/guards';
 
 import { CurrentUser } from '@app/core/decorators';
 
-import { User } from '../../infrastructure/database/typeorm-nest/entities';
-
 // import {  } from '@app/core/domain/entities';
 
 async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 150): Promise<T> {
@@ -16,6 +14,8 @@ async function mockResult<T = true>(result: T = true as unknown as T, delayMs = 
   return result;
 }
 
+import { User } from '../../infrastructure/database/typeorm-nest/entities';
+import { AppointmentListInfo } from '../appointment/dtos';
 import { ShiftListInfo } from '../schedule/dtos';
 
 @ApiTags('Doctor')
@@ -35,11 +35,28 @@ export class DoctorController {
         description: "Appointments registered by patients with the doctor.",
         type: ShiftListInfo
       })
-      @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
-      @ApiResponse( { status: 500, description: "An error occurred during processing; failed to display the schedule."})
+    @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+    @ApiResponse( { status: 500, description: "An error occurred during processing; failed to display the schedule."})
     async getInfo(
-        @CurrentUser() user: User
+    @CurrentUser() user: User
     ): Promise<ShiftListInfo> {
           return await mockResult();
-    }
+  }
+  
+    @Get('list-appointment')
+    @ApiOperation({ summary: "Retrieve list of appointments" })
+    @ApiResponse({
+      status: 200,
+      description: "Information retrieved successfully.",
+      type: AppointmentListInfo
+    })
+    @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+    @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+    async getListApointment(
+      @CurrentUser() user: User,
+    ): Promise<AppointmentListInfo> {
+      return await mockResult();
+  } 
+
+
 }
