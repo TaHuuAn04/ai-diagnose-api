@@ -1,6 +1,6 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index} from 'typeorm';
 
-import { UserRole } from '@app/core/domain/enums';
+import { UserGender, UserRole } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 
@@ -15,6 +15,12 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
+  @Column({ type: 'enum', enum: UserGender, default: UserGender.MALE })
+  gender: UserGender;
+
+  @Column({ type: 'date', nullable: true })
+  dob: string;
+
   @Column({ type: 'varchar', length: 255, nullable: true })
   password: string;
 
@@ -24,9 +30,12 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 20, nullable: true })
   phoneNumber: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.CLIENT })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.PATIENT })
   @Index()
   role: UserRole;
+
+  @Column({ type: 'varchar', nullable: true })
+  avatarUrl: string;
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isOnBoardingCompleted: boolean;
