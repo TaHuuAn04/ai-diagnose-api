@@ -1,5 +1,8 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 
+import { Appointment } from './appointment.entity';
+import { ChatHistory } from './chatHistory.entity';
+import { Consultation } from './consultation.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -7,21 +10,30 @@ export class Patient {
   @PrimaryColumn('uuid')
   userId: string; 
 
-  @Column({ type: 'date', nullable: true })
-  dob: string;
+  @Column({ type: 'varchar', length: 25, nullable: true })
+  folk: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  password: string;
+  address: string;
 
-  @Column({ type: 'varchar', length: 5, nullable: true })
-  phoneCode: string;
+  @Column({ type: 'varchar', length: 15, unique: true })
+  citizenCode: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
-  phoneNumber: string;
+  @Column({ type: 'varchar', length: 25, unique: true })
+  medicalInsurance: string;
     
   @OneToOne(() => User, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' }) 
   user: User;
+
+  @OneToMany(() => ChatHistory, (history) => history.patient)
+  history: ChatHistory[];
+
+  @OneToMany(() => Appointment, (appointment) => appointment.patient)
+  appointment: Appointment[];
+  
+  @OneToMany(() => Consultation, (consultation) => consultation.patient)
+  consultation: Consultation[];
 }
