@@ -19,7 +19,7 @@ export class User extends BaseEntity {
   gender: UserGender;
 
   @Column({ type: 'date', nullable: true })
-  dob: string;
+  dateOfBirth: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   password: string;

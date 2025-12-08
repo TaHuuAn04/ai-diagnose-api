@@ -1,0 +1,20 @@
+import { Column, Entity } from 'typeorm';
+
+import { ShiftStatus } from '@app/core/domain/enums';
+
+import { BaseEntity } from '../base.entity';
+
+@Entity()
+export class Shift extends BaseEntity {
+  @Column({ type: 'date'})
+  date: string;
+
+  @Column({ type: 'timetz' })
+  from: string;
+
+  @Column({ type: 'timetz' })
+  to: string;
+
+  @Column({ type: 'enum', enum: ShiftStatus, default: ShiftStatus.AVAILABLE })
+  status: ShiftStatus;
+}

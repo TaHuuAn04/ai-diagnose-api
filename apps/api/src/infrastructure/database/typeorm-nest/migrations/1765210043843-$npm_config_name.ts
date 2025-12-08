@@ -1,0 +1,120 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class  $npmConfigName1765210043843 implements MigrationInterface {
+    name = ' $npmConfigName1765210043843'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TYPE "public"."users_gender_enum" AS ENUM('MALE', 'FEMALE', 'OTHER')`);
+        await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('ADMIN', 'PATIENT', 'DOCTOR', 'ADMISSION STAFF')`);
+        await queryRunner.query(`CREATE TABLE "users" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "first_name" character varying(255), "last_name" character varying(255), "email" character varying(255) NOT NULL, "gender" "public"."users_gender_enum" NOT NULL DEFAULT 'MALE', "date_of_birth" date, "password" character varying(255), "phone_code" character varying(5), "phone_number" character varying(20), "role" "public"."users_role_enum" NOT NULL DEFAULT 'PATIENT', "avatar_url" character varying, "is_on_boarding_completed" boolean DEFAULT false, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_ace513fa30d485cfd25c11a9e4" ON "users" ("role") `);
+        await queryRunner.query(`CREATE TABLE "chatbots" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "version" character varying(10) NOT NULL, "name" character varying(255), "is_public" boolean NOT NULL DEFAULT true, "access_token" character varying(255) NOT NULL, "knowledge_name" character varying(255), "knowledge_url" character varying(255) NOT NULL, "model_config" jsonb NOT NULL, CONSTRAINT "UQ_b208365e20a6a6f9bfb6b5b46fd" UNIQUE ("access_token"), CONSTRAINT "UQ_83d9ff6696ae5618696bfb61358" UNIQUE ("knowledge_url"), CONSTRAINT "PK_ec8923205b2059dbc8dfb6ef8e5" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "chatbot_queries" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "parent_id" uuid NOT NULL, "history_id" uuid NOT NULL, "query" character varying(255) NOT NULL, "response" character varying(255), CONSTRAINT "REL_db5bc82d2be7332a30959cbec2" UNIQUE ("parent_id"), CONSTRAINT "PK_6103a684485c61104210380e778" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "chat_histories" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "patient_id" uuid NOT NULL, "chatbot_id" uuid NOT NULL, "title" character varying(255) NOT NULL, CONSTRAINT "PK_b4dbb5fb487ffc2f6a37d1e2125" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "patients" ("user_id" uuid NOT NULL, "folk" character varying(25), "address" character varying(255), "citizen_code" character varying(15) NOT NULL, "medical_insurance" character varying(25) NOT NULL, CONSTRAINT "UQ_786e6e32aea74c6f1587d2eea6e" UNIQUE ("citizen_code"), CONSTRAINT "UQ_6b5a22ffe345822225488a7ff55" UNIQUE ("medical_insurance"), CONSTRAINT "PK_7fe1518dc780fd777669b5cb7a0" PRIMARY KEY ("user_id"))`);
+        await queryRunner.query(`CREATE TABLE "consultations" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "appointment_id" uuid NOT NULL, "patient_id" uuid NOT NULL, "doctor_id" uuid NOT NULL, CONSTRAINT "REL_590a17c3e9eeda5c69cb7bd594" UNIQUE ("appointment_id"), CONSTRAINT "PK_c5b78e9424d9bc68464f6a12103" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."images_type_enum" AS ENUM('AVATAR', 'SYMSTOMS')`);
+        await queryRunner.query(`CREATE TABLE "images" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "appointment_id" uuid NOT NULL, "consultation_id" uuid NOT NULL, "data_url" character varying NOT NULL, "description" character varying(255), "type" "public"."images_type_enum" NOT NULL DEFAULT 'SYMSTOMS', CONSTRAINT "UQ_13e9deaee15691605417b569b97" UNIQUE ("data_url"), CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."shifts_status_enum" AS ENUM('AVAILABLE', 'UNAVAILABLE')`);
+        await queryRunner.query(`CREATE TABLE "shifts" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "date" date NOT NULL, "from" TIME WITH TIME ZONE NOT NULL, "to" TIME WITH TIME ZONE NOT NULL, "status" "public"."shifts_status_enum" NOT NULL DEFAULT 'AVAILABLE', CONSTRAINT "PK_84d692e367e4d6cdf045828768c" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."appointments_status_enum" AS ENUM('PENDING', 'SCHEDULED', 'LATE', 'CANCELLED')`);
+        await queryRunner.query(`CREATE TABLE "appointments" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(255), "status" "public"."appointments_status_enum" NOT NULL DEFAULT 'PENDING', "shift_id" uuid NOT NULL, "patient_id" uuid NOT NULL, "doctor_id" uuid NOT NULL, CONSTRAINT "REL_7350602f41e3660d68eba4c646" UNIQUE ("shift_id"), CONSTRAINT "PK_4a437a9a27e948726b8bb3e36ad" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_3007a47d97a542e63b3308a69b" ON "appointments" ("status") `);
+        await queryRunner.query(`CREATE TABLE "doctors" ("user_id" uuid NOT NULL, "doctor_code" character varying(25) NOT NULL, "department" character varying(25) NOT NULL, "experience" character varying(255), "description" character varying(255), CONSTRAINT "UQ_0302da44ec49bc41f07ff910e91" UNIQUE ("doctor_code"), CONSTRAINT "PK_653c27d1b10652eb0c7bbbc4427" PRIMARY KEY ("user_id"))`);
+        await queryRunner.query(`CREATE TABLE "admission_staffs" ("user_id" uuid NOT NULL, "staff_code" character varying(25) NOT NULL, "department" character varying(25) NOT NULL, "description" character varying(255), CONSTRAINT "UQ_99a7340b3274745724a1d3f763f" UNIQUE ("staff_code"), CONSTRAINT "PK_31b4841c492548efba7d0dff59a" PRIMARY KEY ("user_id"))`);
+        await queryRunner.query(`CREATE TABLE "schedules" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "admission_staff_id" uuid NOT NULL, "date" date NOT NULL, "from" TIME WITH TIME ZONE NOT NULL, "to" TIME WITH TIME ZONE NOT NULL, CONSTRAINT "PK_7e33fc2ea755a5765e3564e66dd" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "rooms" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "room" character varying(255) NOT NULL, "doctor_id" uuid NOT NULL, "schedule_id" uuid NOT NULL, CONSTRAINT "PK_3bf6be761f7a587a8f52d500e01" PRIMARY KEY ("id", "doctor_id", "schedule_id"))`);
+        await queryRunner.query(`CREATE TABLE "diagnosis_results" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "advices" character varying(255), "prescription" character varying(255), "symstoms_text" character varying(255) NOT NULL, "consultation_id" uuid NOT NULL, CONSTRAINT "REL_6f3d7685a1da87f8b231022ee1" UNIQUE ("consultation_id"), CONSTRAINT "PK_8b7061e2a19f96b007d4ed58c12" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "diagnose_models" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "version" character varying(10) NOT NULL, "name" character varying(255), "is_public" boolean NOT NULL DEFAULT true, "key_model" character varying(255) NOT NULL, "model_url" character varying(255) NOT NULL, CONSTRAINT "UQ_6d3a60cd058fe37b33743afab29" UNIQUE ("key_model"), CONSTRAINT "UQ_367ad6752b67350cb2f346cf8b6" UNIQUE ("model_url"), CONSTRAINT "PK_004cedd733d8ce1f9e0f8cc9779" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TYPE "public"."ai_diagnosis_results_severity_level_enum" AS ENUM('MINOR', 'MODERATE', 'SEVERE', 'CRITICAL')`);
+        await queryRunner.query(`CREATE TABLE "ai_diagnosis_results" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "consultation_id" uuid NOT NULL, "diagnose_model_id" uuid NOT NULL, "suggested_diagnosis" character varying(255) NOT NULL, "proof" character varying(255), "severity_level" "public"."ai_diagnosis_results_severity_level_enum" NOT NULL DEFAULT 'MINOR', CONSTRAINT "REL_ac920db203bee0f1650211db55" UNIQUE ("consultation_id"), CONSTRAINT "PK_404b5f87f9ba02a098da43efd34" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "ai_result_diseases" ("result_id" uuid NOT NULL, "disease_id" uuid NOT NULL, CONSTRAINT "PK_68fe20421f5c2107cbf016fb81d" PRIMARY KEY ("result_id", "disease_id"))`);
+        await queryRunner.query(`CREATE TABLE "data_instances" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "disease_id" uuid NOT NULL, "image_url" character varying NOT NULL, "description" character varying(255), CONSTRAINT "UQ_2293ab9158a5bad60ebe010d5a2" UNIQUE ("image_url"), CONSTRAINT "PK_688643cddf3b287163c447a8de2" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "diseases" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(255) NOT NULL, "description" character varying(255), CONSTRAINT "UQ_293ca0c5bba4f9950f3fb976d33" UNIQUE ("name"), CONSTRAINT "PK_79ddc936b1458d8a079b62dc210" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "result_diseases" ("result_id" uuid NOT NULL, "disease_id" uuid NOT NULL, CONSTRAINT "PK_4ff61967491d25489d501e2c3b5" PRIMARY KEY ("result_id", "disease_id"))`);
+        await queryRunner.query(`ALTER TABLE "chatbot_queries" ADD CONSTRAINT "FK_db5bc82d2be7332a30959cbec24" FOREIGN KEY ("parent_id") REFERENCES "chatbot_queries"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "chatbot_queries" ADD CONSTRAINT "FK_90085164d4fa57c9753938b6327" FOREIGN KEY ("history_id") REFERENCES "chat_histories"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "chat_histories" ADD CONSTRAINT "FK_6ad6ab1592436e3ff7e5867f216" FOREIGN KEY ("patient_id") REFERENCES "patients"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "chat_histories" ADD CONSTRAINT "FK_5f262a1e68dff4a43bf906ad999" FOREIGN KEY ("chatbot_id") REFERENCES "chatbots"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "patients" ADD CONSTRAINT "FK_7fe1518dc780fd777669b5cb7a0" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "consultations" ADD CONSTRAINT "FK_590a17c3e9eeda5c69cb7bd594b" FOREIGN KEY ("appointment_id") REFERENCES "appointments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "consultations" ADD CONSTRAINT "FK_ee6c335246d3b937f11c329c837" FOREIGN KEY ("patient_id") REFERENCES "patients"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "consultations" ADD CONSTRAINT "FK_f8fd24eb3ea75583c650cc3c0c8" FOREIGN KEY ("doctor_id") REFERENCES "doctors"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "images" ADD CONSTRAINT "FK_147631221765e87d689ee13e588" FOREIGN KEY ("appointment_id") REFERENCES "appointments"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "images" ADD CONSTRAINT "FK_e3142ce1ad274a19e98a01c473a" FOREIGN KEY ("consultation_id") REFERENCES "consultations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "appointments" ADD CONSTRAINT "FK_7350602f41e3660d68eba4c6461" FOREIGN KEY ("shift_id") REFERENCES "shifts"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "appointments" ADD CONSTRAINT "FK_3330f054416745deaa2cc130700" FOREIGN KEY ("patient_id") REFERENCES "patients"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "appointments" ADD CONSTRAINT "FK_4cf26c3f972d014df5c68d503d2" FOREIGN KEY ("doctor_id") REFERENCES "doctors"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "doctors" ADD CONSTRAINT "FK_653c27d1b10652eb0c7bbbc4427" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "admission_staffs" ADD CONSTRAINT "FK_31b4841c492548efba7d0dff59a" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "schedules" ADD CONSTRAINT "FK_c0f988d4cf487d231495a8c8168" FOREIGN KEY ("admission_staff_id") REFERENCES "admission_staffs"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "rooms" ADD CONSTRAINT "FK_98828d5858c20e5edc7966e1e09" FOREIGN KEY ("doctor_id") REFERENCES "doctors"("user_id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "rooms" ADD CONSTRAINT "FK_38a07f1bd948cba8d470a793e2f" FOREIGN KEY ("schedule_id") REFERENCES "schedules"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "diagnosis_results" ADD CONSTRAINT "FK_6f3d7685a1da87f8b231022ee16" FOREIGN KEY ("consultation_id") REFERENCES "consultations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ai_diagnosis_results" ADD CONSTRAINT "FK_ac920db203bee0f1650211db556" FOREIGN KEY ("consultation_id") REFERENCES "consultations"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ai_diagnosis_results" ADD CONSTRAINT "FK_6b97ab81d0b024a39fd13db9d7d" FOREIGN KEY ("diagnose_model_id") REFERENCES "diagnose_models"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ai_result_diseases" ADD CONSTRAINT "FK_a0a26b3f51f0495ba15f51745e0" FOREIGN KEY ("disease_id") REFERENCES "diseases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "ai_result_diseases" ADD CONSTRAINT "FK_324fa0d56bfa2d907051a8cc550" FOREIGN KEY ("result_id") REFERENCES "ai_diagnosis_results"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "data_instances" ADD CONSTRAINT "FK_1efcf62c5e9315ceefb3e8d7328" FOREIGN KEY ("disease_id") REFERENCES "diseases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "result_diseases" ADD CONSTRAINT "FK_0acd0b77766dc5814bdebc6f899" FOREIGN KEY ("disease_id") REFERENCES "diseases"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "result_diseases" ADD CONSTRAINT "FK_dedac3f5652fd6b2805648260cb" FOREIGN KEY ("result_id") REFERENCES "diagnosis_results"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "result_diseases" DROP CONSTRAINT "FK_dedac3f5652fd6b2805648260cb"`);
+        await queryRunner.query(`ALTER TABLE "result_diseases" DROP CONSTRAINT "FK_0acd0b77766dc5814bdebc6f899"`);
+        await queryRunner.query(`ALTER TABLE "data_instances" DROP CONSTRAINT "FK_1efcf62c5e9315ceefb3e8d7328"`);
+        await queryRunner.query(`ALTER TABLE "ai_result_diseases" DROP CONSTRAINT "FK_324fa0d56bfa2d907051a8cc550"`);
+        await queryRunner.query(`ALTER TABLE "ai_result_diseases" DROP CONSTRAINT "FK_a0a26b3f51f0495ba15f51745e0"`);
+        await queryRunner.query(`ALTER TABLE "ai_diagnosis_results" DROP CONSTRAINT "FK_6b97ab81d0b024a39fd13db9d7d"`);
+        await queryRunner.query(`ALTER TABLE "ai_diagnosis_results" DROP CONSTRAINT "FK_ac920db203bee0f1650211db556"`);
+        await queryRunner.query(`ALTER TABLE "diagnosis_results" DROP CONSTRAINT "FK_6f3d7685a1da87f8b231022ee16"`);
+        await queryRunner.query(`ALTER TABLE "rooms" DROP CONSTRAINT "FK_38a07f1bd948cba8d470a793e2f"`);
+        await queryRunner.query(`ALTER TABLE "rooms" DROP CONSTRAINT "FK_98828d5858c20e5edc7966e1e09"`);
+        await queryRunner.query(`ALTER TABLE "schedules" DROP CONSTRAINT "FK_c0f988d4cf487d231495a8c8168"`);
+        await queryRunner.query(`ALTER TABLE "admission_staffs" DROP CONSTRAINT "FK_31b4841c492548efba7d0dff59a"`);
+        await queryRunner.query(`ALTER TABLE "doctors" DROP CONSTRAINT "FK_653c27d1b10652eb0c7bbbc4427"`);
+        await queryRunner.query(`ALTER TABLE "appointments" DROP CONSTRAINT "FK_4cf26c3f972d014df5c68d503d2"`);
+        await queryRunner.query(`ALTER TABLE "appointments" DROP CONSTRAINT "FK_3330f054416745deaa2cc130700"`);
+        await queryRunner.query(`ALTER TABLE "appointments" DROP CONSTRAINT "FK_7350602f41e3660d68eba4c6461"`);
+        await queryRunner.query(`ALTER TABLE "images" DROP CONSTRAINT "FK_e3142ce1ad274a19e98a01c473a"`);
+        await queryRunner.query(`ALTER TABLE "images" DROP CONSTRAINT "FK_147631221765e87d689ee13e588"`);
+        await queryRunner.query(`ALTER TABLE "consultations" DROP CONSTRAINT "FK_f8fd24eb3ea75583c650cc3c0c8"`);
+        await queryRunner.query(`ALTER TABLE "consultations" DROP CONSTRAINT "FK_ee6c335246d3b937f11c329c837"`);
+        await queryRunner.query(`ALTER TABLE "consultations" DROP CONSTRAINT "FK_590a17c3e9eeda5c69cb7bd594b"`);
+        await queryRunner.query(`ALTER TABLE "patients" DROP CONSTRAINT "FK_7fe1518dc780fd777669b5cb7a0"`);
+        await queryRunner.query(`ALTER TABLE "chat_histories" DROP CONSTRAINT "FK_5f262a1e68dff4a43bf906ad999"`);
+        await queryRunner.query(`ALTER TABLE "chat_histories" DROP CONSTRAINT "FK_6ad6ab1592436e3ff7e5867f216"`);
+        await queryRunner.query(`ALTER TABLE "chatbot_queries" DROP CONSTRAINT "FK_90085164d4fa57c9753938b6327"`);
+        await queryRunner.query(`ALTER TABLE "chatbot_queries" DROP CONSTRAINT "FK_db5bc82d2be7332a30959cbec24"`);
+        await queryRunner.query(`DROP TABLE "result_diseases"`);
+        await queryRunner.query(`DROP TABLE "diseases"`);
+        await queryRunner.query(`DROP TABLE "data_instances"`);
+        await queryRunner.query(`DROP TABLE "ai_result_diseases"`);
+        await queryRunner.query(`DROP TABLE "ai_diagnosis_results"`);
+        await queryRunner.query(`DROP TYPE "public"."ai_diagnosis_results_severity_level_enum"`);
+        await queryRunner.query(`DROP TABLE "diagnose_models"`);
+        await queryRunner.query(`DROP TABLE "diagnosis_results"`);
+        await queryRunner.query(`DROP TABLE "rooms"`);
+        await queryRunner.query(`DROP TABLE "schedules"`);
+        await queryRunner.query(`DROP TABLE "admission_staffs"`);
+        await queryRunner.query(`DROP TABLE "doctors"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_3007a47d97a542e63b3308a69b"`);
+        await queryRunner.query(`DROP TABLE "appointments"`);
+        await queryRunner.query(`DROP TYPE "public"."appointments_status_enum"`);
+        await queryRunner.query(`DROP TABLE "shifts"`);
+        await queryRunner.query(`DROP TYPE "public"."shifts_status_enum"`);
+        await queryRunner.query(`DROP TABLE "images"`);
+        await queryRunner.query(`DROP TYPE "public"."images_type_enum"`);
+        await queryRunner.query(`DROP TABLE "consultations"`);
+        await queryRunner.query(`DROP TABLE "patients"`);
+        await queryRunner.query(`DROP TABLE "chat_histories"`);
+        await queryRunner.query(`DROP TABLE "chatbot_queries"`);
+        await queryRunner.query(`DROP TABLE "chatbots"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_ace513fa30d485cfd25c11a9e4"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."users_gender_enum"`);
+    }
+
+}
