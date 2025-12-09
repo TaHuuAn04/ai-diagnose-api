@@ -1,21 +1,27 @@
-import { UserRole } from '../enums';
+import { UserGender, UserRole } from '../enums';
 
 import { BaseEntity } from './base';
 
 export class UserEntity extends BaseEntity {
-  firstName: string;
+  firstName?: string | null;
 
-  lastName: string;
+  lastName?: string | null;
 
   email: string;
+
+  gender: UserGender;
+
+  dateOfBirth?: string | null;
 
   role: UserRole;
 
   password: string;
 
-  phoneCode: string;
+  phoneCode?: string | null;
 
-  phoneNumber: string;
+  phoneNumber?: string | null;
+
+  avatarUrl?: string | null;
 
   isOnBoardingCompleted: boolean;
 
