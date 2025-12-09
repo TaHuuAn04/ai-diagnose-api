@@ -25,7 +25,8 @@ export class Chatbot extends BaseEntity {
   knowledgeUrl: string;
 
   @Column({ type: 'jsonb' })
-  model_config: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model_config: any;
 
   @OneToMany(() => ChatHistory, (history) => history.chatbot)
   history: ChatHistory[];

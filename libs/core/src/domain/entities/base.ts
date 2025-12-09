@@ -5,8 +5,11 @@ export class BaseEntity {
   id: string;
 
   @Expose()
-  createdAt?: Date;
+  createdAt?: Date | null;
 
   @Expose()
-  updatedAt?: Date;
+  updatedAt?: Date | null;
+
+  @Expose()
+  deletedAt?: Date | null;
 }
