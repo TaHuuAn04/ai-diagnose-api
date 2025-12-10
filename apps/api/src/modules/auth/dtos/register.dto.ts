@@ -56,6 +56,12 @@ export class RegisterRequestDto {
   @MinLength(9)
   @ApiProperty({ example: '123456789' })
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  @ApiProperty({ example: 'strongPassword123' })
+  password: string;
 }
 
 @Exclude()

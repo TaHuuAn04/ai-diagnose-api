@@ -2,7 +2,6 @@ import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
 import {
-  INJECTION_TOKEN,
   REPOSITORY_INJECTION_TOKEN,
 } from 'apps/api/src/common/enums';
 import { IUserRepository } from 'apps/api/src/core/repository';
@@ -38,10 +37,10 @@ export class GetUserPayloadHandler
         id: user.id || '',
         email: user.email,
         role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneCode: user.phoneCode,
-        phoneNumber: user.phoneNumber,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        phoneCode: user.phoneCode ?? '',
+        phoneNumber: user.phoneNumber ?? '',
       };
 
       return payload;

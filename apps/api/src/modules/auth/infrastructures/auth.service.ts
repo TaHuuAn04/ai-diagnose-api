@@ -124,7 +124,7 @@ export class AuthService implements IAuthService {
   @Transactional()
   async register(input: RegisterRequestDto): Promise<LoginResponseDto> {
     try {
-      const { email, otp, sessionId, firstName, lastName } = input;
+      const { email, otp, sessionId, firstName, lastName, password } = input;
       const existingUser = await this.userRepository.findOne({
         where: { email },
       });
@@ -134,21 +134,21 @@ export class AuthService implements IAuthService {
       }
 
       // verify register OTP
-      await this.validateRegisterOtp({
-        email,
-        otp,
-        sessionId,
-      });
+      // await this.validateRegisterOtp({
+      //   email,
+      //   otp,
+      //   sessionId,
+      // });
 
       const savedUser = await this.userService.createUser({ ...input });
 
       // create novu user
-      await this.internalWorkerService.createNovuUser({
-        id: savedUser.id,
-        email,
-        firstName,
-        lastName,
-      });
+      // await this.internalWorkerService.createNovuUser({
+      //   id: savedUser.id,
+      //   email,
+      //   firstName,
+      //   lastName,
+      // });
 
       const payload: AuthPayload = {
         id: savedUser.id,

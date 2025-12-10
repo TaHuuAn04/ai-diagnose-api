@@ -45,6 +45,13 @@ export class CreateUserBodyDto {
   @MinLength(9)
   @ApiProperty({ example: '123456789' })
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  @MaxLength(20)
+  @ApiProperty({ example: 'P@ssw0rd' })
+  password: string;
 }
 
 export class CreateUserInputDto extends CreateUserBodyDto {}
