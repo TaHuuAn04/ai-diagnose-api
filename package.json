@@ -31,7 +31,7 @@
     "start:dev:bots-telegram": "nest start --watch bots-telegram",
     "start:dev:bots-discord": "nest start --watch bots-discord",
     "typeorm:api": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d apps/api/src/config/database/typeorm-nest/ormconfig.ts",
-    "dbm:api:generate": "npm run typeorm:api -- migration:generate apps/api/src/infrastructure/database/typeorm-nest/migrations/$npm_config_name",
+    "dbm:api:generate": "node -e \"const name = process.env.npm_config_name || 'Migration'; require('child_process').execSync(`npm run typeorm:api -- migration:generate apps/api/src/infrastructure/database/typeorm-nest/migrations/${name}`, {stdio: 'inherit'})\"",
     "dbm:api:drop": "npm run typeorm:api -- schema:drop",
     "dbm:api:run": "npm run typeorm:api -- migration:run",
     "dbm:api:revert": "npm run typeorm:api -- migration:revert"

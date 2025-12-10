@@ -1,13 +1,15 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class  $npmConfigName1765210043843 implements MigrationInterface {
-    name = ' $npmConfigName1765210043843'
+export class InitDB1765360744939 implements MigrationInterface {
+    name = 'InitDB1765360744939'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."users_gender_enum" AS ENUM('MALE', 'FEMALE', 'OTHER')`);
         await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('ADMIN', 'PATIENT', 'DOCTOR', 'ADMISSION STAFF')`);
-        await queryRunner.query(`CREATE TABLE "users" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "first_name" character varying(255), "last_name" character varying(255), "email" character varying(255) NOT NULL, "gender" "public"."users_gender_enum" NOT NULL DEFAULT 'MALE', "date_of_birth" date, "password" character varying(255), "phone_code" character varying(5), "phone_number" character varying(20), "role" "public"."users_role_enum" NOT NULL DEFAULT 'PATIENT', "avatar_url" character varying, "is_on_boarding_completed" boolean DEFAULT false, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "users" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "first_name" character varying(255), "last_name" character varying(255), "email" character varying(255) NOT NULL, "gender" "public"."users_gender_enum" NOT NULL DEFAULT 'MALE', "date_of_birth" date, "password" character varying(255) NOT NULL, "phone_code" character varying(5), "phone_number" character varying(20), "role" "public"."users_role_enum" NOT NULL DEFAULT 'PATIENT', "avatar_url" character varying, "is_on_boarding_completed" boolean DEFAULT false, CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "IDX_ace513fa30d485cfd25c11a9e4" ON "users" ("role") `);
+        await queryRunner.query(`CREATE TYPE "public"."shifts_status_enum" AS ENUM('AVAILABLE', 'UNAVAILABLE')`);
+        await queryRunner.query(`CREATE TABLE "shifts" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "date" date NOT NULL, "from" TIME WITH TIME ZONE NOT NULL, "to" TIME WITH TIME ZONE NOT NULL, "status" "public"."shifts_status_enum" NOT NULL DEFAULT 'AVAILABLE', CONSTRAINT "PK_84d692e367e4d6cdf045828768c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "chatbots" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "version" character varying(10) NOT NULL, "name" character varying(255), "is_public" boolean NOT NULL DEFAULT true, "access_token" character varying(255) NOT NULL, "knowledge_name" character varying(255), "knowledge_url" character varying(255) NOT NULL, "model_config" jsonb NOT NULL, CONSTRAINT "UQ_b208365e20a6a6f9bfb6b5b46fd" UNIQUE ("access_token"), CONSTRAINT "UQ_83d9ff6696ae5618696bfb61358" UNIQUE ("knowledge_url"), CONSTRAINT "PK_ec8923205b2059dbc8dfb6ef8e5" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "chatbot_queries" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "parent_id" uuid NOT NULL, "history_id" uuid NOT NULL, "query" character varying(255) NOT NULL, "response" character varying(255), CONSTRAINT "REL_db5bc82d2be7332a30959cbec2" UNIQUE ("parent_id"), CONSTRAINT "PK_6103a684485c61104210380e778" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "chat_histories" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "patient_id" uuid NOT NULL, "chatbot_id" uuid NOT NULL, "title" character varying(255) NOT NULL, CONSTRAINT "PK_b4dbb5fb487ffc2f6a37d1e2125" PRIMARY KEY ("id"))`);
@@ -15,8 +17,6 @@ export class  $npmConfigName1765210043843 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "consultations" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "appointment_id" uuid NOT NULL, "patient_id" uuid NOT NULL, "doctor_id" uuid NOT NULL, CONSTRAINT "REL_590a17c3e9eeda5c69cb7bd594" UNIQUE ("appointment_id"), CONSTRAINT "PK_c5b78e9424d9bc68464f6a12103" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."images_type_enum" AS ENUM('AVATAR', 'SYMSTOMS')`);
         await queryRunner.query(`CREATE TABLE "images" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "appointment_id" uuid NOT NULL, "consultation_id" uuid NOT NULL, "data_url" character varying NOT NULL, "description" character varying(255), "type" "public"."images_type_enum" NOT NULL DEFAULT 'SYMSTOMS', CONSTRAINT "UQ_13e9deaee15691605417b569b97" UNIQUE ("data_url"), CONSTRAINT "PK_1fe148074c6a1a91b63cb9ee3c9" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TYPE "public"."shifts_status_enum" AS ENUM('AVAILABLE', 'UNAVAILABLE')`);
-        await queryRunner.query(`CREATE TABLE "shifts" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "date" date NOT NULL, "from" TIME WITH TIME ZONE NOT NULL, "to" TIME WITH TIME ZONE NOT NULL, "status" "public"."shifts_status_enum" NOT NULL DEFAULT 'AVAILABLE', CONSTRAINT "PK_84d692e367e4d6cdf045828768c" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "public"."appointments_status_enum" AS ENUM('PENDING', 'SCHEDULED', 'LATE', 'CANCELLED')`);
         await queryRunner.query(`CREATE TABLE "appointments" ("created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(255), "status" "public"."appointments_status_enum" NOT NULL DEFAULT 'PENDING', "shift_id" uuid NOT NULL, "patient_id" uuid NOT NULL, "doctor_id" uuid NOT NULL, CONSTRAINT "REL_7350602f41e3660d68eba4c646" UNIQUE ("shift_id"), CONSTRAINT "PK_4a437a9a27e948726b8bb3e36ad" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE INDEX "IDX_3007a47d97a542e63b3308a69b" ON "appointments" ("status") `);
@@ -102,8 +102,6 @@ export class  $npmConfigName1765210043843 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX "public"."IDX_3007a47d97a542e63b3308a69b"`);
         await queryRunner.query(`DROP TABLE "appointments"`);
         await queryRunner.query(`DROP TYPE "public"."appointments_status_enum"`);
-        await queryRunner.query(`DROP TABLE "shifts"`);
-        await queryRunner.query(`DROP TYPE "public"."shifts_status_enum"`);
         await queryRunner.query(`DROP TABLE "images"`);
         await queryRunner.query(`DROP TYPE "public"."images_type_enum"`);
         await queryRunner.query(`DROP TABLE "consultations"`);
@@ -111,6 +109,8 @@ export class  $npmConfigName1765210043843 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "chat_histories"`);
         await queryRunner.query(`DROP TABLE "chatbot_queries"`);
         await queryRunner.query(`DROP TABLE "chatbots"`);
+        await queryRunner.query(`DROP TABLE "shifts"`);
+        await queryRunner.query(`DROP TYPE "public"."shifts_status_enum"`);
         await queryRunner.query(`DROP INDEX "public"."IDX_ace513fa30d485cfd25c11a9e4"`);
         await queryRunner.query(`DROP TABLE "users"`);
         await queryRunner.query(`DROP TYPE "public"."users_role_enum"`);
