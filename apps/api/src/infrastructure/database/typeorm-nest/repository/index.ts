@@ -19,3 +19,4 @@ export * from './room.repository';
 export * from './schedule.repository';
 export * from './shift.repository';
 export * from './user.repository';
+export * from './working-time.repository';

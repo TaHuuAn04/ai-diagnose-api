@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class DoctorRepository
-  extends GenericRepository<Doctor, DoctorEntity>(Doctor)
+  extends GenericRepository<DoctorEntity, Doctor>
   implements IDoctorRepository
 {
   constructor(
     @InjectRepository(Doctor)
     public readonly repository: Repository<Doctor>,
   ) {
-    const toDomainEntity = (typeOrmEntity: Doctor): DoctorEntity => {
-      return plainToInstance(DoctorEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: Doctor): DoctorEntity => {
+        return plainToInstance(DoctorEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: DoctorEntity): Doctor => {
+        return plainToInstance(Doctor, domainEntity);
+      }
+    });
   }
 }

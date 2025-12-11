@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class DataInstanceRepository
-  extends GenericRepository<DataInstance, DataInstanceEntity>(DataInstance)
+  extends GenericRepository<DataInstanceEntity, DataInstance>
   implements IDataInstanceRepository
 {
   constructor(
     @InjectRepository(DataInstance)
     public readonly repository: Repository<DataInstance>,
   ) {
-    const toDomainEntity = (typeOrmEntity: DataInstance): DataInstanceEntity => {
-      return plainToInstance(DataInstanceEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: DataInstance): DataInstanceEntity => {
+        return plainToInstance(DataInstanceEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: DataInstanceEntity): DataInstance => {
+        return plainToInstance(DataInstance, domainEntity);
+      }
+    });
   }
 }

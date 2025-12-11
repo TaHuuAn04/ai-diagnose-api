@@ -28,6 +28,7 @@ import {
   Schedule,
   Shift,
   User,
+  WorkingTime,
 } from './entities';
 import {
   AdmissionStaffRepository,
@@ -50,6 +51,7 @@ import {
   ScheduleRepository,
   ShiftRepository,
   UserRepository,
+  WorkingTimeRepository,
 } from './repository';
 
 const Adapters = [
@@ -133,6 +135,10 @@ const Adapters = [
     provide: REPOSITORY_INJECTION_TOKEN.SHIFT_REPOSITORY,
     useClass: ShiftRepository,
   },
+  {
+    provide: REPOSITORY_INJECTION_TOKEN.WORKING_TIME_REPOSITORY,
+    useClass: WorkingTimeRepository,
+  },
 ];
 
 @Global()
@@ -171,6 +177,7 @@ const Adapters = [
       Room,
       Schedule,
       Shift,
+      WorkingTime,
     ]),
   ],
   providers: [...Adapters],

@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class ImageRepository
-  extends GenericRepository<Image, ImageEntity>(Image)
+  extends GenericRepository<ImageEntity, Image>
   implements IImageRepository
 {
   constructor(
     @InjectRepository(Image)
     public readonly repository: Repository<Image>,
   ) {
-    const toDomainEntity = (typeOrmEntity: Image): ImageEntity => {
-      return plainToInstance(ImageEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: Image): ImageEntity => {
+        return plainToInstance(ImageEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: ImageEntity): Image => {
+        return plainToInstance(Image, domainEntity);
+      }
+    });
   }
 }

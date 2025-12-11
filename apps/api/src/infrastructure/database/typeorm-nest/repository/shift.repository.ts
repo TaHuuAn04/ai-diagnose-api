@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class ShiftRepository
-  extends GenericRepository<Shift, ShiftEntity>(Shift)
+  extends GenericRepository<ShiftEntity, Shift>
   implements IShiftRepository
 {
   constructor(
     @InjectRepository(Shift)
     public readonly repository: Repository<Shift>,
   ) {
-    const toDomainEntity = (typeOrmEntity: Shift): ShiftEntity => {
-      return plainToInstance(ShiftEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: Shift): ShiftEntity => {
+        return plainToInstance(ShiftEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: ShiftEntity): Shift => {
+        return plainToInstance(Shift, domainEntity);
+      }
+    });
   }
 }

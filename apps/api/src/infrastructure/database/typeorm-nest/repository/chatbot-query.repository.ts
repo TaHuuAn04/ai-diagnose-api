@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class ChatbotQueryRepository
-  extends GenericRepository<ChatbotQuery, ChatbotQueryEntity>(ChatbotQuery)
+  extends GenericRepository<ChatbotQueryEntity, ChatbotQuery>
   implements IChatbotQueryRepository
 {
   constructor(
     @InjectRepository(ChatbotQuery)
     public readonly repository: Repository<ChatbotQuery>,
   ) {
-    const toDomainEntity = (typeOrmEntity: ChatbotQuery): ChatbotQueryEntity => {
-      return plainToInstance(ChatbotQueryEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: ChatbotQuery): ChatbotQueryEntity => {
+        return plainToInstance(ChatbotQueryEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: ChatbotQueryEntity): ChatbotQuery => {
+        return plainToInstance(ChatbotQuery, domainEntity);
+      }
+    });
   }
 }
