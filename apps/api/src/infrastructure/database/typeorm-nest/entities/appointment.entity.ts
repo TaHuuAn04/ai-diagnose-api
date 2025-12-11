@@ -21,7 +21,6 @@ export class Appointment extends BaseEntity {
   patientId: string;
 
   @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
-  @JoinColumn({ name: 'working_time_id' })
   workingTime: WorkingTime; 
 
   @OneToMany(() => Image, (image) => image.appointment)
