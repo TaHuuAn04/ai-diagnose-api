@@ -11,7 +11,7 @@ import { WorkingTime } from './workingTime.entity';
 @Entity()
 export class Appointment extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
-  description: string;
+  description?: string | null;
 
   @Column({ type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.PENDING })
   @Index()
@@ -21,12 +21,12 @@ export class Appointment extends BaseEntity {
   patientId: string;
 
   @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
-  workingTime: WorkingTime; 
+  workingTime?: WorkingTime | null; 
 
   @OneToMany(() => Image, (image) => image.appointment)
-  image: Image[];
+  image?: Image[] | [];
 
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patient_id' }) 
-  patient: Patient;
+  patient?: Patient | null;
 }

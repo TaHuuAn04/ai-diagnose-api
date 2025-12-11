@@ -19,3 +19,4 @@ export * from './room.repository.interface';
 export * from './schedule.repository.interface';
 export * from './shift.repository.interface';
 export * from './user.repository.interface';
+export * from './working-time.repository.interface';

@@ -5,12 +5,15 @@ import { INJECTION_TOKEN } from "@api/enums";
 
 import { ShiftService } from "./infrastructures";
 import { ShiftController } from "./shift.controller";
+import { BookShiftCommandHandler } from "./use-cases/book-shift.use-case";
+import { GetAvailableShiftsByDoctorQueryHandler } from "./use-cases/get-available-shifts-by-doctor.use-case";
 import { GetListShiftQueryHandler } from "./use-cases/get-list-shift.use-case";
 
 
 const Handlers = [
-  // Add command handlers here in the future
-  GetListShiftQueryHandler
+  GetListShiftQueryHandler,
+  GetAvailableShiftsByDoctorQueryHandler,
+  BookShiftCommandHandler,
 ];
 
 const Adapters = [

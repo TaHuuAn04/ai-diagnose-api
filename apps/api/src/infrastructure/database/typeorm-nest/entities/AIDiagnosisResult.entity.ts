@@ -20,18 +20,18 @@ export class AIDiagnosisResult extends BaseEntity {
   suggestedDiagnosis: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  proof: string
+  proof?: string | null;
     
   @Column({ type: 'enum', enum: SeverityLevel, nullable: true }) //Maybe no suggested disease
-  severityLevel: SeverityLevel
+  severityLevel: SeverityLevel;
 
   @OneToOne(() => Consultation)
   @JoinColumn({ name: 'consultation_id' }) 
-  consultation: Consultation;
+  consultation?: Consultation | null;
 
   @ManyToOne(() => DiagnoseModel)
   @JoinColumn({ name: 'diagnose_model_id' }) 
-  generateBy: DiagnoseModel;
+  generateBy?: DiagnoseModel | null;
 
   @OneToMany(() => AIResultDisease, (diseases) => diseases.result)
   diseases: AIResultDisease[];

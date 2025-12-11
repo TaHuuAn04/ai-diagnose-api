@@ -10,19 +10,19 @@ import { Consultation } from './consultation.entity';
 @Entity()
 export class Image extends BaseEntity {
   @Column('uuid')
-  appointmentId: string
+  appointmentId: string;
 
   @Column('uuid')
-  consultationId: string
+  consultationId: string;
 
   @Column({ type: 'varchar' })
   dataUrl: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  description: string
+  description?: string | null;
   
   @Column({ type: 'enum', enum: ImageType })
-  type: string
+  type: ImageType;
   
   @ManyToOne(() => Appointment)
   @JoinColumn({ name: 'appointment_id' })

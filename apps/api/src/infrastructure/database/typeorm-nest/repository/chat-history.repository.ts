@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class ChatHistoryRepository
-  extends GenericRepository<ChatHistory, ChatHistoryEntity>(ChatHistory)
+  extends GenericRepository<ChatHistoryEntity, ChatHistory>
   implements IChatHistoryRepository
 {
   constructor(
     @InjectRepository(ChatHistory)
     public readonly repository: Repository<ChatHistory>,
   ) {
-    const toDomainEntity = (typeOrmEntity: ChatHistory): ChatHistoryEntity => {
-      return plainToInstance(ChatHistoryEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: ChatHistory): ChatHistoryEntity => {
+        return plainToInstance(ChatHistoryEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: ChatHistoryEntity): ChatHistory => {
+        return plainToInstance(ChatHistory, domainEntity);
+      }
+    });
   }
 }

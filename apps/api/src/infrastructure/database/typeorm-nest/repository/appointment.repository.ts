@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class AppointmentRepository
-  extends GenericRepository<Appointment, AppointmentEntity>(Appointment)
+  extends GenericRepository<AppointmentEntity, Appointment>
   implements IAppointmentRepository
 {
   constructor(
     @InjectRepository(Appointment)
     public readonly repository: Repository<Appointment>,
   ) {
-    const toDomainEntity = (typeOrmEntity: Appointment): AppointmentEntity => {
-      return plainToInstance(AppointmentEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: Appointment): AppointmentEntity => {
+        return plainToInstance(AppointmentEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: AppointmentEntity): Appointment => {
+        return plainToInstance(Appointment, domainEntity);
+      }
+    });
   }
 }

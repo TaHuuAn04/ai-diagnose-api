@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class AIDiagnosisResultRepository
-  extends GenericRepository<AIDiagnosisResult, AIDiagnosisResultEntity>(AIDiagnosisResult)
+  extends GenericRepository<AIDiagnosisResultEntity, AIDiagnosisResult>
   implements IAIDiagnosisResultRepository
 {
   constructor(
     @InjectRepository(AIDiagnosisResult)
     public readonly repository: Repository<AIDiagnosisResult>,
   ) {
-    const toDomainEntity = (typeOrmEntity: AIDiagnosisResult): AIDiagnosisResultEntity => {
-      return plainToInstance(AIDiagnosisResultEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: AIDiagnosisResult): AIDiagnosisResultEntity => {
+        return plainToInstance(AIDiagnosisResultEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: AIDiagnosisResultEntity): AIDiagnosisResult => {
+        return plainToInstance(AIDiagnosisResult, domainEntity);
+      }
+    });
   }
 }

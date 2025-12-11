@@ -20,16 +20,16 @@ export class Consultation extends BaseEntity {
 
   @OneToOne(() => Appointment)
   @JoinColumn({ name: 'appointment_id' }) 
-  appointment: Appointment;
+  appointment?: Appointment | null;
 
   @OneToMany(() => Image, (image) => image.consultation)
-  image: Image[];
+  image?: Image[] | [];
 
   @ManyToOne(() => Patient )
   @JoinColumn({ name: 'patient_id'})
-  patient: Patient;
+  patient?: Patient | null;
 
   @ManyToOne(() => Doctor )
   @JoinColumn({ name: 'doctor_id'})
-  doctor: Doctor;
+  doctor?: Doctor | null;
 }

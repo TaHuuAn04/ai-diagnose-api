@@ -13,17 +13,20 @@ import { GenericRepository } from './generic-repository';
 
 @Injectable()
 export class ScheduleRepository
-  extends GenericRepository<Schedule, ScheduleEntity>(Schedule)
+  extends GenericRepository<ScheduleEntity, Schedule>
   implements IScheduleRepository
 {
   constructor(
     @InjectRepository(Schedule)
     public readonly repository: Repository<Schedule>,
   ) {
-    const toDomainEntity = (typeOrmEntity: Schedule): ScheduleEntity => {
-      return plainToInstance(ScheduleEntity, typeOrmEntity);
-    };
-
-    super(repository, toDomainEntity);
+    super(repository, {
+      toDomain: (typeOrmEntity: Schedule): ScheduleEntity => {
+        return plainToInstance(ScheduleEntity, typeOrmEntity);
+      },
+      toOrmEntity: (domainEntity: ScheduleEntity): Schedule => {
+        return plainToInstance(Schedule, domainEntity);
+      }
+    });
   }
 }
