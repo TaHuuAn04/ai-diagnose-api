@@ -144,12 +144,16 @@ export interface IGenericRepository<DomainEntity> {
   ): Promise<DomainEntity[]>;
 
   count(
-    condition: Partial<{ [K in keyof DomainEntity]: DomainEntity[K] }>,
+    options?: WhereCondition<DomainEntity>
   ): Promise<number>;
 
   findOne(
-    condition: Partial<{ [K in keyof DomainEntity]: DomainEntity[K] }>,
-  ): Promise<DomainEntity | null>;
+    options: QueryOptions<DomainEntity>
+  ): Promise<DomainEntity | null>
+
+  countWithOptions(
+    options?: WhereCondition<DomainEntity>
+  ): Promise<number>
 
   create(entity: Partial<DomainEntity>): Promise<DomainEntity>;
 

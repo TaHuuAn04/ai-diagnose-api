@@ -100,8 +100,10 @@ export class ShiftService implements IShiftService {
       const { doctorId, shiftId, patientId, description } = bookShiftDto;
 
       const workingTime = await this.workingTimeRepository.findOne({
-        doctorId,
-        shiftId,
+        where: { 
+          doctorId: doctorId,
+          shiftId: shiftId,
+        },
       });
 
       if (!workingTime) {

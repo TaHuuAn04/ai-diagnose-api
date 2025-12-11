@@ -24,7 +24,7 @@ export class FindUserByIdHandler
   async execute(command: FindUserByIdCommand) {
     try {
       const user = await this.userRepository.findOne({
-        id: command.id,
+        where: { id: command.id },
       });
 
       return user;

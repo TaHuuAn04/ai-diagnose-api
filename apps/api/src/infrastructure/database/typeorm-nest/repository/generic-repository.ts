@@ -91,11 +91,10 @@ export abstract class GenericRepository<
   }
 
   async findOne(
-    condition: Partial<{ [K in keyof TDomainEntity]: TDomainEntity[K] }>
+    options: QueryOptions<TDomainEntity>
   ): Promise<TDomainEntity | null> {
-    const entity = await this._repository.findOne({
-      where: condition as FindOptionsWhere<TTypeOrmEntity>
-    })
+    const typeormOptions = this._buildTypeOrmOptions(options)
+    const entity = await this._repository.findOne(typeormOptions as FindOneOptions<TTypeOrmEntity>)
 
     return entity ? this._mapper.toDomain(entity) : null
   }
@@ -140,14 +139,6 @@ export abstract class GenericRepository<
   }
 
   async count(
-    condition: Partial<{ [K in keyof TDomainEntity]: TDomainEntity[K] }>
-  ): Promise<number> {
-    return await this._repository.count({
-      where: condition as FindOptionsWhere<TTypeOrmEntity>
-    })
-  }
-
-  async countWithOptions(
     options?: WhereCondition<TDomainEntity>
   ): Promise<number> {
     const typeormOptions = this._buildTypeOrmOptions({ where: options } as QueryOptions<TDomainEntity>)
@@ -158,9 +149,17 @@ export abstract class GenericRepository<
   async exists(
     options: WhereCondition<TDomainEntity>
   ): Promise<boolean> {
-    const count = await this.countWithOptions(options)
+    const count = await this.count(options)
 
     return count > 0
+  }
+
+  async countWithOptions(
+    options?: WhereCondition<TDomainEntity>
+  ): Promise<number> {
+    const typeormOptions = this._buildTypeOrmOptions({ where: options } as QueryOptions<TDomainEntity>)
+
+    return await this._repository.count(typeormOptions)
   }
 
   async create(

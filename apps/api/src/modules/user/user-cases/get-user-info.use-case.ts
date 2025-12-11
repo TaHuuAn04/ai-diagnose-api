@@ -25,7 +25,7 @@ export class GetUserInfoCommandHandler
   async execute(command: GetUserInfoCommand) {
     try {
       const user = await this.userRepository.findOne({
-        id: command.id,
+        where: { id: command.id },
       });
 
       if (!user) {

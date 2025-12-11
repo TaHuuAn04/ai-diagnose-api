@@ -30,7 +30,7 @@ export class UpdateUserInfoCommandHandler
 
   async execute(command: UpdateUserInfoCommand) {
     try {
-      const user = await this.userRepository.findOne({ id: command.userId });
+      const user = await this.userRepository.findOne({ where: { id: command.userId } });
 
       if (!user) {
         throw new BadRequestException('User not found');

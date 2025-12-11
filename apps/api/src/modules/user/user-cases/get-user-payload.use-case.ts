@@ -26,7 +26,7 @@ export class GetUserPayloadHandler
   async execute(command: GetUserPayloadCommand) {
     try {
       const user = await this.userRepository.findOne({
-        email: command.email,
+        where: { email: command.email },
       });
 
       if (!user) {
