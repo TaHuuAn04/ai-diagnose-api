@@ -4,11 +4,11 @@ import { IDoctorRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
-import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
+import { PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler } from '@app/core/exception';
 
 import { IDoctorService } from '../doctor.interface';
-import { GetListDoctorResponseDto } from '../dtos/response';
+import { GetListDoctorRequestDto, GetListDoctorResponseDto } from '../dtos';
 
 @Injectable()
 export class DoctorService implements IDoctorService {
@@ -18,10 +18,15 @@ export class DoctorService implements IDoctorService {
   ) {}
 
   async getListDoctors(
-    pageOptionsDto: PageOptionsDto
+    request: GetListDoctorRequestDto
   ): Promise<PageDto<GetListDoctorResponseDto>> {
     try {
-      const { take, page } = pageOptionsDto;
+      const { take, page, shiftId, department } = request;
+
+      // Build relations array - include workingTime.shift if filtering by shift
+      const relations = shiftId 
+        ? ['user', 'workingTime', 'workingTime.shift']
+        : ['user'];
 
       // Use findAll with QueryOptions for better querying
       const result = await this.doctorRepository.findAll({
@@ -29,19 +34,49 @@ export class DoctorService implements IDoctorService {
           page,
           limit: take,
         },
-        relations: ['user'],
+        relations,
+        where: {
+          department: department,
+        },
       });
+
+      // Filter by shiftId if provided (post-query filtering due to nested relation)
+      let filteredData = result.data;
+      if (shiftId) {
+        filteredData = result.data.filter(doctor => 
+          doctor.workingTime?.some(wt => wt.shift?.id === shiftId)
+        );
+      }
+
+      const total = shiftId ? filteredData.length : (result.meta?.total ?? 0);
 
       const pageMeta = new PageMetaDto({
         take,
         page,
-        itemCount: result.meta?.total ?? 0,
+        itemCount: total,
       });
 
-      const doctorDtos = result.data.map(doctor =>
-        plainToInstance(GetListDoctorResponseDto, doctor, {
-          excludeExtraneousValues: true,
-        })
+      const doctorDtos = filteredData.map(doctor =>
+        {
+          if (!doctor.user) {
+            throw new Error(`User not found for doctor with id ${doctor.userId}`);
+          }
+          const doctorMapping = {
+            ...doctor,
+            id: doctor.user.id,
+            firstName: doctor.user.firstName,
+            lastName: doctor.user.lastName,
+            email: doctor.user.email,
+            phoneNumber: doctor.user.phoneNumber,
+            role: doctor.user.role,
+            gender: doctor.user.gender,
+            dateOfBirth: doctor.user.dateOfBirth,
+            phoneCode: doctor.user.phoneCode,
+            avatarUrl: doctor.user.avatarUrl,
+            isOnBoardingCompleted: doctor.user.isOnBoardingCompleted,
+          }
+          return plainToInstance(GetListDoctorResponseDto, doctorMapping);
+        }
       );
 
       return new PageDto<GetListDoctorResponseDto>(doctorDtos, pageMeta);

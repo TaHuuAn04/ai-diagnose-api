@@ -35,7 +35,7 @@ const apiNodeEnv = process.env.API_NODE_ENV;
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
-    @InjectRepository(User)
+    @ InjectRepository(User)
     private readonly userRepository: Repository<User>,
 
     private readonly jwtService: JwtService,

@@ -1,13 +1,13 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
 
 import { IsPublic } from "@app/core/decorators";
-import { PageDto, PageOptionsDto } from "@app/core/dtos";
+import { PageDto } from "@app/core/dtos";
 
-import { GetListDoctorResponseDto } from "./dtos/response";
+import { GetListDoctorRequestDto, GetListDoctorResponseDto } from "./dtos";
 import { GetListDoctorQuery } from "./use-cases/get-list-doctor.use-case";
 
 @ApiTags('doctors')
@@ -21,15 +21,13 @@ export class DoctorController {
 
   @Get()
   @IsPublic()
-  @ApiOperation({ summary: 'Get list of doctors' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number', type: 'number' })
-  @ApiQuery({ name: 'take', required: false, description: 'Items per page', type: 'number' })
+  @ApiOperation({ summary: 'Get list of doctors with optional filters' })
   @ApiResponse({ status: 200, description: 'List of doctors retrieved successfully.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async getListDoctors(
-    @Query() pageOptions: PageOptionsDto
+    @Query() request: GetListDoctorRequestDto
   ): Promise<PageDto<GetListDoctorResponseDto>> {
-    const query = new GetListDoctorQuery(pageOptions);
+    const query = new GetListDoctorQuery(request);
 
     const result = await this.queryBus.execute<
       GetListDoctorQuery,
