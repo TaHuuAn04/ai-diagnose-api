@@ -15,13 +15,13 @@ export class Image extends BaseEntity {
   @Column('uuid')
   consultationId: string
 
-  @Column({ type: 'varchar', unique: true})
-  data_url: string;
+  @Column({ type: 'varchar' })
+  dataUrl: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string
   
-  @Column({ type: 'enum', enum: ImageType, default: ImageType.SYMSTOMS })
+  @Column({ type: 'enum', enum: ImageType })
   type: string
   
   @ManyToOne(() => Appointment)

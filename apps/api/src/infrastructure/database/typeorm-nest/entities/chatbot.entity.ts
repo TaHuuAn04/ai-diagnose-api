@@ -15,7 +15,7 @@ export class Chatbot extends BaseEntity {
   @Column({ type: 'boolean', default: true })
   isPublic: boolean;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', length: 255 })
   accessToken: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -24,9 +24,9 @@ export class Chatbot extends BaseEntity {
   @Column({ type: 'varchar', length: 255, unique: true })
   knowledgeUrl: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model_config: any;
+  modelConfig: any;
 
   @OneToMany(() => ChatHistory, (history) => history.chatbot)
   history: ChatHistory[];
