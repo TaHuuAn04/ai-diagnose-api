@@ -1,7 +1,8 @@
+import { BaseEntityWithoutId } from './base';
 import { ScheduleEntity } from './schedule';
 import { UserEntity } from './user';
 
-export class AdmissionStaffEntity {
+export class AdmissionStaffEntity extends BaseEntityWithoutId {
   userId: string;
 
   staffCode: string;
@@ -12,5 +13,5 @@ export class AdmissionStaffEntity {
 
   user?: UserEntity | null;
 
-  schedule?: ScheduleEntity[] | null;
+  schedule?: ScheduleEntity[] | [];
 }

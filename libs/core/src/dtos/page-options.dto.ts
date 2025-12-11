@@ -54,7 +54,7 @@ export class PageOptionsDto {
     type: String,
     required: false,
     nullable: true,
-    example: 'keyword',
+    example: '',
   })
   @IsOptional()
   @IsString()

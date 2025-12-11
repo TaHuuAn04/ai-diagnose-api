@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
 import { ExceptionHandler } from '@app/core/exception';
 
-import { GetListShiftResponseDto } from '../dtos/response/shift.response.dto';
+import { GetListShiftResponseDto } from '../dtos/response';
 import { IShiftService } from '../interfaces';
 
 @Injectable()
@@ -18,22 +18,20 @@ export class ShiftService implements IShiftService {
   ) {}
 
   async getListShifts(
-    userId: string,
     pageOptionsDto: PageOptionsDto
   ) : Promise<PageDto<GetListShiftResponseDto>> {
     try {
       const { take, page } = pageOptionsDto;
 
-      const shifts = await this.shiftRepository.find(
-        {}, 
-        pageOptionsDto
-      );
-
+      const [shifts, total] = await Promise.all([
+        this.shiftRepository.find({}, pageOptionsDto),
+        this.shiftRepository.count({}),
+      ]);
 
       const pageMeta = new PageMetaDto({
         take,
         page,
-        itemCount: shifts.length,
+        itemCount: total,
       });
 
       const shiftDtos = shifts.map(shift => 

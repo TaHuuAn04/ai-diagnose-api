@@ -1,8 +1,8 @@
-import { BaseEntity } from './base';
+import { BaseEntityWithoutId } from './base';
 import { DoctorEntity } from './doctor';
 import { ScheduleEntity } from './schedule';
 
-export class RoomEntity extends BaseEntity {
+export class RoomEntity extends BaseEntityWithoutId {
   room: string;
 
   doctorId: string;

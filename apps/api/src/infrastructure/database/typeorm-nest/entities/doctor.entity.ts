@@ -1,11 +1,13 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 
-import { Appointment } from './appointment.entity';
+import { BaseEntityWithoutId } from '../base.entity';
+
 import { Consultation } from './consultation.entity';
 import { User } from './user.entity';
+import { WorkingTime } from './workingTime.entity';
 
 @Entity()
-export class Doctor {
+export class Doctor extends BaseEntityWithoutId {
   @PrimaryColumn('uuid')
   userId: string; 
 
@@ -27,8 +29,8 @@ export class Doctor {
   @JoinColumn({ name: 'user_id' }) 
   user: User;
 
-  @OneToMany(() => Appointment, (appointment) => appointment.doctor)
-  appointment: Appointment[];
+  @OneToMany(() => WorkingTime, (workingTime) => workingTime.doctor)
+  workingTime: WorkingTime[];
 
   @OneToMany(() => Consultation, (consultation) => consultation.doctor)
   consultation: Consultation[];

@@ -8,9 +8,9 @@ export class DiseaseEntity extends BaseEntity {
 
   description?: string | null;
 
-  datas?: DataInstanceEntity[] | null;
+  datas?: DataInstanceEntity[] | [];
 
-  results?: ResultDiseaseEntity[] | null;
+  results?: ResultDiseaseEntity[] | [];
 
-  resultAIs?: AIResultDiseaseEntity[] | null;
+  resultAIs?: AIResultDiseaseEntity[] | [];
 }

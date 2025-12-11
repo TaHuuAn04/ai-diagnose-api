@@ -13,5 +13,5 @@ export class DiagnosisResultEntity extends BaseEntity {
 
   consultation?: ConsultationEntity | null;
 
-  diseases?: ResultDiseaseEntity[] | null;
+  diseases?: ResultDiseaseEntity[] | [];
 }

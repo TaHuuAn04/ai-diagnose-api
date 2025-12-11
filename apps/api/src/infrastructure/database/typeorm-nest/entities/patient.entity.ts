@@ -1,12 +1,14 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 
+import { BaseEntityWithoutId } from '../base.entity';
+
 import { Appointment } from './appointment.entity';
 import { ChatHistory } from './chatHistory.entity';
 import { Consultation } from './consultation.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Patient {
+export class Patient extends BaseEntityWithoutId {
   @PrimaryColumn('uuid')
   userId: string; 
 

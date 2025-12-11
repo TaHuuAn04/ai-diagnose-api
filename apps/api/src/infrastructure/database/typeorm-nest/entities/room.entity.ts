@@ -1,12 +1,12 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
-import { BaseEntity } from '../base.entity';
+import { BaseEntityWithoutId } from '../base.entity';
 
 import { Doctor } from './doctor.entity';
 import { Schedule } from './schedule.entity';
 
 @Entity()
-export class Room extends BaseEntity {
+export class Room extends BaseEntityWithoutId {
   @Column({ type: 'varchar', length: 255 })
   room: string;
 

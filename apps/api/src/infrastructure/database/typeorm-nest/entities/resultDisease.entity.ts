@@ -1,10 +1,12 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
+import { BaseEntityWithoutId } from '../base.entity';
+
 import { DiagnosisResult } from './diagnosisResult.entity';
 import { Disease } from './disease.entity';
 
 @Entity()
-export class ResultDisease {
+export class ResultDisease extends BaseEntityWithoutId {
   @PrimaryColumn('uuid')
   resultId: string;
     

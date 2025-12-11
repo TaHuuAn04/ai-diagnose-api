@@ -1,9 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class BaseEntity {
-  @Expose()
-  id: string;
-
+export class BaseEntityWithoutId {
   @Expose()
   createdAt?: Date | null;
 
@@ -12,4 +9,9 @@ export class BaseEntity {
 
   @Expose()
   deletedAt?: Date | null;
+}
+
+export class BaseEntity extends BaseEntityWithoutId {
+  @Expose()
+  id: string;
 }

@@ -1,9 +1,10 @@
 import { AppointmentEntity } from './appointment';
+import { BaseEntityWithoutId } from './base';
 import { ChatHistoryEntity } from './chat-history';
 import { ConsultationEntity } from './consultation';
 import { UserEntity } from './user';
 
-export class PatientEntity {
+export class PatientEntity extends BaseEntityWithoutId {
   userId: string;
 
   folk?: string | null;
@@ -16,9 +17,9 @@ export class PatientEntity {
 
   user?: UserEntity | null;
 
-  history?: ChatHistoryEntity[] | null;
+  history?: ChatHistoryEntity[] | [];
 
-  appointment?: AppointmentEntity[] | null;
+  appointment?: AppointmentEntity[] | [];
 
-  consultation?: ConsultationEntity[] | null;
+  consultation?: ConsultationEntity[] | [];
 }

@@ -13,7 +13,7 @@ export class ConsultationEntity extends BaseEntity {
 
   appointment?: AppointmentEntity | null;
 
-  image?: ImageEntity[] | null;
+  image?: ImageEntity[] | [];
 
   patient?: PatientEntity | null;
 
