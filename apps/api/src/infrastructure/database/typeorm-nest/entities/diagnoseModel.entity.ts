@@ -15,10 +15,10 @@ export class DiagnoseModel extends BaseEntity {
   @Column({ type: 'boolean', default: true })
   isPublic: boolean;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', length: 255 })
   keyModel: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column({ type: 'varchar', length: 255 })
   modelUrl: string;
 
   @OneToMany(() => AIDiagnosisResult, (results) => results.generateBy)

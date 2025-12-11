@@ -6,16 +6,16 @@ import { BaseEntity } from '../base.entity';
 
 @Entity()
 export class User extends BaseEntity {
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255 })
   firstName: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255 })
   lastName: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column({ type: 'enum', enum: UserGender, default: UserGender.MALE })
+  @Column({ type: 'enum', enum: UserGender })
   gender: UserGender;
 
   @Column({ type: 'date', nullable: true })

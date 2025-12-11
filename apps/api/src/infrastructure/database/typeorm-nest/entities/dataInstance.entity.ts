@@ -9,8 +9,8 @@ export class DataInstance extends BaseEntity {
   @Column('uuid')
   diseaseId: string
 
-  @Column({ type: 'varchar', unique: true})
-  image_url: string
+  @Column({ type: 'varchar' })
+  imageUrl: string
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string
