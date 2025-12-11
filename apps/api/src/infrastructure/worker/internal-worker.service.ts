@@ -4,8 +4,7 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
 import { INTERNAL_WORKER_API_URL } from '@app/core/environments';
-import { ExceptionHandler, InternalServerErrorException } from '@app/core/exception';
-import { fetchDto } from '@app/core/http';
+import { ExceptionHandler } from '@app/core/exception';
 
 import { User } from '../database/typeorm-nest/entities';
 

@@ -5,12 +5,11 @@ import { INJECTION_TOKEN } from "@api/enums";
 
 import { PageDto, PageOptionsDto } from "@app/core/dtos";
 
-import { GetListShiftResponseDto } from "../dtos/response/shift.response.dto";
+import { GetListShiftResponseDto } from "../dtos/response";
 import { IShiftService } from "../interfaces";
 
 export class GetListShiftQuery {
   constructor(
-    public readonly userId: string,
     public readonly pageOptionsDto: PageOptionsDto
   ) {}
 }
@@ -27,7 +26,6 @@ export class GetListShiftQueryHandler
   async execute(query: GetListShiftQuery): Promise<PageDto<GetListShiftResponseDto>> {
     // Implement the logic to get the list of shifts for the user
     const shifts = await this.shiftService.getListShifts(
-      query.userId,
       query.pageOptionsDto
     );
 

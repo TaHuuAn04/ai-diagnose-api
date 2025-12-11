@@ -14,5 +14,5 @@ export class ChatHistoryEntity extends BaseEntity {
 
   chatbot?: ChatbotEntity | null;
 
-  query?: ChatbotQueryEntity[] | null;
+  query?: ChatbotQueryEntity[] | [];
 }

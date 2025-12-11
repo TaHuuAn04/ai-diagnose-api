@@ -78,7 +78,7 @@ export async function fetchDto<T>(data: {
       message:
         (errorMessage || error.message) ??
         JSON.stringify(error?.response?.data) ??
-        (error || 'Internal server error'),
+        (error ?? 'Internal server error'),
     } as IFetchDtoResponse<T>;
 
     let newStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -134,7 +134,7 @@ export async function fetchStreamDto(data: {
       message:
         error.message ??
         JSON.stringify(error?.response?.data) ??
-        (error || 'Internal server error'),
+        (error ?? 'Internal server error'),
     } as IFetchDtoResponse<Readable>;
 
     let newStatusCode = HttpStatus.INTERNAL_SERVER_ERROR;

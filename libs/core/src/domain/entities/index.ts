@@ -19,3 +19,4 @@ export * from './room';
 export * from './schedule';
 export * from './shift';
 export * from './user';
+export * from './working-time';

@@ -6,7 +6,6 @@ import {
   IsDefined,
   IsEmail,
   IsEnum,
-  IsNumber,
   IsNumberString,
   IsString,
   MinLength,

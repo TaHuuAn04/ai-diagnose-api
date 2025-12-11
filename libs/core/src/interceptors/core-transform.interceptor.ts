@@ -25,7 +25,7 @@ export class CoreTransformInterceptor<T>
           statusCode: HttpStatus.OK,
           message: 'success',
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          data: result || null,
+          data: result ?? null,
         };
 
         return response;

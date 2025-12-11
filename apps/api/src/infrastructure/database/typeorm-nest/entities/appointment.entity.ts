@@ -4,10 +4,9 @@ import { AppointmentStatus } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 
-import { Doctor } from './doctor.entity';
 import { Image } from './image.entity';
 import { Patient } from './patient.entity';
-import { Shift } from './shift.entity';
+import { WorkingTime } from './workingTime.entity';
 
 @Entity()
 export class Appointment extends BaseEntity {
@@ -19,19 +18,11 @@ export class Appointment extends BaseEntity {
   status: AppointmentStatus;
 
   @Column('uuid')
-  shiftId: string;
-
-  @Column('uuid')
   patientId: string;
-  
-  @Column('uuid')
-  doctorId: string;
 
-  @OneToOne(() => Shift, {
-    onDelete: 'CASCADE'
-  })
-  @JoinColumn({ name: 'shift_id' }) 
-  shift: Shift;
+  @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
+  @JoinColumn({ name: 'working_time_id' })
+  workingTime: WorkingTime; 
 
   @OneToMany(() => Image, (image) => image.appointment)
   image: Image[];
@@ -39,8 +30,4 @@ export class Appointment extends BaseEntity {
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patient_id' }) 
   patient: Patient;
-
-  @ManyToOne(() => Doctor)
-  @JoinColumn({ name: 'doctor_id' }) 
-  doctor: Doctor;
 }

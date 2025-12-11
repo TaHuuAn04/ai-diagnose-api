@@ -20,5 +20,5 @@ export class AIDiagnosisResultEntity extends BaseEntity {
 
   generateBy?: DiagnoseModelEntity | null;
 
-  diseases?: AIResultDiseaseEntity[] | null;
+  diseases?: AIResultDiseaseEntity[] | [];
 }

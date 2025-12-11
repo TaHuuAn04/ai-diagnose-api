@@ -12,5 +12,5 @@ export class DiagnoseModelEntity extends BaseEntity {
 
   modelUrl: string;
 
-  results?: AIDiagnosisResultEntity[] | null;
+  results?: AIDiagnosisResultEntity[] | [];
 }

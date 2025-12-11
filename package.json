@@ -31,7 +31,7 @@
     "start:dev:bots-telegram": "nest start --watch bots-telegram",
     "start:dev:bots-discord": "nest start --watch bots-discord",
     "typeorm:api": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d apps/api/src/config/database/typeorm-nest/ormconfig.ts",
-    "dbm:api:generate": "npm run typeorm:api -- migration:generate apps/api/src/infrastructure/database/typeorm-nest/migrations/$name",
+    "dbm:api:generate": "cross-env-shell npm run typeorm:api -- migration:generate apps/api/src/infrastructure/database/typeorm-nest/migrations/$npm_config_name",
     "dbm:api:drop": "npm run typeorm:api -- schema:drop",
     "dbm:api:run": "npm run typeorm:api -- migration:run",
     "dbm:api:revert": "npm run typeorm:api -- migration:revert"
@@ -105,6 +105,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.9.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.29.1",

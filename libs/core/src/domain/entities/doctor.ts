@@ -1,8 +1,9 @@
-import { AppointmentEntity } from './appointment';
+import { BaseEntityWithoutId } from './base';
 import { ConsultationEntity } from './consultation';
 import { UserEntity } from './user';
+import { WorkingTimeEntity } from './working-time';
 
-export class DoctorEntity {
+export class DoctorEntity extends BaseEntityWithoutId {
   userId: string;
 
   doctorCode: string;
@@ -15,7 +16,7 @@ export class DoctorEntity {
 
   user?: UserEntity | null;
 
-  appointment?: AppointmentEntity[] | null;
+  workingTime?: WorkingTimeEntity [] | [];
 
-  consultation?: ConsultationEntity[] | null;
+  consultation?: ConsultationEntity[] | [];
 }

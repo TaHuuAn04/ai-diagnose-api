@@ -1,10 +1,12 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
 
+import { BaseEntityWithoutId } from '../base.entity';
+
 import { Schedule } from './schedule.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class AdmissionStaff {
+export class AdmissionStaff extends BaseEntityWithoutId {
   @PrimaryColumn('uuid')
   userId: string; 
 
