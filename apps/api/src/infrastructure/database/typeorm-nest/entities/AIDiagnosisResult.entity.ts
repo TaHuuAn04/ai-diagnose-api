@@ -22,7 +22,7 @@ export class AIDiagnosisResult extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   proof: string
     
-  @Column({ type: 'enum', enum: SeverityLevel, default: SeverityLevel.MINOR })
+  @Column({ type: 'enum', enum: SeverityLevel, nullable: true }) //Maybe no suggested disease
   severityLevel: SeverityLevel
 
   @OneToOne(() => Consultation)
