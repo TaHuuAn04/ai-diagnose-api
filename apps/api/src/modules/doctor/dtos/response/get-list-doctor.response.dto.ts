@@ -1,10 +1,9 @@
 import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
-export class GetListDoctorResponseDto {
-  @Expose()
-  userId: string;
+import { UserInfoDto } from '../../../user/dtos';
 
+@Exclude()
+export class GetListDoctorResponseDto extends UserInfoDto {
   @Expose()
   doctorCode: string;
 
@@ -16,13 +15,4 @@ export class GetListDoctorResponseDto {
 
   @Expose()
   description?: string | null;
-
-  @Expose()
-  user?: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber?: string;
-  } | null;
 }
