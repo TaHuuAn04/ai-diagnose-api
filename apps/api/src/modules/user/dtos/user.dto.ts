@@ -15,37 +15,48 @@ import { UserGender, UserRole } from '@app/core/domain/enums';
 
 export class UserInfoDto {
   @Expose()
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
 
   @Expose()
+  @ApiProperty({ example: 'user@example.com' })
   email: string;
 
   @Expose()
+  @ApiProperty({ example: 'USER' })
   role: UserRole;
 
   @Expose()
-  firstName?: string | null;
+  @ApiProperty({ example: 'John' })
+  firstName: string;
 
   @Expose()
-  lastName?: string | null;
+  @ApiProperty({ example: 'Doe' })
+  lastName: string;
 
   @Expose()
-  gender: UserGender;
+  @ApiProperty({ example: 'MALE' })
+  gender: UserGender; 
 
   @Expose()
+  @ApiProperty({ example: '1990-01-15' })
   dateOfBirth?: string | null;
 
   @Expose()
+  @ApiProperty({ example: '+84' })
   phoneCode?: string | null;
 
   @Expose()
+  @ApiProperty({ example: '0123456789' })
   phoneNumber?: string | null;
-
+  
   @Expose()
+  @ApiProperty({ example: 'https://www.google.com/search?sca_esv=73b20ffd545e0371&sxsrf' })
   avatarUrl?: string | null;
 
   @Expose()
-  isOnBoardingCompleted: boolean;
+  @ApiProperty({ example: true })
+  isOnBoardingCompleted?: boolean | null;
 }
 
 export class UpdateUserDto {

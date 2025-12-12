@@ -7,6 +7,8 @@ export class ResultDiseaseEntity extends BaseEntityWithoutId {
 
   diseaseId: string;
 
+  name: string;
+
   disease?: DiseaseEntity | null;
 
   result?: DiagnosisResultEntity | null;

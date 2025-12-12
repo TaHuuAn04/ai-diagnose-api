@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 
 import { BaseEntityWithoutId } from '../base.entity';
 
@@ -12,6 +12,9 @@ export class AIResultDisease extends BaseEntityWithoutId {
     
   @PrimaryColumn('uuid')
   diseaseId: string;
+
+  @Column({ type: 'float' })
+  accuracy: number;
 
   @ManyToOne(() => Disease)
   @JoinColumn({ name: 'disease_id' }) 
