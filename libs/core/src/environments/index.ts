@@ -42,6 +42,22 @@ export const INTERNAL_WORKER_API_URL: string =
 // dify
 export const DIFY_ALLOWED_PLUGINS: string =
   process.env.DIFY_ALLOWED_PLUGINS ?? '';
+export const GEMINI_STABLE_PLUGIN_IDENTIFIER: string =
+  process.env.GEMINI_STABLE_PLUGIN_IDENTIFIER ?? '';
+export const DIFY_AI_OPENAI_API_KEY: string =
+  process.env.DIFY_AI_OPENAI_API_KEY ?? '';
+export const GEMINI_API_KEY: string = process.env.GEMINI_API_KEY ?? '';
+export const AI_EMBEDDING_MODEL_NAME: string =
+  process.env.AI_EMBEDDING_MODEL_NAME ?? '';
+export const AI_EMBEDDING_MODEL_PROVIDER: string =
+  process.env.AI_EMBEDDING_MODEL_PROVIDER ?? '';
+export const AI_MODEL_MODE: string = process.env.AI_MODEL_MODE ?? '';
+export const AI_MODEL_NAME: string = process.env.AI_MODEL_NAME ?? '';
+export const AI_MODEL_PROVIDER: string = process.env.AI_MODEL_PROVIDER ?? '';
+export const DIFY_AI_ACCESS_TOKEN_EXPIRE: number = process.env
+  .DIFY_AI_ACCESS_TOKEN_EXPIRE
+  ? parseInt(process.env.DIFY_AI_ACCESS_TOKEN_EXPIRE)
+  : 3600;
 
 // API Base URL
 export const API_BASE_URL: string = process.env.API_BASE_URL ?? '';

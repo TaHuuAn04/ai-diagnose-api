@@ -167,6 +167,39 @@ export class GatewayTimeoutException extends Exception {
   }
 }
 
+// AI-specific exceptions
+export class AiBadRequestException extends BadRequestException {
+  constructor(message = 'AI Bad Request', data?: unknown, cause?: Error) {
+    super(message, data, cause);
+    Object.setPrototypeOf(this, AiBadRequestException.prototype);
+  }
+}
+
+export class AiUnauthorizedException extends UnauthorizedException {
+  constructor(message = 'AI Unauthorized', data?: unknown, cause?: Error) {
+    super(message, data, cause);
+    Object.setPrototypeOf(this, AiUnauthorizedException.prototype);
+  }
+}
+
+export class AiInternalServerError extends InternalServerErrorException {
+  constructor(message = 'AI Internal Server Error', cause?: Error) {
+    super(message, cause);
+    Object.setPrototypeOf(this, AiInternalServerError.prototype);
+  }
+}
+
+export class ExternalServiceException extends BadGatewayException {
+  constructor(
+    message = 'External Service Error',
+    data?: unknown,
+    cause?: Error,
+  ) {
+    super(message, data, cause);
+    Object.setPrototypeOf(this, ExternalServiceException.prototype);
+  }
+}
+
 export class ExceptionHandler {
   static handleErrorException(error: unknown, message?: string): never {
     if (error instanceof Exception) {

@@ -3,9 +3,9 @@ import { UserGender, UserRole } from '../enums';
 import { BaseEntity } from './base';
 
 export class UserEntity extends BaseEntity {
-  firstName?: string | null;
+  firstName: string;
 
-  lastName?: string | null;
+  lastName: string;
 
   email: string;
 

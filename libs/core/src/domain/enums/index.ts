@@ -5,3 +5,4 @@ export * from './shift.enum';
 export * from './severity.enum';
 export * from './image.enum';
 export * from './working-time.enum';
+export * from './http-method.enum';

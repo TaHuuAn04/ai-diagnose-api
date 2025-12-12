@@ -111,8 +111,8 @@ export class AuthService implements IAuthService {
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
-        phoneCode: user.phoneCode,
-        phoneNumber: user.phoneNumber,
+        phoneCode: user.phoneCode ?? '',
+        phoneNumber: user.phoneNumber ?? '',
       };
       const token = this.generateToken(payload);
       return plainToInstance(LoginResponseDto, { accessToken: token });
