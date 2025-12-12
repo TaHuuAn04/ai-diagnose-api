@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { INJECTION_TOKEN } from '../../common/enums';
 import { AuthJwtConfig } from '../../config';
 import { User } from '../../infrastructure/database/typeorm-nest/entities';
+import { PatientModule } from '../patient/patient.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './infrastructures/auth.service';
@@ -58,6 +59,7 @@ const Handlers = [
         };
       },
     }),
+    PatientModule,
   ],
   providers: [
     ...Adapters,
