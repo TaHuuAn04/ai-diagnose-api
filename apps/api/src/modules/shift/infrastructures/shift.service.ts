@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
-import { IAppointmentRepository, IWorkingTimeRepository } from '@api/core/repository';
+import { IAppointmentRepository, IShiftRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
@@ -18,8 +18,12 @@ import { IShiftService } from '../interfaces';
 @Injectable()
 export class ShiftService implements IShiftService {
   constructor(
+    @Inject(REPOSITORY_INJECTION_TOKEN.SHIFT_REPOSITORY)
+    private readonly shiftRepository: IShiftRepository,
+
     @Inject(REPOSITORY_INJECTION_TOKEN.WORKING_TIME_REPOSITORY)
     private readonly workingTimeRepository: IWorkingTimeRepository,
+
     @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
     private readonly appointmentRepository: IAppointmentRepository
   ) {}
@@ -31,12 +35,11 @@ export class ShiftService implements IShiftService {
       const { take, page } = pageOptionsDto;
 
       // Use findAll with QueryOptions for better querying
-      const result = await this.workingTimeRepository.findAll({
+      const result = await this.shiftRepository.findAll({
         pagination: {
           page,
           limit: take,
         },
-        relations: ['shift', 'doctor'],
       });
 
       const pageMeta = new PageMetaDto({
@@ -117,7 +120,7 @@ export class ShiftService implements IShiftService {
       const appointment = await this.appointmentRepository.create({
         patientId,
         description: description ?? '',
-        status: AppointmentStatus.PENDING,
+        status: AppointmentStatus.SCHEDULED,
       });
 
       const updatedWorkingTimes = await this.workingTimeRepository.updateMany(

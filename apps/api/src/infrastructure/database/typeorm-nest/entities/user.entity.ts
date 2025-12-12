@@ -19,23 +19,23 @@ export class User extends BaseEntity {
   gender: UserGender;
 
   @Column({ type: 'date', nullable: true })
-  dateOfBirth: string;
+  dateOfBirth?: string | null;
 
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
   @Column({ type: 'varchar', length: 5, nullable: true })
-  phoneCode: string;
+  phoneCode?: string | null;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
-  phoneNumber: string;
+  phoneNumber?: string | null;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.PATIENT })
   @Index()
   role: UserRole;
 
   @Column({ type: 'varchar', nullable: true })
-  avatarUrl: string;
+  avatarUrl?: string | null;
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isOnBoardingCompleted: boolean;

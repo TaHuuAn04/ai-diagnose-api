@@ -44,8 +44,8 @@ export class TempAuthService {
         role: userInfo.role,
         firstName: userInfo.firstName,
         lastName: userInfo.lastName,
-        phoneCode: userInfo.phoneCode,
-        phoneNumber: userInfo.phoneNumber,
+        phoneCode: userInfo.phoneCode ?? '',
+        phoneNumber: userInfo.phoneNumber ?? '',
       };
       const token = this.generateToken(payload);
       return token;

@@ -4,6 +4,7 @@ import { IDoctorRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
+import { WorkingTimeEntity } from '@app/core/domain/entities';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler } from '@app/core/exception';
 
@@ -23,12 +24,10 @@ export class DoctorService implements IDoctorService {
     try {
       const { take, page, shiftId, department } = request;
 
-      // Build relations array - include workingTime.shift if filtering by shift
       const relations = shiftId 
         ? ['user', 'workingTime', 'workingTime.shift']
         : ['user'];
 
-      // Use findAll with QueryOptions for better querying
       const result = await this.doctorRepository.findAll({
         pagination: {
           page,
@@ -40,7 +39,6 @@ export class DoctorService implements IDoctorService {
         },
       });
 
-      // Filter by shiftId if provided (post-query filtering due to nested relation)
       let filteredData = result.data;
       if (shiftId) {
         filteredData = result.data.filter(doctor => 

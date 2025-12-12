@@ -2,13 +2,13 @@ import { Expose } from 'class-transformer';
 
 export class BaseEntityWithoutId {
   @Expose()
-  createdAt?: Date | null;
+  createdAt?: Date;
 
   @Expose()
-  updatedAt?: Date | null;
+  updatedAt?: Date;
 
   @Expose()
-  deletedAt?: Date | null;
+  deletedAt?: Date;
 }
 
 export class BaseEntity extends BaseEntityWithoutId {
