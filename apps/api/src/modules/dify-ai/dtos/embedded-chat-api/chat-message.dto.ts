@@ -5,7 +5,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 import { HttpMethod } from '@app/core/domain/enums';
@@ -31,11 +30,11 @@ export class ChatMessageDifyAiBodyDto {
   @IsOptional()
   response_mode: string;
 
-  @IsUUID()
+  @IsString()
   @IsOptional()
   conversation_id?: string;
 
-  @IsUUID()
+  @IsString()
   @IsOptional()
   parent_message_id?: string;
 
@@ -51,11 +50,12 @@ export class ChatMessageDifyAiBodyDto {
     url: string;
   }[] = [];
 
+  // @IsString()
+  // @IsNotEmpty()
   // user: string;
 }
 
 export class ChatMessageDifyAiResponseDto extends BlockingModeResponseDto {
-  // Note: Custom field for embedded chat for Codelight
   @Expose()
   query: string;
 }

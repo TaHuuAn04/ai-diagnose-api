@@ -4,7 +4,6 @@ import { HttpFetchDto } from '@app/core/http';
 export class GetPassportDifyAiBodyDto {
   name: string;
   email: string;
-  nimspace_ai_id: string;
 }
 
 export class GetPassportDifyAiHeadersDto {
@@ -21,8 +20,8 @@ export class GetPassportDifyAiResponseDto {
 }
 
 export class GetPassportDifyAiDto extends HttpFetchDto {
-  public static url = 'v1/web/passport';
-  public method = HttpMethod.POST;
+  public static url = 'api/passport';
+  public method = HttpMethod.GET;
   public url = GetPassportDifyAiDto.url;
   public paramsDto = undefined;
   public queryDto = undefined;

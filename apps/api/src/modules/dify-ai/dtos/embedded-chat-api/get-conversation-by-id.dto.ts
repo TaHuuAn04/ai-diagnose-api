@@ -21,7 +21,7 @@ export class GetConversationByIdDifyAiResponseDto {
 }
 
 export class GetConversationByIdDifyAiDto extends HttpFetchDto {
-  public static url = 'v1/web/conversations/:conversationId';
+  public static url = 'web/conversations/:conversationId';
   public method = HttpMethod.GET;
   public url = GetConversationByIdDifyAiDto.url;
   public bodyDto = undefined;

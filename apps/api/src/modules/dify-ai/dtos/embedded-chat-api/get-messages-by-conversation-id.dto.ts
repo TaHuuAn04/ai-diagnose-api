@@ -61,18 +61,6 @@ export class MessageItemDto {
   type: 'received' | 'sent';
 }
 
-export class GetMessagesByConversationIdCodelightResponseDto {
-  @Expose()
-  limit: number;
-
-  @Expose()
-  has_more: boolean;
-
-  @Expose()
-  @Type(() => MessageItemDto)
-  data: MessageItemDto[];
-}
-
 export class GetMessagesByConversationIdDifyAiDto extends HttpFetchDto {
   public static url = 'api/messages';
   public method = HttpMethod.GET;

@@ -697,7 +697,7 @@ export class RenameDocumentDifyAiInputDto {
 }
 
 export class PostCreateEmptyKnowledgeDifyAiDto extends HttpFetchDto {
-  public static url = 'v1/datasets';
+  public static url = 'datasets';
   public method = HttpMethod.POST;
   public url = PostCreateEmptyKnowledgeDifyAiDto.url;
   public paramsDto = undefined;

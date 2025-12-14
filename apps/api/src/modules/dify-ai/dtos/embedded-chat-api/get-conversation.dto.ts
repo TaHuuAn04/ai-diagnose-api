@@ -14,10 +14,6 @@ export class GetConversationDifyAiInputDto {
 export class GetConversationDifyAiResponseDto {
   limit: number;
 
-  page: number;
-
-  total: number;
-
   has_more: boolean;
 
   data: ConversationDataItem[];
@@ -30,11 +26,15 @@ export class ConversationDataItem {
 
   status: string;
 
+  introduction: string;
+
   created_at: number;
+
+  updated_at: number;
 }
 
 export class GetConversationDifyAiDto extends HttpFetchDto {
-  public static url = 'v1/web/conversations';
+  public static url = 'api/conversations';
   public method = HttpMethod.GET;
   public url = GetConversationDifyAiDto.url;
   public bodyDto = undefined;
