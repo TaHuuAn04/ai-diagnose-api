@@ -18,7 +18,7 @@ export class LoginWithoutPasswordDifyAiResponseDto {
 }
 
 export class PostLoginWithoutPasswordDifyAiDto extends HttpFetchDto {
-  public static url = 'v1/login-without-password';
+  public static url = 'login-without-password';
   public method = HttpMethod.POST;
   public url = PostLoginWithoutPasswordDifyAiDto.url;
   public paramsDto = undefined;

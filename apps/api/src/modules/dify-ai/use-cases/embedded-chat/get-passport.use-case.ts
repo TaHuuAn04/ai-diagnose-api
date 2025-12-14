@@ -32,6 +32,7 @@ export class GetPassportDifyAiCommandHandler
         command.input.body,
         command.input.headers,
       );
+
       const response = await fetchDto<GetPassportDifyAiResponseDto>({
         httpService: this.httpService,
         headers: new AxiosHeaders({

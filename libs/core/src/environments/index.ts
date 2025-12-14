@@ -46,6 +46,7 @@ export const GEMINI_STABLE_PLUGIN_IDENTIFIER: string =
   process.env.GEMINI_STABLE_PLUGIN_IDENTIFIER ?? '';
 export const DIFY_AI_OPENAI_API_KEY: string =
   process.env.DIFY_AI_OPENAI_API_KEY ?? '';
+export const DIFY_AI_APP_ID: string = process.env.DIFY_AI_APP_ID ?? '';
 export const GEMINI_API_KEY: string = process.env.GEMINI_API_KEY ?? '';
 export const AI_EMBEDDING_MODEL_NAME: string =
   process.env.AI_EMBEDDING_MODEL_NAME ?? '';

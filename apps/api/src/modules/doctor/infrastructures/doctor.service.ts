@@ -4,7 +4,7 @@ import { IDoctorRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
-import { WorkingTimeEntity } from '@app/core/domain/entities';
+
 import { PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler } from '@app/core/exception';
 

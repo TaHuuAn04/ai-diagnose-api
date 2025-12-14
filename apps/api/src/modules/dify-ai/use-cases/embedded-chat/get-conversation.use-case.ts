@@ -32,7 +32,8 @@ export class GetConversationDifyAiQueryHandler
       const response = await fetchDto<GetConversationDifyAiResponseDto>({
         httpService: this.httpService,
         headers: new AxiosHeaders({
-          Authorization: `Bearer ${query.input.token}`,
+          'x-app-code': process.env.DIFY_AI_APP_ID ?? '',
+          'x-app-passport': query.input.token,
         }),
         dto,
       });

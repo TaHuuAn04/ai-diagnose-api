@@ -39,7 +39,7 @@ export class GetConversationDifyResponseDto {
 }
 
 export class GetConversationDifyDto extends HttpFetchDto {
-  public static url = 'v1/apps/:app_id/chat-conversations';
+  public static url = 'apps/:app_id/chat-conversations';
   public method = HttpMethod.GET;
   public url = GetConversationDifyDto.url;
   public bodyDto = undefined;

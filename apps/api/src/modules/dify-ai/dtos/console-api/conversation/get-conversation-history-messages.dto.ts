@@ -36,7 +36,7 @@ export class GetConversationHistoryMessagesDifyResponseDto {
 }
 
 export class GetConversationHistoryMessagesDifyDto extends HttpFetchDto {
-  public static url = 'v1/apps/:app_id/chat-messages';
+  public static url = 'apps/:app_id/chat-messages';
   public method = HttpMethod.GET;
   public url = GetConversationHistoryMessagesDifyDto.url;
   public bodyDto = undefined;
