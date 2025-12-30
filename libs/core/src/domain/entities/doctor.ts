@@ -16,7 +16,7 @@ export class DoctorEntity extends BaseEntityWithoutId {
 
   user?: UserEntity | null;
 
-  workingTime?: WorkingTimeEntity [] | [];
+  workingTime?: WorkingTimeEntity[];
 
-  consultation?: ConsultationEntity[] | [];
+  consultation?: ConsultationEntity[];
 }

@@ -1,8 +1,7 @@
 export * from './create-app.use-case';
 export * from './create-empty-knowledge.use-case';
-export * from './delete-knowledge-document.use-case';
-export * from './set-knowledge-document-status.use-case';
 export * from './delete-knowledge.use-case';
+export * from './delete-knowledge-document.use-case';
 export * from './get-app-by-id.use-case';
 export * from './get-knowledge.use-case';
 export * from './get-knowledges.use-case';
@@ -14,7 +13,4 @@ export * from './update-knowledge-document.use-case';
 export * from './update-knowledge.use-case';
 export * from './upload-files.use-case';
 export * from './rename-document.use-case';
-
-// console api
-export * from './conversation';
-export * from './workflow';
+export * from './set-knowledge-document-status.use-case';

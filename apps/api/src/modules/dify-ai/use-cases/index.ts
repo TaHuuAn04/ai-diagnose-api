@@ -1,5 +1,10 @@
 // Console API
-export * from './console-api'
+export * from './console-api/create-app.use-case';
+export * from './console-api/update-app-model-config.use-case';
+export * from './console-api/get-app-by-id.use-case';
+export * from './console-api/login.use-case';
+export * from './console-api/workflow';
+export * from './console-api/conversation';
 
 // Internal API
 export * from './internal-api/login-without-password.use-case';

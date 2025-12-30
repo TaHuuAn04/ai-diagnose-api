@@ -17,27 +17,24 @@ import {
   ChatMessageBlockDifyAiCommandHandler,
   ChatMessageStreamDifyAiCommandHandler,
   CreateAppDifyAiCommandHandler,
-  DeleteKnowledgeDocumentDifyAiCommandHandler,
   DraftWorkflowDifyAiCommandHandler,
   GetAppByIdDifyAiCommandHandler,
   GetConversationByIdDifyAiQueryHandler,
   GetConversationDifyAiQueryHandler,
   GetConversationHistoryMessagesDifyCommandHandler,
   GetConversationsDifyCommandHandler,
-  GetKnowledgesDocumentDifyAiCommandHandler,
   GetMessagesByConversationIdDifyAiQueryHandler,
   GetMessagesByConversationIdPaginationDifyAiQueryHandler,
   GetPassportDifyAiCommandHandler,
   LoginDifyAiCommandHandler,
   LoginWithoutPasswordDifyAiCommandHandler,
   PublishWorkflowDifyAiCommandHandler,
-  RenameDocumentDifyAiCommandHandler,
-  SetKnowledgeDocumentStatusDifyAiCommandHandler,
   UpdateAppModelConfigDifyAiCommandHandler 
 } from './use-cases';
 import {
   CreateEmptyKnowledgeCommandHandler,
   DeleteKnowledgeDifyAiCommandHandler,
+  DeleteKnowledgeDocumentDifyAiCommandHandler,
   GetKnowledgeDifyAiCommandHandler,
   GetKnowledgesDifyAiCommandHandler,
   InitKnowledgeDocumentDifyAiCommandHandler,
@@ -45,6 +42,9 @@ import {
   UpdateKnowledgeDocumentDifyAiCommandHandler,
   UploadFileKnowledgeDifyAiCommandHandler,
 } from './use-cases/console-api'
+import { GetKnowledgesDocumentDifyAiCommandHandler } from './use-cases/console-api/get-knowledge-document.use-case';
+import { RenameDocumentDifyAiCommandHandler } from './use-cases/console-api/rename-document.use-case';
+import { SetKnowledgeDocumentStatusDifyAiCommandHandler } from './use-cases/console-api/set-knowledge-document-status.use-case';
 
 const Adapters = [
   {
