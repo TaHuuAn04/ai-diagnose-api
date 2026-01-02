@@ -11,9 +11,9 @@ export class PatientEntity extends BaseEntityWithoutId {
 
   address?: string | null;
 
-  citizenCode: string;
+  citizenCode?: string | null;
 
-  medicalInsurance: string;
+  medicalInsurance?: string | null;
 
   user?: UserEntity | null;
 

@@ -5,13 +5,14 @@ import { INJECTION_TOKEN } from "@api/enums";
 
 import { PatientService } from "./infrastructures";
 import { PatientController } from "./patient.controller";
-import { CreatePatientCommandHandler, GetInfoQueryHandler } from "./use-cases";
+import { CreatePatientCommandHandler, GetInfoQueryHandler, UpdatePatientCommandHandler } from "./use-cases";
 
 
 const Handlers = [
   // Add command handlers here in the future
   GetInfoQueryHandler,
-  CreatePatientCommandHandler
+  CreatePatientCommandHandler,
+  UpdatePatientCommandHandler
 ];
 
 const Adapters = [

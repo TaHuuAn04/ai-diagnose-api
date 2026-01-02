@@ -1,4 +1,4 @@
-import { CreatePatientResponseDto, PatientInfoDto } from "../dtos";
+import { CreatePatientResponseDto, PatientInfoDto, UpdatePatientDto } from "../dtos";
 
 export interface IPatientService {
   getInfo(
@@ -6,4 +6,9 @@ export interface IPatientService {
   ): Promise<PatientInfoDto>;
 
   createPatient(userId: string): Promise<CreatePatientResponseDto>;
+
+  updatePatient(
+    userId: string,
+    input: UpdatePatientDto,
+  ): Promise<PatientInfoDto>;
 }
