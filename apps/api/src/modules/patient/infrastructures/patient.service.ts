@@ -8,7 +8,7 @@ import { Transactional } from 'typeorm-transactional';
 
 import { ExceptionHandler, NotFoundException } from '@app/core/exception';
 
-import { CreatePatientDto, CreatePatientResponseDto, PatientInfoDto } from '../dtos';
+import { CreatePatientResponseDto, PatientInfoDto } from '../dtos';
 import { IPatientService } from '../interfaces';
 
 @Injectable()
@@ -58,10 +58,10 @@ export class PatientService implements IPatientService {
   }
 
   @Transactional()
-  async createPatient(input: CreatePatientDto): Promise<CreatePatientResponseDto> {
+  async createPatient(userId: string): Promise<CreatePatientResponseDto> {
     try {
       const createdPatient = await this.patientRepository.create({
-        ...input,
+        userId,
       });
 
       const responseDto = plainToInstance(CreatePatientResponseDto, createdPatient);

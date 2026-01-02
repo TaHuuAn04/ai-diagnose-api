@@ -19,6 +19,7 @@ import {
   ExceptionHandler,
 } from '@app/core/exception';
 
+import { IPatientService } from '../../patient/interfaces';
 import {
   LoginResponseDto,
   RegisterRequestDto,
@@ -45,6 +46,9 @@ export class AuthService implements IAuthService {
 
     @Inject(INJECTION_TOKEN.USER_SERVICE)
     private readonly userService: IUserService,
+
+    @Inject(INJECTION_TOKEN.PATIENT_SERVICE)
+    private readonly patientService: IPatientService,
 
     private readonly internalWorkerService: InternalWorkerService,
   ) {}
@@ -149,6 +153,9 @@ export class AuthService implements IAuthService {
       //   firstName,
       //   lastName,
       // });
+      
+      // create patient profile for user
+      await this.patientService.createPatient(savedUser.id);
 
       const payload: AuthPayload = {
         id: savedUser.id,

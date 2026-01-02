@@ -15,6 +15,10 @@ export class DataInstance extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string
 
+  @Column({ type: 'jsonb', nullable: true })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: any;
+
   @ManyToOne(() => Disease)
   @JoinColumn({ name: 'disease_id' }) 
   disease: Disease

@@ -3,12 +3,12 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { INJECTION_TOKEN } from "@api/enums";
 
-import { CreatePatientDto, CreatePatientResponseDto } from '../dtos';
+import { CreatePatientResponseDto } from '../dtos';
 import { IPatientService } from "../interfaces";
 
 
 export class CreatePatientCommand {
-  constructor(public readonly input: CreatePatientDto) {}
+  constructor(public readonly userId: string) {}
 }
 
 @CommandHandler(CreatePatientCommand)
@@ -22,7 +22,7 @@ export class CreatePatientCommandHandler
 
   async execute(command: CreatePatientCommand): Promise<CreatePatientResponseDto> {
     const createdUser = await this.patientService.createPatient(
-      command.input,
+      command.userId,
     );
 
     return createdUser;
