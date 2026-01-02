@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -12,7 +13,7 @@ import {
 } from 'class-validator';
 
 import { UserEntity } from '@app/core/domain/entities';
-import { UserRole } from '@app/core/domain/enums';
+import { UserGender, UserRole } from '@app/core/domain/enums';
 
 export class CreateUserBodyDto {
   @IsEmail()
@@ -31,6 +32,11 @@ export class CreateUserBodyDto {
   @MaxLength(25)
   @ApiProperty({ example: 'Doe' })
   lastName: string;
+
+  @IsNotEmpty()
+  @IsEnum(UserGender)
+  @ApiProperty({ example: 'MALE' })
+  gender: UserGender;
 
   @ValidateIf((dto: CreateUserBodyDto) => !!dto.phoneNumber)
   @IsNotEmpty()

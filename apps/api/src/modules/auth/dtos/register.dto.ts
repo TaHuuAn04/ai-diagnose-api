@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import {
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
@@ -13,7 +14,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-import { UserRole } from '@app/core/domain/enums';
+import { UserGender, UserRole } from '@app/core/domain/enums';
 
 export class RegisterRequestDto {
   @IsEmail()
@@ -56,6 +57,11 @@ export class RegisterRequestDto {
   @MinLength(9)
   @ApiProperty({ example: '123456789' })
   phoneNumber: string;
+
+  @IsNotEmpty()
+  @IsEnum(UserGender)
+  @ApiProperty({ example: 'MALE' })
+  gender: UserGender;
 
   @IsNotEmpty()
   @IsString()

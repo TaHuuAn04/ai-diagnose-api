@@ -48,7 +48,7 @@ export class PatientInfoDto extends UserInfoDto {
 
   @Expose()
   @ApiProperty({ example: '038204013123' })
-  citizenCode: string
+  citizenCode?: string
 
   @Expose()
   @ApiProperty({ example: 'Ho Chi Minh, Viet Nam' })
@@ -56,5 +56,5 @@ export class PatientInfoDto extends UserInfoDto {
 
   @Expose()
   @ApiProperty({ example: '4 79 00 670 00052' })
-  medicalInsurance: string
+  medicalInsurance?: string
 }

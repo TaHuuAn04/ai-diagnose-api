@@ -18,10 +18,10 @@ export class Patient extends BaseEntityWithoutId {
   @Column({ type: 'varchar', length: 255, nullable: true })
   address: string;
 
-  @Column({ type: 'varchar', length: 15, unique: true })
+  @Column({ type: 'varchar', length: 15, nullable: true })
   citizenCode: string;
 
-  @Column({ type: 'varchar', length: 25, unique: true })
+  @Column({ type: 'varchar', length: 25, nullable: true })
   medicalInsurance: string;
     
   @OneToOne(() => User, {

@@ -2,12 +2,8 @@ import { ApiProperty } from "@nestjs/swagger";
 
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
 
-export class CreatePatientDto {
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
-  userId: string;
-
+export class UpdatePartientDto {
+  
   @IsString()  
   @IsOptional()
   @MaxLength(25)
@@ -24,11 +20,11 @@ export class CreatePatientDto {
   @IsString()
   @MaxLength(15)
   @ApiProperty({ example: '123456789012345' })
-  citizenCode: string;
+  citizenCode?: string;
 
   @IsNotEmpty()
   @IsString()
   @MaxLength(25)
   @ApiProperty({ example: 'AB1234567' })
-  medicalInsurance: string;
+  medicalInsurance?: string;
 }
