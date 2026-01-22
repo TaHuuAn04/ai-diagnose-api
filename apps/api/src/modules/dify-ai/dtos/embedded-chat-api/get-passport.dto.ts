@@ -1,9 +1,8 @@
 import { HttpMethod } from '@app/core/domain/enums';
 import { HttpFetchDto } from '@app/core/http';
 
-export class GetPassportDifyAiBodyDto {
-  name: string;
-  email: string;
+export class GetPassportDifyAiQueryDto {
+  user_id: string;
 }
 
 export class GetPassportDifyAiHeadersDto {
@@ -12,7 +11,7 @@ export class GetPassportDifyAiHeadersDto {
 
 export class GetPassportDifyAiInputDto {
   headers: GetPassportDifyAiHeadersDto;
-  body: GetPassportDifyAiBodyDto;
+  query: GetPassportDifyAiQueryDto;
 }
 
 export class GetPassportDifyAiResponseDto {
@@ -24,11 +23,11 @@ export class GetPassportDifyAiDto extends HttpFetchDto {
   public method = HttpMethod.GET;
   public url = GetPassportDifyAiDto.url;
   public paramsDto = undefined;
-  public queryDto = undefined;
+  public bodyDto = undefined;
   public responseDto: GetPassportDifyAiResponseDto;
 
   constructor(
-    public bodyDto: GetPassportDifyAiBodyDto,
+    public queryDto: GetPassportDifyAiQueryDto,
     public headers: GetPassportDifyAiHeadersDto,
   ) {
     super();

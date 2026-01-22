@@ -1,30 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class GetEmbeddedChatPassportBodyDto {
-  @ApiProperty({
-    type: String,
-    required: false,
-    example: 'John Doe',
-  })
-  @IsString()
-  @IsOptional()
-  name: string;
-
+export class GetEmbeddedChatPassportQueryDto {
   @ApiProperty({
     type: String,
     required: true,
-    example: 'john.doe@example.com',
+    example: 'user-123',
   })
   @IsString()
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
+  user_id: string;
 }
 
-export class GetPassportInputDto extends GetEmbeddedChatPassportBodyDto {
+export class GetPassportInputDto extends GetEmbeddedChatPassportQueryDto {
   xAppCode: string;
 }
 

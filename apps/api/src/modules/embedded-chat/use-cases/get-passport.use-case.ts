@@ -28,9 +28,8 @@ export class GetEmbeddedChatPassportCommandHandler
     // Ai metadata is stored in jsonb column, so we need to use jsonb_extract_path_text to get the value
     const { input } = command;
     const passport = await this.difyEmbeddedChatService.getPassport({
-      body: {
-        name: input.name,
-        email: input.email,
+      query: {
+        user_id: input.user_id,
       },
       headers: {
         'x-app-code': input.xAppCode,

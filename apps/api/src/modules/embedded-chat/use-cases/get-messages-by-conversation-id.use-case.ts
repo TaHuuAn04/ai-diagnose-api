@@ -34,16 +34,16 @@ export class GetEmbeddedChatMessagesByConversationIdQueryHandler
     query: GetEmbeddedChatMessagesByConversationIdQuery,
   ): Promise<PaginatedResult<EmbeddedChatMessageItemDto>> {
     try {
-      const { token, conversation_id, take, page } = query.input;
+      const { token, conversationId, limit, firstId } = query.input;
 
       const difyResponse =
         await this.difyEmbeddedChatService.getMessagesByConversationIdPagination(
           {
             token,
             query: {
-              conversation_id,
-              limit: take,
-              page,
+              conversation_id: conversationId,
+              limit,
+              ...(firstId ? { first_id: firstId } : {}),
             },
           },
         );
@@ -61,7 +61,8 @@ export class GetEmbeddedChatMessagesByConversationIdQueryHandler
             type: 'received',
           },
         ]),
-        total: difyResponse.total,
+        total: difyResponse.data.length,
+        hasMore: difyResponse.has_more,
       };
     } catch (error) {
       if (error instanceof Exception) {

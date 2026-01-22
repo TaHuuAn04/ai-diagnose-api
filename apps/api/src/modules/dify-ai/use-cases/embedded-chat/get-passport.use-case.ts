@@ -29,7 +29,7 @@ export class GetPassportDifyAiCommandHandler
   async execute(command: GetPassportDifyAiCommand) {
     try {
       const dto = new GetPassportDifyAiDto(
-        command.input.body,
+        command.input.query,
         command.input.headers,
       );
 

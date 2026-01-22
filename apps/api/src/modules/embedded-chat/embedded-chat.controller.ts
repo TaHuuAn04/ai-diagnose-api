@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@api/guards';
 import { plainToInstance } from 'class-transformer';
@@ -31,6 +31,7 @@ import {
   EmbeddedChatMessageItemDto,
   GetEmbeddedChatConversationQueryDto,
   GetEmbeddedChatMessagesByConversationIdQueryDto,
+  GetEmbeddedChatMessagesResponseDto,
   GetPassportResponseDto,
 } from './dtos';
 import {
@@ -69,6 +70,7 @@ export class EmbeddedChatController {
   }
 
   @IsPublic()
+  @ApiSecurity('third-party-token')
   @Post('chat-messages-stream')
   async chatMessageStream(
     @Body() dto: ChatMessageStreamBodyDto,
@@ -104,6 +106,7 @@ export class EmbeddedChatController {
   }
 
   @IsPublic()
+  @ApiSecurity('third-party-token')
   @Get('conversations')
   @ApiResponseWrapper(EmbeddedChatConversationItemDto, 'Get conversations')
   async getConversations(
@@ -154,6 +157,7 @@ export class EmbeddedChatController {
         ...{
           name: user.firstName + ' ' + user.lastName,
           email: user.email,
+          user_id: user.id,
         },
       }),
     );
@@ -163,15 +167,17 @@ export class EmbeddedChatController {
 
   
 
+  @IsPublic()
+  @ApiSecurity('third-party-token')
   @Get('messages')
   @ApiResponseWrapper(
-    EmbeddedChatMessageItemDto,
+    GetEmbeddedChatMessagesResponseDto,
     'Get messages by conversation id',
   )
   async getMessagesByConversationId(
+    @Headers('Authorization') authorization: string,
     @Query() dto: GetEmbeddedChatMessagesByConversationIdQueryDto,
-    @Headers('authorization') authorization?: string,
-  ): Promise<PageDto<EmbeddedChatMessageItemDto>> {
+  ): Promise<GetEmbeddedChatMessagesResponseDto> {
     if (!authorization) {
       throw new UnauthorizedException();
     }
@@ -185,19 +191,13 @@ export class EmbeddedChatController {
       new GetEmbeddedChatMessagesByConversationIdQuery({
         ...dto,
         token,
-        skip: dto.skip,
       }),
     );
 
-    const pageMeta = new PageMetaDto({
-      take: dto.take,
-      page: dto.page,
-      itemCount: result.total,
+    return plainToInstance(GetEmbeddedChatMessagesResponseDto, {
+      limit: dto.limit || 20,
+      hasMore: result.hasMore || false,
+      data: result.data,
     });
-
-    return new PageDto(
-      plainToInstance(EmbeddedChatMessageItemDto, result.data),
-      pageMeta,
-    );
   }
 }

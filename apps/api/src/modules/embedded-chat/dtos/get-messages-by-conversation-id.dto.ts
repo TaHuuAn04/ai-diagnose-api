@@ -1,9 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { Expose } from 'class-transformer';
-import { IsNotEmpty, IsString } from 'class-validator';
-
-import { PageOptionsDto } from '@app/core/dtos';
+import { Expose, Transform, Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class EmbeddedChatMessageItemDto {
   @ApiProperty({
@@ -34,7 +32,7 @@ export class EmbeddedChatMessageItemDto {
   type: 'received' | 'sent';
 }
 
-export class GetEmbeddedChatMessagesByConversationIdQueryDto extends PageOptionsDto {
+export class GetEmbeddedChatMessagesByConversationIdQueryDto {
   @ApiProperty({
     type: String,
     required: true,
@@ -44,9 +42,57 @@ export class GetEmbeddedChatMessagesByConversationIdQueryDto extends PageOptions
   @Expose()
   @IsString()
   @IsNotEmpty()
-  conversation_id: string;
+  conversationId: string;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Number of messages to return (1-100)',
+    example: 20,
+    default: 20,
+  })
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  @Max(100)
+  @Transform(({ value }) => (value ? Number(value) : 20))
+  limit?: number = 20;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'First message ID for pagination (to get older messages)',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @IsString()
+  @IsOptional()
+  firstId?: string;
 }
 
 export class GetEmbeddedChatMessagesByConversationIdInputDto extends GetEmbeddedChatMessagesByConversationIdQueryDto {
   token: string;
+}
+
+export class GetEmbeddedChatMessagesResponseDto {
+  @ApiProperty({
+    type: Number,
+    description: 'Number of messages returned',
+    example: 20,
+  })
+  @Expose()
+  limit: number;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Whether there are more messages',
+    example: true,
+  })
+  @Expose()
+  hasMore: boolean;
+
+  @ApiProperty({
+    type: [EmbeddedChatMessageItemDto],
+    description: 'List of messages',
+  })
+  @Expose()
+  @Type(() => EmbeddedChatMessageItemDto)
+  data: EmbeddedChatMessageItemDto[];
 }
