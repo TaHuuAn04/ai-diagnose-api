@@ -41,6 +41,10 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'access-token',
     )
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Third-party token from Dify AI' },
+      'third-party-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerOption);

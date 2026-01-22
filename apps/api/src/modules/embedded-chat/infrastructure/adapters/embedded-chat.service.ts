@@ -32,11 +32,10 @@ export class EmbeddedChatService implements IEmbeddedChatService {
   async getPassport(input: GetPassportInputDto): Promise<GetPassportResponseDto> {
     const passportInput: GetPassportDifyAiInputDto = {
       headers: {
-        'x-app-code': process.env.DIFY_AI_APP_ID ?? '',
+        'x-app-code': input.xAppCode,
       },
-      body: {
-        name: input.name,
-        email: input.email,
+      query: {
+        user_id: input.user_id,
       },
     };
 

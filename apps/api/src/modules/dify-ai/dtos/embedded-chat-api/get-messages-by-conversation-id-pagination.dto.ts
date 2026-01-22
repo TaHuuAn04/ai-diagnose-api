@@ -3,8 +3,8 @@ import { HttpFetchDto } from '@app/core/http';
 
 export class GetMessagesByConversationIdPaginationDifyAiQueryDto {
   conversation_id: string;
-  limit: number;
-  page: number;
+  limit?: number;
+  first_id?: string;
 }
 
 export class GetMessagesByConversationIdPaginationDifyAiInputDto {
@@ -22,15 +22,13 @@ export class MessageItemPaginationDifyAiDto {
 }
 
 export class GetMessagesByConversationIdPaginationDifyAiResponseDto {
-  page: number;
   limit: number;
-  total: number;
   has_more: boolean;
   data: MessageItemPaginationDifyAiDto[];
 }
 
 export class GetMessagesByConversationIdPaginationDifyAiDto extends HttpFetchDto {
-  public static url = 'api/messages/pagination';
+  public static url = 'api/messages';
   public method = HttpMethod.GET;
   public url = GetMessagesByConversationIdPaginationDifyAiDto.url;
   public bodyDto = undefined;
