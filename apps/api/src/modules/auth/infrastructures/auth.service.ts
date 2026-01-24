@@ -30,6 +30,7 @@ import {
 import { AuthPayload } from '../interfaces';
 import { IAuthService, IUserService } from '../use-cases/adapters';
 import { IOtpService } from '../use-cases/adapters/otp.service.interface';
+import { hashPassword } from '../utils';
 
 const apiNodeEnv = process.env.API_NODE_ENV;
 
@@ -136,6 +137,9 @@ export class AuthService implements IAuthService {
       if (existingUser) {
         throw new BadRequestException('Email already registered');
       }
+
+      // hash password
+      input.password = await hashPassword(password);
 
       // verify register OTP
       // await this.validateRegisterOtp({
