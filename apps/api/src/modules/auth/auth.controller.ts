@@ -14,9 +14,10 @@ import {
   RequestLoginDto,
   RequestOtpResponseDto,
   VerifyOtpRequestDto,
+  VerifyOtpResponseDto,
 } from './dtos';
 import { TempAuthService } from './infrastructures/temp-auth.service';
-import { RequestOtpCommand, VerifyLoginOtpCommand } from './use-cases';
+import { RequestOtpCommand, VerifyOtpCommand } from './use-cases';
 import { RegisterCommand } from './use-cases/register.use-case';
 
 @ApiTags('Auth')
@@ -45,12 +46,12 @@ export class AuthController {
     return await this.commandBus.execute(command);
   }
 
-  @Post('verify-login-otp')
+  @Post('verify-otp')
   @IsPublic()
   async verifyOTP(
     @Body() input: VerifyOtpRequestDto,
-  ): Promise<LoginResponseDto> {
-    const command = new VerifyLoginOtpCommand(input);
+  ): Promise<VerifyOtpResponseDto> {
+    const command = new VerifyOtpCommand(input);
     return await this.commandBus.execute(command);
   }
 

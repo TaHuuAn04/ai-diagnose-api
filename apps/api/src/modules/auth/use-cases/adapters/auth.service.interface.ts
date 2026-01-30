@@ -4,12 +4,13 @@ import {
   RequestLoginDto,
   RequestLoginResponseDto,
   VerifyOtpRequestDto,
+  VerifyOtpResponseDto,
 } from '../../dtos';
 
 export interface IAuthService {
   requestOTP(input: RequestLoginDto): Promise<RequestLoginResponseDto>;
 
-  verifyLoginOTP(input: VerifyOtpRequestDto): Promise<LoginResponseDto>;
+  verifyOTP(input: VerifyOtpRequestDto): Promise<VerifyOtpResponseDto>;
 
   register(input: RegisterRequestDto): Promise<LoginResponseDto>;
 
