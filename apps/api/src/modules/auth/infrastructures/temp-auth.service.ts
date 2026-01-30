@@ -33,6 +33,10 @@ export class TempAuthService {
         throw new BadRequestException('Invalid credentials');
       }
 
+      if (!userInfo.isOnBoardingCompleted) {
+        throw new BadRequestException('User is not registered completely or activated');
+      }
+
       if (!(await comparePassword(password, userInfo.password))) {
         throw new BadRequestException('Invalid Password');
       }

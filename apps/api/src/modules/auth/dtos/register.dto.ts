@@ -5,10 +5,10 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumberString,
+  // IsNumberString,
   IsOptional,
   IsString,
-  IsUUID,
+  // IsUUID,
   MaxLength,
   MinLength,
   ValidateIf,
@@ -22,15 +22,15 @@ export class RegisterRequestDto {
   @ApiProperty({ example: '2qBbV@example.com' })
   email: string;
 
-  @IsNotEmpty()
-  @IsNumberString()
-  @ApiProperty({ example: 1111 })
-  otp: string;
+  // @IsNotEmpty()
+  // @IsNumberString()
+  // @ApiProperty({ example: 1111 })
+  // otp: string;
 
-  @IsNotEmpty()
-  @IsUUID()
-  @ApiProperty({ example: 'bf1b85cf-d188-4e3c-8963-bdca8fe029bd' })
-  sessionId: string;
+  // @IsNotEmpty()
+  // @IsUUID()
+  // @ApiProperty({ example: 'bf1b85cf-d188-4e3c-8963-bdca8fe029bd' })
+  // sessionId: string;
 
   @IsNotEmpty()
   @IsString()

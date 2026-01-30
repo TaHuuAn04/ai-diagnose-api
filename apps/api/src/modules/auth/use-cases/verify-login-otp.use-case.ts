@@ -3,24 +3,24 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 import { INJECTION_TOKEN } from 'apps/api/src/common/enums';
 
-import { LoginResponseDto, VerifyOtpRequestDto } from '../dtos';
+import { VerifyOtpRequestDto, VerifyOtpResponseDto } from '../dtos';
 
 import { IAuthService } from './adapters';
 
-export class VerifyLoginOtpCommand {
+export class VerifyOtpCommand {
   constructor(public readonly input: VerifyOtpRequestDto) {}
 }
 
-@CommandHandler(VerifyLoginOtpCommand)
+@CommandHandler(VerifyOtpCommand)
 export class VerifyOtpCommandHandler
-  implements ICommandHandler<VerifyLoginOtpCommand>
+  implements ICommandHandler<VerifyOtpCommand>
 {
   constructor(
     @Inject(INJECTION_TOKEN.AUTH_SERVICE)
     private readonly authService: IAuthService,
   ) {}
 
-  async execute(command: VerifyLoginOtpCommand): Promise<LoginResponseDto> {
-    return await this.authService.verifyLoginOTP(command.input);
+  async execute(command: VerifyOtpCommand): Promise<VerifyOtpResponseDto> {
+    return await this.authService.verifyOTP(command.input);
   }
 }

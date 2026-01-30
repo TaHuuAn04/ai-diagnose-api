@@ -6,3 +6,4 @@ export * from './severity.enum';
 export * from './image.enum';
 export * from './working-time.enum';
 export * from './http-method.enum';
+export * from './otp-type.enum';

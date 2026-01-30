@@ -1,7 +1,8 @@
+import { OtpType } from '@app/core/domain/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsNumberString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumberString, IsString, IsUUID } from 'class-validator';
 
 export class RequestOtpRequestDto {
   @IsNotEmpty()
@@ -31,4 +32,16 @@ export class VerifyOtpRequestDto {
   @IsNotEmpty()
   @ApiProperty({ example: '04b65d85-7c56-43fe-b0ef-7287256ec94d' })
   sessionId: string;
+
+  @IsEnum(OtpType)
+  @IsNotEmpty()
+  @ApiProperty({ example: OtpType.REGISTER })
+  type: OtpType;
+}
+
+export class VerifyOtpResponseDto {
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty({ example: true })
+  status: boolean;
 }

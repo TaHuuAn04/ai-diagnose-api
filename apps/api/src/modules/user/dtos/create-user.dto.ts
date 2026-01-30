@@ -21,43 +21,43 @@ export class CreateUserBodyDto {
   @ApiProperty({ example: '2qBbV@example.com' })
   email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(25)
-  @ApiProperty({ example: 'John' })
-  firstName: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // @MaxLength(25)
+  // @ApiProperty({ example: 'John' })
+  // firstName: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(25)
-  @ApiProperty({ example: 'Doe' })
-  lastName: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // @MaxLength(25)
+  // @ApiProperty({ example: 'Doe' })
+  // lastName: string;
 
-  @IsNotEmpty()
-  @IsEnum(UserGender)
-  @ApiProperty({ example: 'MALE' })
-  gender: UserGender;
+  // @IsNotEmpty()
+  // @IsEnum(UserGender)
+  // @ApiProperty({ example: 'MALE' })
+  // gender: UserGender;
 
-  @ValidateIf((dto: CreateUserBodyDto) => !!dto.phoneNumber)
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(5)
-  @ApiProperty({ example: '+84' })
-  phoneCode: string;
+  // @ValidateIf((dto: CreateUserBodyDto) => !!dto.phoneNumber)
+  // @IsNotEmpty()
+  // @IsString()
+  // @MaxLength(5)
+  // @ApiProperty({ example: '+84' })
+  // phoneCode: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(15)
-  @MinLength(9)
-  @ApiProperty({ example: '123456789' })
-  phoneNumber: string;
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(15)
+  // @MinLength(9)
+  // @ApiProperty({ example: '123456789' })
+  // phoneNumber: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(6)
-  @MaxLength(20)
-  @ApiProperty({ example: 'P@ssw0rd' })
-  password: string;
+  // @IsNotEmpty()
+  // @IsString()
+  // @MinLength(6)
+  // @MaxLength(20)
+  // @ApiProperty({ example: 'P@ssw0rd' })
+  // password: string;
 }
 
 export class CreateUserInputDto extends CreateUserBodyDto {}
