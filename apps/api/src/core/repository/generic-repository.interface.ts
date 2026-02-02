@@ -157,6 +157,8 @@ export interface IGenericRepository<DomainEntity> {
 
   create(entity: Partial<DomainEntity>): Promise<DomainEntity>;
 
+  createMany(entities: Partial<DomainEntity>[]): Promise<DomainEntity[]>;
+
   update(id: string, entity: Partial<DomainEntity>): Promise<DomainEntity>;
 
   delete(id: string): Promise<void>;

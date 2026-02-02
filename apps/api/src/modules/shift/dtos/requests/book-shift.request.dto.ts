@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { HasMimeType, IsFiles, MemoryStoredFile } from 'nestjs-form-data';
 
 export class BookShiftRequestDto {
   @ApiProperty({ 
     description: 'Doctor ID',
-    example: '11111111-1111-1111-1111-111111111111'
+    example: '0518b63b-fc8f-4c7c-9e02-c8b5e59b9557'
   })
   @IsUUID()
   @IsNotEmpty()
@@ -13,7 +14,7 @@ export class BookShiftRequestDto {
 
   @ApiProperty({ 
     description: 'Shift ID to book',
-    example: 'e9c8a957-5111-427a-af72-78e8bfc8f3dd'
+    example: '5543f3af-19b4-43b8-920b-db756f97cca1'
   })
   @IsUUID()
   @IsNotEmpty()
@@ -21,11 +22,33 @@ export class BookShiftRequestDto {
 
   @ApiProperty({ 
     description: 'Patient ID',
-    example: '33333333-3333-3333-3333-333333333333'
+    example: '0571f8d8-d934-4a1c-87bd-49bf5a922307'
   })
   @IsUUID()
   @IsNotEmpty()
   patientId: string;
+
+  @ApiProperty({
+    description: 'List of image URLs related to the appointment (optional)',
+    type: 'string',
+    format: 'binary',
+    isArray: true,
+    required: false
+  })
+  @ValidateIf((_, value) => {
+    return Boolean(
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value[0]?.originalName
+    );
+  })
+  @IsOptional()
+  @IsFiles()
+  @HasMimeType(
+    ['image/jpeg', 'image/png'],
+    { each: true }
+  )
+  images?: MemoryStoredFile[];  
 
   @ApiProperty({ 
     description: 'Appointment description (optional)',

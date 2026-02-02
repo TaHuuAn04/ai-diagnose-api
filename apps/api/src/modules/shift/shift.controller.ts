@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
+import { FormDataRequest } from "nestjs-form-data";
 
 import { IsPublic } from "@app/core/decorators";
 import { PageDto, PageOptionsDto } from "@app/core/dtos";
@@ -85,6 +86,8 @@ export class ShiftController {
   @ApiResponse({ status: 201, description: 'Appointment booked successfully.' })
   @ApiResponse({ status: 400, description: 'Shift not available or invalid request.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
+  @ApiConsumes('multipart/form-data')
+  @FormDataRequest()
   async bookShift(
     @Body() bookShiftDto: BookShiftRequestDto
   ): Promise<BookShiftResponseDto> {

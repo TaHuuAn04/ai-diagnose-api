@@ -8,6 +8,7 @@ import { ShiftController } from "./shift.controller";
 import { BookShiftCommandHandler } from "./use-cases/book-shift.use-case";
 import { GetAvailableShiftsByDoctorQueryHandler } from "./use-cases/get-available-shifts-by-doctor.use-case";
 import { GetListShiftQueryHandler } from "./use-cases/get-list-shift.use-case";
+import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data";
 
 
 const Handlers = [
@@ -24,7 +25,11 @@ const Adapters = [
 ];
 
 @Module({  
-  imports: [CqrsModule],
+  imports: [CqrsModule,
+    NestjsFormDataModule.config({
+      storage: MemoryStoredFile,
+    }),
+  ],
   controllers: [ShiftController],
   providers: [...Adapters, ...Handlers],
   exports: [...Adapters, ...Handlers],

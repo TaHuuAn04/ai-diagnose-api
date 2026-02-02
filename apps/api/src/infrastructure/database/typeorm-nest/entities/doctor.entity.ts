@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from '
 import { BaseEntityWithoutId } from '../base.entity';
 
 import { Consultation } from './consultation.entity';
+import { Schedule } from './schedule.entity';
 import { User } from './user.entity';
 import { WorkingTime } from './workingTime.entity';
 
@@ -28,6 +29,9 @@ export class Doctor extends BaseEntityWithoutId {
   })
   @JoinColumn({ name: 'user_id' }) 
   user: User;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.doctor)
+  schedule: Schedule[];
 
   @OneToMany(() => WorkingTime, (workingTime) => workingTime.doctor)
   workingTime: WorkingTime[];

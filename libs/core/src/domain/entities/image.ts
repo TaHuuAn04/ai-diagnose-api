@@ -1,21 +1,19 @@
-import { ImageType } from '../enums';
+import { ImageReference, ImageType } from '../enums';
 
-import { AppointmentEntity } from './appointment';
 import { BaseEntity } from './base';
-import { ConsultationEntity } from './consultation';
 
 export class ImageEntity extends BaseEntity {
-  appointmentId: string;
+  referenceId: string;
 
-  consultationId: string;
+  referenceType: ImageReference;
 
-  data_url: string;
+  dataUrl?: string | null;
 
   description?: string | null;
 
+  order?: number | null;
+
+  base64?: string | null;
+
   type: ImageType;
-
-  appointment?: AppointmentEntity | null;
-
-  consultation?: ConsultationEntity | null;
 }

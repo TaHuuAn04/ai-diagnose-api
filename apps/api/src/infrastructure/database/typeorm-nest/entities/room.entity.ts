@@ -1,28 +1,28 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+// import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
-import { BaseEntityWithoutId } from '../base.entity';
+// import { BaseEntityWithoutId } from '../base.entity';
 
-import { Doctor } from './doctor.entity';
-import { Schedule } from './schedule.entity';
+// import { Doctor } from './doctor.entity';
+// import { Schedule } from './schedule.entity';
 
-@Entity()
-export class Room extends BaseEntityWithoutId {
-  @Column({ type: 'varchar', length: 255 })
-  room: string;
+// @Entity()
+// export class Room extends BaseEntityWithoutId {
+//   @Column({ type: 'varchar', length: 255 })
+//   room: string;
 
-  @PrimaryColumn('uuid')
-  doctorId: string;
+//   @PrimaryColumn('uuid')
+//   doctorId: string;
     
-  @PrimaryColumn('uuid')
-  scheduleId: string;
+//   @PrimaryColumn('uuid')
+//   scheduleId: string;
 
-  @OneToOne(() => Doctor)
-  @JoinColumn({ name: 'doctor_id' }) 
-  doctor: Doctor;
+//   @OneToOne(() => Doctor)
+//   @JoinColumn({ name: 'doctor_id' }) 
+//   doctor: Doctor;
 
-  @OneToOne(() => Schedule, {
-    onDelete: 'CASCADE'
-  })
-  @JoinColumn({ name: 'schedule_id' })
-  schedule: Schedule;
-}
+//   @OneToOne(() => Schedule, {
+//     onDelete: 'CASCADE'
+//   })
+//   @JoinColumn({ name: 'schedule_id' })
+//   schedule: Schedule;
+// }

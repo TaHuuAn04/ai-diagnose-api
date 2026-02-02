@@ -1,13 +1,14 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { IAppointmentRepository, IShiftRepository, IWorkingTimeRepository } from '@api/core/repository';
+import { IAppointmentRepository, IImageRepository, IShiftRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { AppointmentStatus, WorkingTimeStatus } from '@app/core/domain/enums';
+import { AppointmentStatus, ImageReference, ImageType, WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
-import { ExceptionHandler } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler } from '@app/core/exception';
+import { filesToBase64 } from '@app/utils';
 
 import { BookShiftRequestDto } from '../dtos/requests/book-shift.request.dto';
 import { GetListShiftResponseDto } from '../dtos/response';
@@ -25,7 +26,10 @@ export class ShiftService implements IShiftService {
     private readonly workingTimeRepository: IWorkingTimeRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
-    private readonly appointmentRepository: IAppointmentRepository
+    private readonly appointmentRepository: IAppointmentRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
+    private readonly imageRepository: IImageRepository,
   ) {}
 
   async getListShifts(
@@ -100,7 +104,7 @@ export class ShiftService implements IShiftService {
   @Transactional()
   async bookShift(bookShiftDto: BookShiftRequestDto): Promise<BookShiftResponseDto> {
     try {
-      const { doctorId, shiftId, patientId, description } = bookShiftDto;
+      const { doctorId, shiftId, patientId, images, description } = bookShiftDto;
 
       const workingTime = await this.workingTimeRepository.findOne({
         where: { 
@@ -134,6 +138,17 @@ export class ShiftService implements IShiftService {
       if (!updatedWorkingTimes) {
         throw new BadRequestException('Failed to book shift');
       }
+
+      const imageBase64s = filesToBase64(images)
+      await this.imageRepository.createMany(
+        imageBase64s.map((img, index) => ({
+          referenceId: appointment.id,
+          referenceType: ImageReference.APPOINTMENT,
+          base64: img,
+          order: index + 1,
+          type: ImageType.PATIENT_SYMPTOMS
+        }))
+      );
 
       return plainToInstance(BookShiftResponseDto, {
         appointmentId: appointment.id,
