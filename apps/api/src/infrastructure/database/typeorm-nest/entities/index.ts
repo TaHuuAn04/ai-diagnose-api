@@ -15,7 +15,7 @@ export * from './image.entity';
 export * from './patient.entity';
 export * from './schedule.entity';
 export * from './shift.entity';
-export * from './room.entity';
+// export * from './room.entity';
 export * from './resultDisease.entity'
 export * from './user.entity';
 export * from './workingTime.entity';

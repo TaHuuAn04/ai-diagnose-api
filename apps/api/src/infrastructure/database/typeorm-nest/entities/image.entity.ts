@@ -1,34 +1,30 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 
-import { ImageType } from '@app/core/domain/enums';
+import { ImageReference, ImageType } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 
-import { Appointment } from './appointment.entity';
-import { Consultation } from './consultation.entity';
-
 @Entity()
+@Index(['referenceId', 'referenceType'])
 export class Image extends BaseEntity {
   @Column('uuid')
-  appointmentId: string;
+  referenceId: string;
 
-  @Column('uuid')
-  consultationId: string;
+  @Column({ type: 'enum', enum: ImageReference })
+  referenceType: ImageReference;  
+    
+  @Column({ type: 'varchar', nullable: true })
+  dataUrl?: string | null;
 
-  @Column({ type: 'varchar' })
-  dataUrl: string;
+  @Column({ type: 'int', nullable: true })
+  order?: number | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   description?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  base64?: string | null;
   
   @Column({ type: 'enum', enum: ImageType })
   type: ImageType;
-  
-  @ManyToOne(() => Appointment)
-  @JoinColumn({ name: 'appointment_id' })
-  appointment: Appointment;
-
-  @ManyToOne(() => Consultation)
-  @JoinColumn({ name: 'consultation_id' })
-  consultation: Consultation;
 }

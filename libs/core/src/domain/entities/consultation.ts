@@ -1,7 +1,6 @@
 import { AppointmentEntity } from './appointment';
 import { BaseEntity } from './base';
 import { DoctorEntity } from './doctor';
-import { ImageEntity } from './image';
 import { PatientEntity } from './patient';
 
 export class ConsultationEntity extends BaseEntity {
@@ -12,8 +11,6 @@ export class ConsultationEntity extends BaseEntity {
   doctorId: string;
 
   appointment?: AppointmentEntity | null;
-
-  image?: ImageEntity[] | [];
 
   patient?: PatientEntity | null;
 

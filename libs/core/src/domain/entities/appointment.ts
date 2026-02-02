@@ -1,7 +1,6 @@
 import { AppointmentStatus } from '../enums';
 
 import { BaseEntity } from './base';
-import { ImageEntity } from './image';
 import { PatientEntity } from './patient';
 import { WorkingTimeEntity } from './working-time';
 
@@ -11,8 +10,6 @@ export class AppointmentEntity extends BaseEntity {
   status: AppointmentStatus;
 
   patientId: string;
-
-  image?: ImageEntity[] | [];
 
   patient?: PatientEntity | null;
 

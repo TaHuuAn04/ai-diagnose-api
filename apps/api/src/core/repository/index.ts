@@ -15,7 +15,7 @@ export * from './doctor.repository.interface';
 export * from './image.repository.interface';
 export * from './patient.repository.interface';
 export * from './result-disease.repository.interface';
-export * from './room.repository.interface';
+// export * from './room.repository.interface';
 export * from './schedule.repository.interface';
 export * from './shift.repository.interface';
 export * from './user.repository.interface';

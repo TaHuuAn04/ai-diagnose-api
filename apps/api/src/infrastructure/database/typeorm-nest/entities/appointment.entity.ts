@@ -1,10 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
 import { AppointmentStatus } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 
-import { Image } from './image.entity';
 import { Patient } from './patient.entity';
 import { WorkingTime } from './workingTime.entity';
 
@@ -22,9 +21,6 @@ export class Appointment extends BaseEntity {
 
   @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
   workingTime?: WorkingTime | null; 
-
-  @OneToMany(() => Image, (image) => image.appointment)
-  image?: Image[] | [];
 
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patient_id' }) 

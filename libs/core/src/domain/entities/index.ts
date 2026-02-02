@@ -15,7 +15,7 @@ export * from './doctor';
 export * from './image';
 export * from './patient';
 export * from './result-disease';
-export * from './room';
+// export * from './room';
 export * from './schedule';
 export * from './shift';
 export * from './user';

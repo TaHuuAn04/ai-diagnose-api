@@ -1,4 +1,12 @@
 export enum ImageType {
     AVATAR = 'AVATAR',
-    SYMSTOMS = 'SYMSTOMS'
+    PATIENT_SYMPTOMS = 'PATIENT_SYMPTOMS',
+    DOCTOR_SYMPTOMS = 'DOCTOR_SYMPTOMS',
+    OTHER = 'OTHER'
+}
+
+export enum ImageReference {  
+    APPOINTMENT = 'APPOINTMENT',
+    CONSULTATION = 'CONSULTATION',
+    AVATAR = 'AVATAR'
 }
