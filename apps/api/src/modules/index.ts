@@ -1,3 +1,4 @@
+import { AppointmentModule } from './appointment/appointment.module';
 import { AuthModule } from './auth/auth.module';
 import { DevModeModule } from './dev-mode/dev-mode.module';
 import { DifyAiModule } from './dify-ai/dify-ai.module';
@@ -14,5 +15,6 @@ export const modules = [
   EmbeddedChatModule,
   DoctorModule,
   PatientModule,
+  AppointmentModule,
   DevModeModule.registerAsync()
 ];

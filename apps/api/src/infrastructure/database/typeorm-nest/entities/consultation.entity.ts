@@ -2,7 +2,9 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 
 import { BaseEntity } from "../base.entity";
 
+import { AIDiagnosisResult } from "./AIDiagnosisResult.entity";
 import { Appointment } from "./appointment.entity";
+import { DiagnosisResult } from "./diagnosisResult.entity";
 import { Doctor } from "./doctor.entity";
 import { Patient } from "./patient.entity";
 
@@ -28,4 +30,10 @@ export class Consultation extends BaseEntity {
   @ManyToOne(() => Doctor )
   @JoinColumn({ name: 'doctor_id'})
   doctor?: Doctor | null;
+
+  @OneToOne(() => AIDiagnosisResult, (aiResult) => aiResult.consultation)
+  aiResult?: AIDiagnosisResult | null;
+
+  @OneToOne(() => DiagnosisResult, (diagnosisResult) => diagnosisResult.consultation)
+  diagnosisResult?: DiagnosisResult | null;
 }

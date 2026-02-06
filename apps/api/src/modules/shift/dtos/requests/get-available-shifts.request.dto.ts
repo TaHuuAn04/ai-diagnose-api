@@ -1,15 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsDateString, IsOptional, IsUUID } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional } from 'class-validator';
 
-export class GetAvailableShiftsRequestDto {
-  @ApiProperty({ 
-    description: 'Doctor ID',
-    example: '123e4567-e89b-12d3-a456-426614174000'
-  })
-  @IsUUID()
-  doctorId: string;
-
+import { WorkingTimeStatus } from '@app/core/domain/enums';
+import { PageOptionsDto } from '@app/core/dtos';
+export class GetShiftsByDoctorIdRequestDto extends PageOptionsDto {
   @ApiProperty({ 
     description: 'Start date filter (optional)',
     example: '2025-12-11',
@@ -27,4 +22,13 @@ export class GetAvailableShiftsRequestDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @ApiProperty({
+    description: 'Shift status filter (optional)',
+    example: WorkingTimeStatus.AVAILABLE,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(WorkingTimeStatus)
+  status?: WorkingTimeStatus;
 }

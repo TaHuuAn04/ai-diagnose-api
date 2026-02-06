@@ -10,7 +10,7 @@ import { PageDto } from "@app/core/dtos";
 import { GetListDoctorRequestDto, GetListDoctorResponseDto } from "./dtos";
 import { GetListDoctorQuery } from "./use-cases/get-list-doctor.use-case";
 
-@ApiTags('doctors')
+@ApiTags('Doctors')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @Controller("doctors")

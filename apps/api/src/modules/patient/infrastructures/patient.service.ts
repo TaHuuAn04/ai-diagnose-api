@@ -5,7 +5,6 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
 import { ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { CreatePatientResponseDto, PatientInfoDto, UpdatePatientDto } from '../dtos';
@@ -60,6 +59,7 @@ export class PatientService implements IPatientService {
     }
   }
 
+  //TODO: Implement getMedicalRecords method
   // async getMedicalRecords(
   //   userId: string,
   //   pageOptionsDto: PageOptionsDto

@@ -1,18 +1,18 @@
-import { Body, Controller, Get, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Put, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
 
 import { CurrentUser, Roles } from "@app/core/decorators";
 import { UserEntity } from "@app/core/domain/entities";
-import { SortDirection, UserRole } from "@app/core/domain/enums";
-import { PageDto, PageOptionsDto } from "@app/core/dtos";
+import { UserRole } from "@app/core/domain/enums";
 
 import { PatientInfoDto, UpdatePatientDto } from "./dtos";
 import { GetInfoQuery, UpdatePatientCommand } from "./use-cases";
 
-@ApiTags('patients')
+
+@ApiTags('Patients')
 @Roles(UserRole.PATIENT)
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
@@ -48,6 +48,7 @@ export class PatientController {
     return result;
   }
 
+  //TODO: Uncomment and implement when medical records feature is ready
   // @Get('medical-records')
   // @ApiQuery({ name: 'sort', required: false, description: 'Field to sort by', type: 'string' })
   // @ApiQuery({ name: 'sortDirection', required: false, description: 'Sort direction (ASC or DESC)', type: 'enum', enum: SortDirection })

@@ -4,6 +4,7 @@ import { AppointmentStatus } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 
+import { Consultation } from './consultation.entity';
 import { Patient } from './patient.entity';
 import { WorkingTime } from './workingTime.entity';
 
@@ -21,6 +22,9 @@ export class Appointment extends BaseEntity {
 
   @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
   workingTime?: WorkingTime | null; 
+
+  @OneToOne(() => Consultation, (consultation) => consultation.appointment)
+  consultation?: Consultation | null;
 
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patient_id' }) 
