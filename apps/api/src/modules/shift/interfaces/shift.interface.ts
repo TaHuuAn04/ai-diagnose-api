@@ -1,6 +1,7 @@
 import { PageDto, PageOptionsDto } from "@app/core/dtos";
 
 import { BookShiftRequestDto } from "../dtos/requests/book-shift.request.dto";
+import { GetShiftsByDoctorIdRequestDto } from "../dtos/requests/get-available-shifts.request.dto";
 import { AvailableShiftResponseDto } from "../dtos/response/available-shift.response.dto";
 import { BookShiftResponseDto } from "../dtos/response/book-shift.response.dto";
 import { GetListShiftResponseDto } from "../dtos/response/shift.response.dto";
@@ -10,11 +11,9 @@ export interface IShiftService {
     pageOptionsDto: PageOptionsDto
   ): Promise<PageDto<GetListShiftResponseDto>>;
 
-  getAvailableShiftsByDoctor(
+  getShiftsByDoctor(
     doctorId: string,
-    startDate?: string,
-    endDate?: string,
-    pageOptionsDto?: PageOptionsDto
+    input: GetShiftsByDoctorIdRequestDto
   ): Promise<PageDto<AvailableShiftResponseDto>>;
 
   bookShift(

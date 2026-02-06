@@ -1,19 +1,17 @@
 import { WorkingTimeEntity } from '@app/core/domain/entities/working-time';
-import { PageOptionsDto } from '@app/core/dtos';
+
+import { GetShiftsByDoctorIdRequestDto } from '../../modules/shift/dtos/requests/get-available-shifts.request.dto';
 
 import { IGenericRepository } from './generic-repository.interface';
 
 export interface IWorkingTimeRepository extends IGenericRepository<WorkingTimeEntity> {
-  findAvailableShiftsByDoctor(
+  findShiftsByDoctor(
     doctorId: string,
-    startDate?: string,
-    endDate?: string,
-    pageOptions?: PageOptionsDto
+    input: GetShiftsByDoctorIdRequestDto
   ): Promise<WorkingTimeEntity[]>;
   
-  countAvailableShiftsByDoctor(
+  countShiftsByDoctor(
     doctorId: string,
-    startDate?: string,
-    endDate?: string
+    input: GetShiftsByDoctorIdRequestDto
   ): Promise<number>;
 }

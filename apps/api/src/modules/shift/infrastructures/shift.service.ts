@@ -11,6 +11,7 @@ import { BadRequestException, ExceptionHandler } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
 import { BookShiftRequestDto } from '../dtos/requests/book-shift.request.dto';
+import { GetShiftsByDoctorIdRequestDto } from '../dtos/requests/get-available-shifts.request.dto';
 import { GetListShiftResponseDto } from '../dtos/response';
 import { AvailableShiftResponseDto } from '../dtos/response/available-shift.response.dto';
 import { BookShiftResponseDto } from '../dtos/response/book-shift.response.dto';
@@ -62,26 +63,25 @@ export class ShiftService implements IShiftService {
     }
   }
 
-  async getAvailableShiftsByDoctor(
+  async getShiftsByDoctor(
     doctorId: string,
-    startDate?: string,
-    endDate?: string,
-    pageOptionsDto?: PageOptionsDto
+    input: GetShiftsByDoctorIdRequestDto
   ): Promise<PageDto<AvailableShiftResponseDto>> {
     try {
-      const { take, page } = pageOptionsDto ?? { take: 10, page: 1 };
+      const { take, page } = input;
+
+      if (input.startDate && input.endDate && input.startDate > input.endDate) {
+        throw new BadRequestException('Start date must be before end date');
+      }
 
       const [workingTimes, total] = await Promise.all([
-        this.workingTimeRepository.findAvailableShiftsByDoctor(
+        this.workingTimeRepository.findShiftsByDoctor(
           doctorId,
-          startDate,
-          endDate,
-          pageOptionsDto
+          input
         ),
-        this.workingTimeRepository.countAvailableShiftsByDoctor(
+        this.workingTimeRepository.countShiftsByDoctor(
           doctorId,
-          startDate,
-          endDate
+          input
         ),
       ]);
 
@@ -156,7 +156,7 @@ export class ShiftService implements IShiftService {
         doctorId,
         patientId,
         shiftId,
-        appointmentStatus: AppointmentStatus.PENDING,
+        appointmentStatus: AppointmentStatus.SCHEDULED,
         workingTimeStatus: WorkingTimeStatus.BOOKED,
         description: description ?? '',
         message: 'Shift booked successfully',

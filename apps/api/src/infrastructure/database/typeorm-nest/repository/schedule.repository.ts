@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 
 import { ScheduleEntity } from '@app/core/domain/entities';
 
+import { GetConsultingRoomDto } from '../../../../modules/appointment/dtos';
 import { Schedule } from '../entities';
 
 import { GenericRepository } from './generic-repository';
@@ -28,5 +29,16 @@ export class ScheduleRepository
         return plainToInstance(Schedule, domainEntity);
       }
     });
+  }
+
+  async findRoomByDoctorAndShift( input: GetConsultingRoomDto ): Promise<string | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('schedule')
+      .where('schedule.doctor = :doctorId', { doctorId: input.doctorId })
+      .andWhere('schedule.date = :date', { date: input.date })
+      .andWhere('schedule.from <= :timeStart', { timeStart: input.timeStart })
+      .andWhere('schedule.to >= :timeEnd', { timeEnd: input.timeEnd });
+    const schedule = await queryBuilder.getOne();
+    return schedule ? schedule.room : null;
   }
 }

@@ -3,35 +3,32 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { INJECTION_TOKEN } from '@api/enums';
 
-import { PageDto, PageOptionsDto } from '@app/core/dtos';
+import { PageDto} from '@app/core/dtos';
 
+import { GetShiftsByDoctorIdRequestDto } from '../dtos/requests/get-available-shifts.request.dto';
 import { AvailableShiftResponseDto } from '../dtos/response/available-shift.response.dto';
 import { IShiftService } from '../interfaces';
 
-export class GetAvailableShiftsByDoctorQuery {
+export class GetShiftsByDoctorQuery {
   constructor(
     public readonly doctorId: string,
-    public readonly startDate?: string,
-    public readonly endDate?: string,
-    public readonly pageOptionsDto?: PageOptionsDto
+    public readonly input: GetShiftsByDoctorIdRequestDto
   ) {}
 }
 
-@QueryHandler(GetAvailableShiftsByDoctorQuery)
-export class GetAvailableShiftsByDoctorQueryHandler
-  implements IQueryHandler<GetAvailableShiftsByDoctorQuery, PageDto<AvailableShiftResponseDto>>
+@QueryHandler(GetShiftsByDoctorQuery)
+export class GetShiftsByDoctorQueryHandler
+  implements IQueryHandler<GetShiftsByDoctorQuery, PageDto<AvailableShiftResponseDto>>
 {
   constructor(
     @Inject(INJECTION_TOKEN.SHIFT_SERVICE)
     private readonly shiftService: IShiftService
   ) {}
 
-  async execute(query: GetAvailableShiftsByDoctorQuery): Promise<PageDto<AvailableShiftResponseDto>> {
-    return await this.shiftService.getAvailableShiftsByDoctor(
+  async execute(query: GetShiftsByDoctorQuery): Promise<PageDto<AvailableShiftResponseDto>> {
+    return await this.shiftService.getShiftsByDoctor(
       query.doctorId,
-      query.startDate,
-      query.endDate,
-      query.pageOptionsDto
+      query.input
     );
   }
 }
