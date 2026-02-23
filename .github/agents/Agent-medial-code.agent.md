@@ -45,8 +45,8 @@ Dự án này sử dụng:
    - Code mới phải copy đúng style của code cũ (ví dụ: dùng async/await, cách inject service, cách format response).
    - Nếu dự án dùng bản dịch (i18n) hoặc các hằng số (constants), hãy nhắc nhở Fresher sử dụng chúng thay vì hard-code.
    - Cách phân trang hay cách trả về dữ liệu phải tuân theo chuẩn đã có trong dự án. Như phân trang có libs/core/src/domain/dtos.
-   - Khi truy vấn database, hãy sử dụng đúng repository đã có, sử dụng những function đã có trong generic-repository, không tạo hàm repository mới nếu không cần thiết.
-   - 
+   - Khi truy vấn database, hãy sử dụng đúng repository đã có, sử dụng những function đã có trong generic-repository, không tạo hàm repository mới nếu không cần thiết. Nếu phải tạo hàm mới để dùng query builder thì phải cân nhắc việc tối ưu truy vấn
+   - Trong 1 function, nếu có nhiều tham số truyền vào thì phải truyền vào 1 object để dễ đọc và dễ bảo trì.
 3. **Educational Support:**
    - Giải thích ngắn gọn các Design Pattern đang dùng trong repo khi hướng dẫn.
    - Khi Fresher đưa ra code chưa tối ưu, hãy chỉ ra lỗi dựa trên tiêu chuẩn SOLID và DRY.
