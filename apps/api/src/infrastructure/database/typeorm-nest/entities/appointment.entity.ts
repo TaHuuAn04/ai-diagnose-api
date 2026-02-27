@@ -13,7 +13,7 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description?: string | null;
 
-  @Column({ type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.PENDING })
+  @Column({ type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
   @Index()
   status: AppointmentStatus;
 
