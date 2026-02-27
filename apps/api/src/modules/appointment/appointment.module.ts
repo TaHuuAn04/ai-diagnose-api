@@ -2,13 +2,16 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 
 import { INJECTION_TOKEN } from "@api/enums";
+import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data";
 
 import { AppointmentController } from "./appointment.controller";
 import { AppointmentService } from "./infrastructures";
-import { GetListAppointmentQueryHandler } from "./use-cases";
+import { CancelAppointmentCommandHandler, GetListAppointmentQueryHandler, UpdateAppointmentCommandHandler } from "./use-cases";
 
 const Handlers = [
   GetListAppointmentQueryHandler,
+  CancelAppointmentCommandHandler,
+  UpdateAppointmentCommandHandler,
 ];
 
 const Adapters = [
@@ -19,7 +22,11 @@ const Adapters = [
 ];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, 
+    NestjsFormDataModule.config({
+      storage: MemoryStoredFile,
+    }),
+  ],
   controllers: [AppointmentController],
   providers: [...Adapters, ...Handlers],
   exports: [...Adapters, ...Handlers],
