@@ -3,12 +3,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IAppointmentRepository, IImageRepository, IScheduleRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
+import { Transactional } from 'typeorm-transactional';
 
-import { ImageReference, SortDirection } from '@app/core/domain/enums';
+import { AppointmentStatus, ImageReference, ImageType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { filesToBase64 } from '@app/utils';
 
-import { GetAppointmentResponseDto, GetConsultingRoomDto, GetListAppointmentDto } from '../dtos';
+import { UpdateOrDeleteResponseDto } from '../../../common/dtos';
+import { GetAppointmentResponseDto, GetConsultingRoomDto, GetListAppointmentDto, UpdateAppointmentDto } from '../dtos';
 import { IAppointmentService } from '../interfaces';
 
 @Injectable()
@@ -93,6 +96,77 @@ export class AppointmentService implements IAppointmentService {
       return new PageDto<GetAppointmentResponseDto>(appointmentDtos, pageMeta);
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting list of appointments');
+    }
+  }
+
+  @Transactional()
+  async updateAppointment(
+    appointmentId: string,
+    input: UpdateAppointmentDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const { images, description } = input;
+
+      const appointment = await this.appointmentRepository.findOne({
+        where: { id: appointmentId }
+      });
+
+      if (!appointment) {
+        throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      appointment.description = description ?? appointment.description;
+      if (images) {
+        await this.imageRepository.deleteMany({
+          referenceId: appointmentId,
+          referenceType: ImageReference.APPOINTMENT,
+        }); 
+        const newImages = filesToBase64(images);
+        await this.imageRepository.createMany(
+          newImages.map((img, index) => ({
+            referenceId: appointmentId,
+            referenceType: ImageReference.APPOINTMENT,
+            base64: img,
+            order: index + 1,
+            type: ImageType.PATIENT_SYMPTOMS
+          }))
+        );
+      }
+
+      const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Appointment updated successfully',
+        at: updatedAppointment.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error updating appointment');
+    }
+  }
+
+  async cancelAppointment(
+    appointmentId: string
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try { 
+      const appointment = await this.appointmentRepository.findOne({
+        where: { id: appointmentId }
+      });
+
+      if (!appointment) {
+        throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+      
+      appointment.status = AppointmentStatus.CANCELLED;
+      const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Appointment cancelled successfully',
+        at: updatedAppointment.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error cancelling appointment');
     }
   }
 }
