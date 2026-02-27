@@ -6,7 +6,9 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { DoctorEntity } from '@app/core/domain/entities';
+import { SortDirection } from '@app/core/domain/enums';
 
+import { GetListDoctorRequestDto } from '../../../../modules/doctor/dtos';
 import { Doctor } from '../entities';
 
 import { GenericRepository } from './generic-repository';
@@ -29,4 +31,45 @@ export class DoctorRepository
       }
     });
   }
+
+  async findListDoctors(
+    request: GetListDoctorRequestDto
+  ): Promise<DoctorEntity[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+
+    if (request.shiftId) {
+      queryBuilder
+        .leftJoinAndSelect('doctor.workingTime', 'workingTime')
+        .leftJoinAndSelect('workingTime.shift', 'shift')
+        .andWhere('shift.id = :shiftId', { shiftId: request.shiftId });
+    } 
+
+    if (request.department) {
+      queryBuilder.andWhere('doctor.department = :department', { department: request.department });
+    }
+
+    const sortField = request.sort ?? 'user.firstName';
+    const sortOrder = request.sortDirection ?? SortDirection.ASC;
+    queryBuilder.orderBy(sortField, sortOrder as 'ASC' | 'DESC');
+
+    if (request.keyword) {
+      queryBuilder.andWhere(
+        `CONCAT(user.firstName, ' ', user.lastName) ILIKE :keyword`,
+        { keyword: `%${request.keyword}%` },
+      );
+    }
+
+    if (request.skip) {
+      queryBuilder.skip(request.skip);
+    }
+    if (request.take) {
+      queryBuilder.take(request.take);
+    }
+
+    const entities = await queryBuilder.getMany();
+
+    return entities.map((entity) => this._mapper.toDomain(entity));
+  }    
 }

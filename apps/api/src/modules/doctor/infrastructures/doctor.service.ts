@@ -4,7 +4,6 @@ import { IDoctorRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
-
 import { PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler } from '@app/core/exception';
 
@@ -22,39 +21,17 @@ export class DoctorService implements IDoctorService {
     request: GetListDoctorRequestDto
   ): Promise<PageDto<GetListDoctorResponseDto>> {
     try {
-      const { take, page, shiftId, department } = request;
+      const { take, page } = request;
 
-      const relations = shiftId 
-        ? ['user', 'workingTime', 'workingTime.shift']
-        : ['user'];
-
-      const result = await this.doctorRepository.findAll({
-        pagination: {
-          page,
-          limit: take,
-        },
-        relations,
-        where: {
-          department: department,
-        },
-      });
-
-      let filteredData = result.data;
-      if (shiftId) {
-        filteredData = result.data.filter(doctor => 
-          doctor.workingTime?.some(wt => wt.shift?.id === shiftId)
-        );
-      }
-
-      const total = shiftId ? filteredData.length : (result.meta?.total ?? 0);
+      const result = await this.doctorRepository.findListDoctors(request);
 
       const pageMeta = new PageMetaDto({
         take,
         page,
-        itemCount: total,
+        itemCount: result.length,
       });
 
-      const doctorDtos = filteredData.map(doctor =>
+      const doctorDtos = result.map(doctor =>
         {
           if (!doctor.user) {
             throw new Error(`User not found for doctor with id ${doctor.userId}`);
