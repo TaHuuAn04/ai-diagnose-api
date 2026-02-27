@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { AppointmentEntity } from '@app/core/domain/entities';
-import { SortDirection } from '@app/core/domain/enums';
+import { AppointmentStatus, SortDirection } from '@app/core/domain/enums';
 
 import { Appointment } from '../entities';
 
@@ -74,5 +74,24 @@ export class AppointmentRepository
     const entities = await queryBuilder.getMany();
 
     return entities.map((entity) => this._mapper.toDomain(entity));
+  }
+
+  async findUpcomingAppointment(
+    userId: string
+  ): Promise<AppointmentEntity | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.workingTime', 'workingTime')
+      .leftJoinAndSelect('workingTime.doctor', 'doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+      .leftJoinAndSelect('workingTime.shift', 'shift')
+      .where('appointment.patientId = :userId', { userId: userId })
+      .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.EXAMINED, AppointmentStatus.CANCELLED] })
+      .andWhere('shift.date + shift.to >= :date', { date: new Date() })
+      .orderBy('shift.date', 'ASC').addOrderBy('shift.from', 'ASC')
+
+    const entity = await queryBuilder.getOne();
+
+    return entity ? this._mapper.toDomain(entity) : null;
   }
 }

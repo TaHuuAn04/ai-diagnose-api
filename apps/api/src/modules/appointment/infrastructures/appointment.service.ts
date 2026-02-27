@@ -7,7 +7,7 @@ import { Transactional } from 'typeorm-transactional';
 
 import { AppointmentStatus, ImageReference, ImageType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
-import { ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { ExceptionHandler, InternalServerErrorException, NotFoundException } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
 import { UpdateOrDeleteResponseDto } from '../../../common/dtos';
@@ -32,8 +32,27 @@ export class AppointmentService implements IAppointmentService {
     request: GetListAppointmentDto
   ): Promise<PageDto<GetAppointmentResponseDto>> {
     try {
+      const results = await this.appointmentRepository.findListAppointments(userId, request);
 
-      const appointments = await this.appointmentRepository.findListAppointments(userId, request);
+      const examiningAppointment = results.filter(appointment => {
+        const shift = appointment.workingTime?.shift;
+        if (!shift?.date || !shift.from) {
+          return new InternalServerErrorException('Shift date or time is missing for appointment with id ' + appointment.id);
+        }
+        const appointmentDateTime = new Date(`${shift.date}T${shift.from}:00`);
+        return appointmentDateTime < new Date();
+      });
+
+      await Promise.all(examiningAppointment.map(async appointment => {
+        if (appointment.status === AppointmentStatus.SCHEDULED) {
+          appointment.status = AppointmentStatus.EXAMINING;
+        }
+        await this.appointmentRepository.update(appointment.id, appointment);
+      }));
+      
+      const appointments = (request.status === AppointmentStatus.SCHEDULED) 
+        ? results.filter(appointment => !examiningAppointment.some(examining => examining.id === appointment.id))
+        : results
 
       const pageMeta = new PageMetaDto({
         take: request.take,
@@ -96,6 +115,58 @@ export class AppointmentService implements IAppointmentService {
       return new PageDto<GetAppointmentResponseDto>(appointmentDtos, pageMeta);
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting list of appointments');
+    }
+  }
+
+  async getUpcomingAppointment(
+    userId: string
+  ): Promise<GetAppointmentResponseDto | null> {
+    try {
+      const appointment = await this.appointmentRepository.findUpcomingAppointment(userId);
+
+      if (!appointment) {
+        return null;
+      }
+      if (!appointment.workingTime) {
+          throw new NotFoundException(`WorkingTime not found for appointment with id ${appointment.id}`);
+      }
+      if (!appointment.workingTime.doctor) {
+        throw new NotFoundException(`Doctor not found for WorkingTime with id ${appointment.workingTime.doctorId}`);
+      }
+      if (!appointment.workingTime.shift) {
+        throw new NotFoundException(`Shift not found for WorkingTime with id ${appointment.workingTime.shiftId}`);
+      }
+      if (!appointment.workingTime.doctor.user) {
+        throw new NotFoundException(`User not found for Doctor with id ${appointment.workingTime.doctor.userId}`);
+      }
+      if (appointment.status === AppointmentStatus.SCHEDULED &&
+        new Date(`${appointment.workingTime.shift.date}T${appointment.workingTime.shift.from}:00`) <= new Date()
+      ) {
+        await this.appointmentRepository.update(appointment.id, { status: AppointmentStatus.EXAMINING });
+        appointment.status = AppointmentStatus.EXAMINING;
+      }
+
+      const appointmentInfo = plainToInstance(GetConsultingRoomDto, {
+        doctorId: appointment.workingTime.doctorId,
+        date: appointment.workingTime.shift.date,
+        timeStart: appointment.workingTime.shift.from,
+        timeEnd: appointment.workingTime.shift.to,
+      });
+      const roomNumber = await this.scheduleRepository.findRoomByDoctorAndShift(appointmentInfo);
+      if (!roomNumber) {
+        throw new NotFoundException(`Room not found for appointment with id ${appointment.id}`);
+      }
+
+      return plainToInstance(GetAppointmentResponseDto, {
+        ...appointment,
+        date: appointment.workingTime.shift.date,
+        from: appointment.workingTime.shift.from,
+        doctorName: `${appointment.workingTime.doctor.user.firstName} ${appointment.workingTime.doctor.user.lastName}`,
+        department: appointment.workingTime.doctor.department,
+        room: roomNumber
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error getting upcoming appointment');
     }
   }
 

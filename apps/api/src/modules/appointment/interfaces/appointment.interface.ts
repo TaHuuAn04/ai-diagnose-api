@@ -9,6 +9,8 @@ export interface IAppointmentService {
     request: GetListAppointmentDto,
   ): Promise<PageDto<GetAppointmentResponseDto>>;
 
+  getUpcomingAppointment(userId: string): Promise<GetAppointmentResponseDto | null>;
+
   cancelAppointment(appointmentId: string): Promise<UpdateOrDeleteResponseDto>; 
 
   updateAppointment(

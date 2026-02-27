@@ -36,7 +36,7 @@ export class GetAppointmentResponseDto {
 	room: string;
 
 	@Expose()
-	@ApiProperty({ example: AppointmentStatus.PENDING })
+	@ApiProperty({ example: AppointmentStatus.SCHEDULED })
 	status: AppointmentStatus;
 
 	@Expose()

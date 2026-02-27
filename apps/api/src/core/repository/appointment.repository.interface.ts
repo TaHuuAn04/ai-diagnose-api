@@ -9,4 +9,8 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
     userId: string,
     request: GetListAppointmentDto
   ): Promise<AppointmentEntity[]>;
+
+  findUpcomingAppointment(
+    userId: string
+  ): Promise<AppointmentEntity | null>;
 }

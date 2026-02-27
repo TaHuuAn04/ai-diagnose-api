@@ -13,7 +13,7 @@ import { RolesGuard } from "@app/core/guards";
 import { UpdateOrDeleteResponseDto } from "../../common/dtos";
 
 import { GetAppointmentResponseDto, GetListAppointmentDto, UpdateAppointmentDto } from "./dtos";
-import { CancelAppointmentCommand, GetListAppointmentQuery, UpdateAppointmentCommand } from "./use-cases";
+import { CancelAppointmentCommand, GetListAppointmentQuery, GetUpcomingAppointmentQuery, UpdateAppointmentCommand } from "./use-cases";
 
 @ApiTags('Appointments')
 @UseGuards(JwtAuthGuard)
@@ -47,6 +47,29 @@ export class AppointmentController {
       GetListAppointmentQuery, PageDto<GetAppointmentResponseDto>
     >(query);
 
+    return result;
+  }
+
+  @Get('/:userId/upcoming')
+  @Roles(UserRole.PATIENT)
+  @ApiOperation({ summary: "Get patient's upcoming appointment" })
+  @ApiParam({ name: 'userId', description: "ID of the patient (user)", type: String })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: GetAppointmentResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getUpcomingAppointment(
+    @Param('userId') userId: string,
+  ): Promise<GetAppointmentResponseDto | null> {
+    const query = new GetUpcomingAppointmentQuery(userId);  
+
+    const result = await this.queryBus.execute<
+      GetUpcomingAppointmentQuery, GetAppointmentResponseDto | null
+    >(query);
+    
     return result;
   }
 
