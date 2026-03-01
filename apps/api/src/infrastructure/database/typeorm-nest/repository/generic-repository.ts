@@ -202,6 +202,18 @@ export abstract class GenericRepository<
     await this._repository.softDelete(id)
   }
 
+  async softDeleteMany (conditions: WhereCondition<TDomainEntity>): Promise<number> {
+    const whereCondition = this._buildWhereCondition(conditions)
+    const deleteResult = await this._repository.softDelete(whereCondition)
+    return deleteResult.affected ?? 0
+  }
+
+  async restore(id: string): Promise<boolean> {
+    const result = await this._repository.restore(id)
+
+    return !!(result.affected && result.affected > 0)
+  }
+
   async updateMany(
     conditions: Record<string, unknown>,
     data: Partial<TDomainEntity>

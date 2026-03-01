@@ -165,6 +165,12 @@ export interface IGenericRepository<DomainEntity> {
 
   softDelete(id: string): Promise<void>;
 
+  softDeleteMany(conditions: WhereCondition<DomainEntity>): Promise<number>;
+
+  deleteMany(conditions: WhereCondition<DomainEntity>): Promise<number>;
+
+  restore(id: string): Promise<boolean>;
+
   updateMany(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     conditions: Record<string, any>,
