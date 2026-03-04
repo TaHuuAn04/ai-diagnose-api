@@ -1,14 +1,14 @@
-import { Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
 
 import { IsPublic } from "@app/core/decorators";
 import { PageDto } from "@app/core/dtos";
 
-import { GetListDoctorRequestDto, GetListDoctorResponseDto } from "./dtos";
-import { GetListDoctorQuery } from "./use-cases/get-list-doctor.use-case";
+import { GetDoctorResponseDto, GetListDoctorRequestDto } from "./dtos";
+import { GetDoctorInfoQuery, GetListDoctorQuery } from "./use-cases";
 
 @ApiTags('Doctors')
 @UseGuards(JwtAuthGuard)
@@ -26,14 +26,35 @@ export class DoctorController {
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async getListDoctors(
     @Query() request: GetListDoctorRequestDto
-  ): Promise<PageDto<GetListDoctorResponseDto>> {
+  ): Promise<PageDto<GetDoctorResponseDto>> {
     const query = new GetListDoctorQuery(request);
 
     const result = await this.queryBus.execute<
       GetListDoctorQuery,
-      PageDto<GetListDoctorResponseDto>
+      PageDto<GetDoctorResponseDto>
     >(query);
 
     return result;
   }
+
+  @Get('info/:doctorId')
+  @IsPublic()
+  @ApiOperation({ summary: 'Get doctor information by ID' })
+  @ApiParam({ name: 'doctorId', type: 'string', description: 'ID of the doctor' })
+  @ApiResponse({ status: 200, description: 'Doctor information retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'Doctor not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async getDoctorInfo(
+    @Param('doctorId') doctorId: string
+  ): Promise<GetDoctorResponseDto> {
+    const query = new GetDoctorInfoQuery(doctorId);
+
+    const result = await this.queryBus.execute<
+      GetDoctorInfoQuery,
+      GetDoctorResponseDto
+    >(query);
+
+    return result;
+  }
+
 }

@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { UserInfoDto } from '../../../user/dtos';
 
 @Exclude()
-export class GetListDoctorResponseDto extends UserInfoDto {
+export class GetDoctorResponseDto extends UserInfoDto {
   @Expose()
   doctorCode: string;
 

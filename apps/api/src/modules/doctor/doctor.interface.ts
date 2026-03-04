@@ -1,7 +1,9 @@
 import { PageDto } from '@app/core/dtos';
 
-import { GetListDoctorRequestDto, GetListDoctorResponseDto } from './dtos';
+import { GetDoctorResponseDto, GetListDoctorRequestDto } from './dtos';
 
 export interface IDoctorService {
-  getListDoctors(request: GetListDoctorRequestDto): Promise<PageDto<GetListDoctorResponseDto>>;
+  getListDoctors(request: GetListDoctorRequestDto): Promise<PageDto<GetDoctorResponseDto>>;
+
+  getDoctorInfo(doctorId: string): Promise<GetDoctorResponseDto>;
 }
