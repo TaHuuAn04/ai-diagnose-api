@@ -1,11 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { IAppointmentRepository, IImageRepository, IShiftRepository, IWorkingTimeRepository } from '@api/core/repository';
+import {
+  IAppointmentRepository,
+  IImageRepository,
+  IPatientRepository,
+  IShiftRepository,
+  IWorkingTimeRepository,
+} from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { AppointmentStatus, ImageReference, ImageType, WorkingTimeStatus } from '@app/core/domain/enums';
+import { AppointmentStatus, ImageReference, ImageType, ShiftStatus, WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
@@ -31,6 +37,9 @@ export class ShiftService implements IShiftService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
     private readonly imageRepository: IImageRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.PATIENT_REPOSITORY)
+    private readonly patientRepository: IPatientRepository,
   ) {}
 
   async getListShifts(
@@ -105,6 +114,24 @@ export class ShiftService implements IShiftService {
   async bookShift(bookShiftDto: BookShiftRequestDto): Promise<BookShiftResponseDto> {
     try {
       const { doctorId, shiftId, patientId, images, description } = bookShiftDto;
+
+      // Validate if the patient has fully completed their profile
+      const patientInfo = await this.patientRepository.findOne({
+        where: { userId: patientId },
+        relations: ['user'],
+      });
+      if (!patientInfo || patientInfo.user === null) {
+        throw new BadRequestException('Patient not found');
+      }
+      if (
+        !patientInfo.user?.dateOfBirth ||
+        !patientInfo.citizenCode ||
+        !patientInfo.address ||
+        !patientInfo.folk ||
+        !patientInfo.medicalInsurance
+      ) {
+        throw new BadRequestException('Patient profile is not fully completed. Please complete your profile before booking a shift.');
+      }
 
       const workingTime = await this.workingTimeRepository.findOne({
         where: { 
