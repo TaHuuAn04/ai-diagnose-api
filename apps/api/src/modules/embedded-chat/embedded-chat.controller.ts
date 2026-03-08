@@ -1,6 +1,8 @@
 import { Readable } from 'stream';
 
+import { HttpService } from '@nestjs/axios';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,14 +11,19 @@ import {
   Query,
   Res,
   UnauthorizedException,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiHeader, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@api/guards';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
+import { memoryStorage } from 'multer';
 
 import { ApiResponseWrapper, CurrentUser, IsPublic } from '@app/core/decorators';
 import { UserEntity } from '@app/core/domain/entities';
@@ -40,6 +47,7 @@ import {
   GetEmbeddedChatConversationQuery,
   GetEmbeddedChatMessagesByConversationIdQuery,
   GetEmbeddedChatPassportCommand,
+  UploadFileChatCommand,
 } from './use-cases';
 
 @UseGuards(JwtAuthGuard)
@@ -49,6 +57,8 @@ export class EmbeddedChatController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post('chat-messages-block')
@@ -165,6 +175,25 @@ export class EmbeddedChatController {
     return plainToInstance(GetPassportResponseDto, result);
   }
 
+  @IsPublic()
+  @ApiSecurity('third-party-token')
+  @Post('upload-file')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('Authorization') authorization: string,
+  ) {
+    if (!authorization) {
+      throw new UnauthorizedException();
+    }
+
+    const token = authorization.split(' ')[1];
+    
+    return this.commandBus.execute(
+      new UploadFileChatCommand({ file, token }),
+    );
+  }
+
   
 
   @IsPublic()
@@ -195,9 +224,56 @@ export class EmbeddedChatController {
     );
 
     return plainToInstance(GetEmbeddedChatMessagesResponseDto, {
-      limit: dto.limit || 20,
-      hasMore: result.hasMore || false,
+      limit: dto.limit ?? 20,
+      hasMore: result.hasMore ?? false,
       data: result.data,
     });
+  }
+
+  @IsPublic()
+  @Get('image-proxy')
+  async proxyImage(
+    @Query('url') url: string,
+    @Query('token') token: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    if (!url) {
+      throw new BadRequestException('Missing url parameter');
+    }
+
+    const difyBaseUrl = this.configService.get<string>('DIFY_AI_API_URL') ?? 'https://api.dify.ai';
+    let difyHostname: string;
+    try {
+      difyHostname = new URL(difyBaseUrl).hostname;
+    } catch {
+      throw new BadRequestException('Invalid proxy configuration');
+    }
+
+    const absoluteUrl = url.startsWith('/') ? `${difyBaseUrl}${url}` : url;
+
+    let targetHostname: string;
+    try {
+      targetHostname = new URL(absoluteUrl).hostname;
+    } catch {
+      throw new BadRequestException('Invalid url parameter');
+    }
+
+    if (targetHostname !== difyHostname) {
+      throw new BadRequestException('URL not allowed');
+    }
+
+    const forwardHeaders: Record<string, string> = {};
+    if (token) {
+      forwardHeaders.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await this.httpService.axiosRef.get(absoluteUrl, {
+      responseType: 'stream',
+      headers: forwardHeaders,
+    });
+
+    res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    (response.data as Readable).pipe(res);
   }
 }

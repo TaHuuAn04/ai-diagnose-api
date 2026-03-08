@@ -29,7 +29,8 @@ import {
   LoginDifyAiCommandHandler,
   LoginWithoutPasswordDifyAiCommandHandler,
   PublishWorkflowDifyAiCommandHandler,
-  UpdateAppModelConfigDifyAiCommandHandler 
+  UpdateAppModelConfigDifyAiCommandHandler,
+  UploadFileChatDifyAiCommandHandler 
 } from './use-cases';
 import {
   CreateEmptyKnowledgeCommandHandler,
@@ -62,6 +63,7 @@ const handlers = [
   UpdateAppModelConfigDifyAiCommandHandler,
   ChatMessageBlockDifyAiCommandHandler,
   ChatMessageStreamDifyAiCommandHandler,
+  UploadFileChatDifyAiCommandHandler,
   LoginWithoutPasswordDifyAiCommandHandler,
   GetAppByIdDifyAiCommandHandler,
   GetConversationDifyAiQueryHandler,

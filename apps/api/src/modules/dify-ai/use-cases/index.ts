@@ -15,3 +15,4 @@ export * from './embedded-chat/get-passport.use-case';
 export * from './embedded-chat/get-messages-by-conversation-id.use-case';
 export * from './embedded-chat/get-messages-by-conversation-id-pagination.use-case';
 export * from './embedded-chat/get-conversation-by-id.use-case';
+export * from './embedded-chat/upload-file.use-case';

@@ -11,6 +11,7 @@ import { HttpMethod } from '@app/core/domain/enums';
 import { HttpFetchDto } from '@app/core/http/http-fetch.dto';
 
 import { BlockingModeResponseDto } from '..';
+import { ChatFileDto } from '../../../embedded-chat/dtos';
 
 export const DEFAULT_SEND_CHAT_MESSAGE = {
   inputs: {},
@@ -44,11 +45,7 @@ export class ChatMessageDifyAiBodyDto {
 
   @IsArray()
   @IsOptional()
-  files?: {
-    type: string;
-    transfer_method: 'remote_url';
-    url: string;
-  }[] = [];
+  files?: ChatFileDto[] = [];
 
   // @IsString()
   // @IsNotEmpty()
