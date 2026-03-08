@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 
@@ -12,6 +13,7 @@ import {
   GetEmbeddedChatConversationQueryHandler,
   GetEmbeddedChatMessagesByConversationIdQueryHandler,
   GetEmbeddedChatPassportCommandHandler,
+  UploadFileChatCommandHandler,
 } from './use-cases';
 
 const handlers = [
@@ -20,6 +22,7 @@ const handlers = [
   ChatMessageStreamCommandHandler,
   GetEmbeddedChatPassportCommandHandler,
   GetEmbeddedChatConversationQueryHandler,
+  UploadFileChatCommandHandler,
 ];
 
 const adapters = [
@@ -30,7 +33,7 @@ const adapters = [
 ];
 
 @Module({
-  imports: [CqrsModule, DifyAiModule],
+  imports: [CqrsModule, DifyAiModule, HttpModule],
   controllers: [EmbeddedChatController],
   providers: [...handlers, ...adapters],
 })

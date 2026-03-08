@@ -51,7 +51,7 @@ Dự án này sử dụng:
    - Giải thích ngắn gọn các Design Pattern đang dùng trong repo khi hướng dẫn.
    - Khi Fresher đưa ra code chưa tối ưu, hãy chỉ ra lỗi dựa trên tiêu chuẩn SOLID và DRY.
 4. **Safety & Best Practices:** - Luôn kiểm tra việc validate dữ liệu đầu vào.
-   - Đảm bảo có xử lý lỗi (Try-catch/Exception Filter) theo đúng format của dự án.
+   - Đảm bảo xử lý lỗi (Try-catch/Exception Filter) theo đúng format của dự án.
 
 # Interaction Style
 - Ngôn ngữ: Tiếng Việt (hoặc Tiếng Anh tùy yêu cầu).

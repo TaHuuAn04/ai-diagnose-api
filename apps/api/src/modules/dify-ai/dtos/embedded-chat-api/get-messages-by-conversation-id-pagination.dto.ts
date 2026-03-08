@@ -12,6 +12,13 @@ export class GetMessagesByConversationIdPaginationDifyAiInputDto {
   token: string;
 }
 
+export class MessageFilePaginationDifyAiDto {
+  id: string;
+  type: string;
+  url: string;
+  belongs_to: string;
+}
+
 export class MessageItemPaginationDifyAiDto {
   id: string;
   conversation_id: string;
@@ -19,6 +26,7 @@ export class MessageItemPaginationDifyAiDto {
   query: string;
   answer: string;
   created_at: number;
+  message_files: MessageFilePaginationDifyAiDto[];
 }
 
 export class GetMessagesByConversationIdPaginationDifyAiResponseDto {

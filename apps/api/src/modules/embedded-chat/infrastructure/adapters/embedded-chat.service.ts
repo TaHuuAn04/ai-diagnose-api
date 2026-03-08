@@ -6,15 +6,18 @@ import { CommandBus } from '@nestjs/cqrs';
 import { plainToInstance } from 'class-transformer';
 
 import {
+  ChatMessageDifyAiBodyDto,
   ChatMessageDifyAiInputDto,
   ChatMessageDifyAiResponseDto,
   GetPassportDifyAiInputDto,
   GetPassportDifyAiResponseDto,
+  UploadFileChatDifyAiResponseDto,
 } from '../../../dify-ai/dtos';
 import {
   ChatMessageBlockDifyAiCommand,
   ChatMessageStreamDifyAiCommand,
   GetPassportDifyAiCommand,
+  UploadFileChatDifyAiCommand,
 } from '../../../dify-ai/use-cases';
 import {
   ChatMessageBlockInputDto,
@@ -22,6 +25,7 @@ import {
   ChatMessageStreamInputDto,
   GetPassportInputDto,
   GetPassportResponseDto,
+  UploadFileChatInputDto,
 } from '../../dtos';
 import { IEmbeddedChatService } from '../../use-cases/adapters/embedded-chat.service.interface';
 
@@ -78,7 +82,7 @@ export class EmbeddedChatService implements IEmbeddedChatService {
   }
 
   async chatMessageStream(input: ChatMessageStreamInputDto): Promise<Readable> {
-    const { token, query, conversation_id, parent_message_id } = input;
+    const { token, query, conversation_id, parent_message_id, files } = input;
     
 
     const commandInput: ChatMessageDifyAiInputDto = {
@@ -89,7 +93,7 @@ export class EmbeddedChatService implements IEmbeddedChatService {
         response_mode: 'streaming',
         query,
         ...(conversation_id ? { conversation_id } : {}),
-        files: [],
+        files: (files ?? []) as ChatMessageDifyAiBodyDto['files'],
         ...(parent_message_id ? { parent_message_id } : {}),
       },
       token,
@@ -99,6 +103,15 @@ export class EmbeddedChatService implements IEmbeddedChatService {
       ChatMessageStreamDifyAiCommand,
       Readable
     >(new ChatMessageStreamDifyAiCommand(commandInput));
+
+    return result;
+  }
+
+  async uploadFile(input: UploadFileChatInputDto): Promise<UploadFileChatDifyAiResponseDto> {
+    const result = await this.commandBus.execute<
+      UploadFileChatDifyAiCommand,
+      UploadFileChatDifyAiResponseDto
+    >(new UploadFileChatDifyAiCommand(input));
 
     return result;
   }

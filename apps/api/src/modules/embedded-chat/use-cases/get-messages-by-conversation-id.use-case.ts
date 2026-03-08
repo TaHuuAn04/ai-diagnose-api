@@ -54,6 +54,9 @@ export class GetEmbeddedChatMessagesByConversationIdQueryHandler
             id: uuidv5(message.id, uuidv5.URL),
             message: message.query,
             type: 'sent',
+            imageUrls: (message.message_files)
+              .filter((f) => f.belongs_to === 'user' && f.type === 'image')
+              .map((f) => f.url),
           },
           {
             id: message.id,
@@ -70,8 +73,7 @@ export class GetEmbeddedChatMessagesByConversationIdQueryHandler
       }
 
       throw new AiInternalServerError(
-        (error.message ||
-          'Error fetching messages by conversation ID') as string,
+        (error.message ?? 'Error fetching messages by conversation ID') as string,
       );
     }
   }

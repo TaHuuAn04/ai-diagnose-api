@@ -27,3 +27,4 @@ export * from './embedded-chat-api/get-messages-by-conversation-id-pagination.dt
 
 export * from './console-api/conversation/get-conversation-history-messages.dto';
 export * from './embedded-chat-api/get-conversation-by-id.dto';
+export * from './embedded-chat-api/upload-file.dto';

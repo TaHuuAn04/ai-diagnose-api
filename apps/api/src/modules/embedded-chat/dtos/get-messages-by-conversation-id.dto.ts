@@ -30,6 +30,13 @@ export class EmbeddedChatMessageItemDto {
   })
   @Expose()
   type: 'received' | 'sent';
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Image URLs attached to this message',
+  })
+  @Expose()
+  imageUrls?: string[];
 }
 
 export class GetEmbeddedChatMessagesByConversationIdQueryDto {
