@@ -19,6 +19,12 @@ export class Consultation extends BaseEntity {
   @Column('uuid')
   doctorId: string;
 
+  @Column({ type: 'timetz', nullable: true })
+  startTime?: string | null;
+
+  @Column({ type: 'timetz', nullable: true })
+  endTime?: string | null;
+
   @OneToOne(() => Appointment)
   @JoinColumn({ name: 'appointment_id' }) 
   appointment?: Appointment | null;

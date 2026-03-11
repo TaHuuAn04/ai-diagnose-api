@@ -7,7 +7,7 @@ import { Transactional } from 'typeorm-transactional';
 
 import { AppointmentStatus, ImageReference, ImageType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
-import { ExceptionHandler, InternalServerErrorException, NotFoundException } from '@app/core/exception';
+import { ExceptionHandler, NotFoundException } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
 import { UpdateOrDeleteResponseDto } from '../../../common/dtos';
@@ -32,32 +32,13 @@ export class AppointmentService implements IAppointmentService {
     request: GetListAppointmentDto
   ): Promise<PageDto<GetAppointmentResponseDto>> {
     try {
-      const results = await this.appointmentRepository.findListAppointments(userId, request);
-
-      const examiningAppointment = results.filter(appointment => {
-        const shift = appointment.workingTime?.shift;
-        if (!shift?.date || !shift.from) {
-          return new InternalServerErrorException('Shift date or time is missing for appointment with id ' + appointment.id);
-        }
-        const appointmentDateTime = new Date(`${shift.date}T${shift.from}:00`);
-        return appointmentDateTime < new Date();
-      });
-
-      await Promise.all(examiningAppointment.map(async appointment => {
-        if (appointment.status === AppointmentStatus.SCHEDULED) {
-          appointment.status = AppointmentStatus.EXAMINING;
-        }
-        await this.appointmentRepository.update(appointment.id, appointment);
-      }));
-      
-      const appointments = (request.status === AppointmentStatus.SCHEDULED) 
-        ? results.filter(appointment => !examiningAppointment.some(examining => examining.id === appointment.id))
-        : results
+      const paginatedResult = await this.appointmentRepository.findListAppointments(userId, request);
+      const appointments = paginatedResult.data;
 
       const pageMeta = new PageMetaDto({
         take: request.take,
         page: request.page,
-        itemCount: appointments.length,
+        itemCount: paginatedResult.total,
       });
 
       const appointmentDtos = await Promise.all(appointments.map(async appointment => {
@@ -139,13 +120,7 @@ export class AppointmentService implements IAppointmentService {
       if (!appointment.workingTime.doctor.user) {
         throw new NotFoundException(`User not found for Doctor with id ${appointment.workingTime.doctor.userId}`);
       }
-      if (appointment.status === AppointmentStatus.SCHEDULED &&
-        new Date(`${appointment.workingTime.shift.date}T${appointment.workingTime.shift.from}:00`) <= new Date()
-      ) {
-        await this.appointmentRepository.update(appointment.id, { status: AppointmentStatus.EXAMINING });
-        appointment.status = AppointmentStatus.EXAMINING;
-      }
-
+      
       const appointmentInfo = plainToInstance(GetConsultingRoomDto, {
         doctorId: appointment.workingTime.doctorId,
         date: appointment.workingTime.shift.date,

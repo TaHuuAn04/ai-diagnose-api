@@ -1,4 +1,5 @@
 import { AppointmentEntity } from '@app/core/domain/entities';
+import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListAppointmentDto } from '../../modules/appointment/dtos';
 
@@ -8,7 +9,7 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
   findListAppointments(
     userId: string,
     request: GetListAppointmentDto
-  ): Promise<AppointmentEntity[]>;
+  ): Promise<PaginatedResult<AppointmentEntity>>;
 
   findUpcomingAppointment(
     userId: string
