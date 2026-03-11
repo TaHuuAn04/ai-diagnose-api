@@ -23,12 +23,13 @@ export class DoctorService implements IDoctorService {
     try {
       const { take, page } = request;
 
-      const result = await this.doctorRepository.findListDoctors(request);
+      const paginatedResult = await this.doctorRepository.findListDoctors(request);
+      const result = paginatedResult.data;
 
       const pageMeta = new PageMetaDto({
         take,
         page,
-        itemCount: result.length,
+        itemCount: paginatedResult.total,
       });
 
       const doctorDtos = result.map(doctor =>

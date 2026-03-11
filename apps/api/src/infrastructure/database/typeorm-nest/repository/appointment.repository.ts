@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 
 import { AppointmentEntity } from '@app/core/domain/entities';
 import { AppointmentStatus, SortDirection } from '@app/core/domain/enums';
+import { PaginatedResult } from '@app/core/dtos';
 
 import { Appointment } from '../entities';
 
@@ -35,7 +36,7 @@ export class AppointmentRepository
   async findListAppointments(
     userId: string,
     request: GetListAppointmentDto
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<PaginatedResult<AppointmentEntity>> {
     const queryBuilder = this.repository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.workingTime', 'workingTime')
@@ -71,9 +72,14 @@ export class AppointmentRepository
       queryBuilder.take(request.take);
     }
 
-    const entities = await queryBuilder.getMany();
+    const [ entities, total ] = await queryBuilder.getManyAndCount();
 
-    return entities.map((entity) => this._mapper.toDomain(entity));
+    const appointments = entities.map(entity => this._mapper.toDomain(entity));
+
+    return plainToInstance(PaginatedResult<AppointmentEntity>, {
+      data: appointments,
+      total
+    });
   }
 
   async findUpcomingAppointment(

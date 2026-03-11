@@ -12,6 +12,10 @@ export class ConsultationEntity extends BaseEntity {
 
   doctorId: string;
 
+  startTime: string | null;
+
+  endTime: string | null;
+
   appointment?: AppointmentEntity | null;
 
   patient?: PatientEntity | null;

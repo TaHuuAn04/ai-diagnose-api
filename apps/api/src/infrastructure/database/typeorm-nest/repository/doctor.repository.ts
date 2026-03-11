@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 
 import { DoctorEntity } from '@app/core/domain/entities';
 import { SortDirection } from '@app/core/domain/enums';
+import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListDoctorRequestDto } from '../../../../modules/doctor/dtos';
 import { Doctor } from '../entities';
@@ -34,7 +35,7 @@ export class DoctorRepository
 
   async findListDoctors(
     request: GetListDoctorRequestDto
-  ): Promise<DoctorEntity[]> {
+  ): Promise<PaginatedResult<DoctorEntity>> {
     const queryBuilder = this.repository
       .createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.user', 'user')
@@ -68,8 +69,13 @@ export class DoctorRepository
       queryBuilder.take(request.take);
     }
 
-    const entities = await queryBuilder.getMany();
+    const [ entities, total] = await queryBuilder.getManyAndCount();
+    
+    const result = entities.map((entity) => this._mapper.toDomain(entity));
 
-    return entities.map((entity) => this._mapper.toDomain(entity));
+    return plainToInstance(PaginatedResult<DoctorEntity>, {
+      data: result,
+      total,
+    });
   }    
 }

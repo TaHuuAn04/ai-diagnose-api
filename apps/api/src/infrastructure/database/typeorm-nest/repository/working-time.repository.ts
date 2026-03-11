@@ -7,6 +7,7 @@ import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
 
 import { WorkingTimeEntity } from "@app/core/domain/entities";
+import { SortDirection } from "@app/core/domain/enums";
 
 import { WorkingTime } from "../entities";
 
@@ -52,6 +53,11 @@ export class WorkingTimeRepository
     if (input.status) {
       queryBuilder.andWhere('workingTime.status = :status', { status: input.status });
     }
+
+    const sortField = input.sort ? `shift.${input.sort}` : 'shift.date';
+    const sortDirection = input.sortDirection ?? SortDirection.ASC;
+    queryBuilder.orderBy(sortField, sortDirection)
+      .addOrderBy('shift.from', 'ASC');
 
     if (input.sort && input.sortDirection) {
       queryBuilder.orderBy(`shift.${input.sort}`, input.sortDirection)
