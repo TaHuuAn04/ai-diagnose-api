@@ -4,11 +4,14 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@ne
 
 import { JwtAuthGuard } from "@api/guards";
 
-import { IsPublic } from "@app/core/decorators";
+import { RolesGuard } from "@app/core";
+import { CurrentUser, IsPublic, Roles } from "@app/core/decorators";
+import { UserEntity } from "@app/core/domain/entities";
+import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 
-import { GetDoctorResponseDto, GetListDoctorRequestDto } from "./dtos";
-import { GetDoctorInfoQuery, GetListDoctorQuery } from "./use-cases";
+import { GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from "./dtos";
+import { GetDoctorInfoQuery, GetListDoctorQuery, GetPersonalAppointmentsQuery } from "./use-cases";
 
 @ApiTags('Doctors')
 @UseGuards(JwtAuthGuard)
@@ -57,4 +60,32 @@ export class DoctorController {
     return result;
   }
 
+  @Get('personal-appointment')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get doctor personal appointments' })
+  @ApiResponse({
+    status: 200,
+    description: "Doctor personal appointments retrieved successfully.",
+    type: GetPersonalAppointmentsRequestDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getPersonalAppointments(
+    @CurrentUser() user: UserEntity,
+    @Query() input: GetPersonalAppointmentsRequestDto
+  ): Promise<PageDto<GetPersonalAppointmentsResponseDto>> {
+    // Implementation will go here
+    const query = new GetPersonalAppointmentsQuery(
+      user.id,
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      GetPersonalAppointmentsQuery,
+      PageDto<GetPersonalAppointmentsResponseDto>
+    >(query);
+    
+    return result;
+  }
 }
