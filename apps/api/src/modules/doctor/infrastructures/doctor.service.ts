@@ -1,20 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { IDoctorRepository } from '@api/core/repository';
+import { IConsultationRepository, IDoctorRepository, IImageRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
+import { ImageReference, SortDirection } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
-import { ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { IDoctorService } from '../doctor.interface';
-import { GetDoctorResponseDto, GetListDoctorRequestDto } from '../dtos';
+import { GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from '../dtos';
+
 
 @Injectable()
 export class DoctorService implements IDoctorService {
   constructor(
     @Inject(REPOSITORY_INJECTION_TOKEN.DOCTOR_REPOSITORY)
-    private readonly doctorRepository: IDoctorRepository
+    private readonly doctorRepository: IDoctorRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.WORKING_TIME_REPOSITORY)
+    private readonly workingTimeRepository: IWorkingTimeRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.CONSULTATION_REPOSITORY)
+    private readonly consultationRepository: IConsultationRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
+    private readonly imageRepository: IImageRepository,
   ) {}
 
   async getListDoctors(
@@ -90,6 +101,88 @@ export class DoctorService implements IDoctorService {
       });
     } catch (error) { 
       ExceptionHandler.handleErrorException(error, 'Error getting doctor info');
+    }
+  }
+
+  async getPersonalAppointments(
+    doctorId: string,
+    request: GetPersonalAppointmentsRequestDto
+  ): Promise<PageDto<GetPersonalAppointmentsResponseDto>> {
+    try {
+      if (!request.startDate || !request.endDate || request.startDate > request.endDate) {
+        throw new BadRequestException('Invalid date range: startDate must be before endDate');
+      }
+
+      if (request.from && request.to && request.from > request.to) {
+        throw new BadRequestException('Invalid time range: from must be before to');
+      }
+
+      const result = await this.workingTimeRepository.findDoctorAppointments(doctorId, request);
+      const appointments = result.data;
+
+      const pageMeta = new PageMetaDto({
+        page: request.page,
+        take: request.take,
+        itemCount: result.total,
+      });
+
+      const appointmentDtos = await Promise.all(appointments.map(async appointment => {
+        if (!appointment.appointment) {
+          throw new NotFoundException(`Appointment not found`);
+        }
+
+        if (!appointment.appointment.patient) {
+          throw new NotFoundException(`Patient not found for appointment with id ${appointment.appointment.id}`);
+        }
+
+        if (!appointment.appointment.patient.user) {
+          throw new NotFoundException(`User infomation is not found for patient with id ${appointment.appointment.patientId}`);
+        }
+
+        const patientConsultation =  await this.consultationRepository.findOne({
+          where: {
+            patientId: appointment.appointment.patientId,
+          },
+          sort: {
+            sortBy: 'createdAt',
+            sortOrder: SortDirection.DESC
+          },
+          relations: ['diagnosisResult', 'diagnosisResult.diseases']
+        });
+
+        const diseases = patientConsultation ? patientConsultation.diagnosisResult?.diseases?.map((disease: { name: string }) => disease.name)
+                                             : [];
+        
+        
+        const imageEntities = await this.imageRepository.findAll({
+          where: {
+            referenceId: appointment.appointment.id,
+            referenceType: ImageReference.APPOINTMENT,
+          },
+          sort: { 
+            sortBy: 'order',
+            sortOrder: SortDirection.DESC
+          },
+        });  
+
+        return plainToInstance(GetPersonalAppointmentsResponseDto, {
+          date: appointment.shift?.date,
+          from: appointment.shift?.from,
+          to: appointment.shift?.to,
+          patientName: appointment.appointment.patient.user.firstName + ' ' + appointment.appointment.patient.user.lastName,
+          dateOfBirth: appointment.appointment.patient.user.dateOfBirth,
+          phoneNumber: appointment.appointment.patient.user.phoneNumber,
+          gender: appointment.appointment.patient.user.gender,
+          description: appointment.appointment.description,
+          previousDiseases: diseases,
+          status: appointment.appointment.status,
+          images: imageEntities
+        });
+      }));
+
+      return new PageDto<GetPersonalAppointmentsResponseDto>(appointmentDtos, pageMeta);
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve information.');
     }
   }
 }

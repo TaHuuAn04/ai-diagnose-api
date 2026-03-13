@@ -5,11 +5,12 @@ import { INJECTION_TOKEN } from "@api/enums";
 
 import { DoctorController } from "./doctor.controller";
 import { DoctorService } from "./infrastructures";
-import { GetDoctorInfoQueryHandler, GetListDoctorQueryHandler } from "./use-cases";
+import { GetDoctorInfoQueryHandler, GetListDoctorQueryHandler, GetPersonalAppointmentsQueryHandler } from "./use-cases";
 
 const Handlers = [
   GetListDoctorQueryHandler,
-  GetDoctorInfoQueryHandler
+  GetDoctorInfoQueryHandler,
+  GetPersonalAppointmentsQueryHandler
 ];
 
 const Adapters = [

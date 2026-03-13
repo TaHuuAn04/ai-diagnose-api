@@ -7,14 +7,16 @@ import { JwtAuthGuard } from "@api/guards";
 import { CurrentUser, Roles } from "@app/core/decorators";
 import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
+import { RolesGuard } from "@app/core/guards";
 
 import { PatientInfoDto, UpdatePatientDto } from "./dtos";
 import { GetInfoQuery, UpdatePatientCommand } from "./use-cases";
 
 
 @ApiTags('Patients')
-@Roles(UserRole.PATIENT)
 @UseGuards(JwtAuthGuard)
+@UseGuards(RolesGuard)
+@Roles(UserRole.PATIENT)
 @ApiBearerAuth('access-token')
 @Controller("patients")
 export class PatientController {
