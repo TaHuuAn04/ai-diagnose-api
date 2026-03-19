@@ -3,7 +3,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   IConsultationRepository,
   IImageRepository,
-  IResultDiseaseRepository,
   IScheduleRepository,
 } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
@@ -13,7 +12,6 @@ import { ImageReference, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { ExceptionHandler, NotFoundException } from '@app/core/exception';
 
-import { GetConsultingRoomDto } from '../../appointment/dtos';
 import { GetConsultationHistoryDto, GetConsultationResponseDto } from '../dtos';
 import { IConsultationService } from '../interfaces';
 
@@ -29,9 +27,6 @@ export class ConsultationService implements IConsultationService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
     private readonly imageRepository: IImageRepository,
-
-    @Inject(REPOSITORY_INJECTION_TOKEN.RESULT_DISEASE_REPOSITORY)
-    private readonly resultDiseaseRepository: IResultDiseaseRepository,
   ) { }
 
   async getConsultationHistory(
@@ -40,25 +35,19 @@ export class ConsultationService implements IConsultationService {
   ): Promise<PageDto<GetConsultationResponseDto>> {
     try {
       // Get consultations information 
-      const { consultations, total } = await this.consultationRepository.findConsultationHistory(patientId, request);
+      const results = await this.consultationRepository.findConsultationHistory(patientId, request);
+      const consultations = results.data;
 
       // Create page metadata
       const pageMeta = new PageMetaDto({
         page: request.page,
         take: request.take,
-        itemCount: total
+        itemCount: results.total,
       });
 
       const consultationHistoryDtos = await Promise.all(consultations.map(async (consultation) => {
-        const appointmentShortInfo = plainToInstance(GetConsultingRoomDto, {
-          doctorId: consultation.doctorId,
-          date: consultation.appointment?.workingTime?.shift?.date,
-          timeStart: consultation.appointment?.workingTime?.shift?.from,
-          timeEnd: consultation.appointment?.workingTime?.shift?.to,
-        });
-        const roomNumber = await this.scheduleRepository.findRoomByDoctorAndShift(appointmentShortInfo);
-        if (!roomNumber) {
-          throw new NotFoundException(`Room not found for appointment in consultation with id ${consultation.id}`);
+        if (!consultation.appointment || consultation.appointment.metadata === null) {
+          throw new NotFoundException('Appointment information is missing for consultation ID: ' + consultation.id);
         }
 
         // Get images for the diagnosis result
@@ -75,12 +64,12 @@ export class ConsultationService implements IConsultationService {
 
         const consultationMapping = {
           id: consultation.id,
-          doctorName: `${consultation.doctor?.user?.firstName ?? ''} ${consultation.doctor?.user?.lastName ?? ''}`,
-          department: consultation.doctor?.department,
-          date: consultation.appointment?.workingTime?.shift?.date,
-          from: consultation.appointment?.workingTime?.shift?.from,
-          to: consultation.appointment?.workingTime?.shift?.to,
-          room: roomNumber,
+          doctorName: consultation.appointment.metadata?.doctorName,
+          department: consultation.appointment.metadata?.department,
+          date: consultation.appointment.metadata?.date,
+          from: consultation.appointment.metadata?.from,
+          to: consultation.appointment.metadata?.to,
+          room: consultation.appointment.metadata?.room,
           diseases: consultation.diagnosisResult?.diseases?.map((disease: { name: string }) => disease.name) ?? [],
           advices: consultation.diagnosisResult?.advices ?? '',
           prescription: consultation.diagnosisResult?.prescription ?? '',

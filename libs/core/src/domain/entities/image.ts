@@ -7,6 +7,8 @@ export class ImageEntity extends BaseEntity {
 
   referenceType: ImageReference;
 
+  fileName: string;
+
   dataUrl?: string | null;
 
   description?: string | null;

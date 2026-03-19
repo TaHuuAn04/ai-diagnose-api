@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import {
   IAppointmentRepository,
+  IDoctorRepository,
   IImageRepository,
   IPatientRepository,
+  IScheduleRepository,
   IShiftRepository,
   IWorkingTimeRepository,
 } from '@api/core/repository';
@@ -11,11 +13,13 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { AppointmentStatus, ImageReference, ImageType, ShiftStatus, WorkingTimeStatus } from '@app/core/domain/enums';
+import { AppointmentMetadata } from '@app/core/domain/entities';
+import { AppointmentStatus, ImageReference, ImageType, WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
-import { BadRequestException, ExceptionHandler } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
+import { GetConsultingRoomDto } from '../../appointment/dtos';
 import { BookShiftRequestDto } from '../dtos/requests/book-shift.request.dto';
 import { GetShiftsByDoctorIdRequestDto } from '../dtos/requests/get-available-shifts.request.dto';
 import { GetListShiftResponseDto } from '../dtos/response';
@@ -35,11 +39,17 @@ export class ShiftService implements IShiftService {
     @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
     private readonly appointmentRepository: IAppointmentRepository,
 
+    @Inject(REPOSITORY_INJECTION_TOKEN.SCHEDULE_REPOSITORY)
+    private readonly scheduleRepository: IScheduleRepository,
+
     @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
     private readonly imageRepository: IImageRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.PATIENT_REPOSITORY)
     private readonly patientRepository: IPatientRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.DOCTOR_REPOSITORY)
+    private readonly doctorRepository: IDoctorRepository,
   ) {}
 
   async getListShifts(
@@ -121,7 +131,7 @@ export class ShiftService implements IShiftService {
         relations: ['user'],
       });
       if (!patientInfo || patientInfo.user === null) {
-        throw new BadRequestException('Patient not found');
+        throw new NotFoundException('Patient not found for ' + patientId);
       }
       if (
         !patientInfo.user?.dateOfBirth ||
@@ -148,9 +158,45 @@ export class ShiftService implements IShiftService {
         throw new BadRequestException('This shift has already been booked');
       }
 
+      const doctorInfo = await this.doctorRepository.findOne({
+        where: { userId: doctorId },
+        relations: ['user'],
+      });
+      if (!doctorInfo || doctorInfo.user === null) {
+        throw new NotFoundException('Doctor not found for ' + doctorId);
+      }
+
+      const shiftInfo = await this.shiftRepository.findOne({
+        where: { id: shiftId },
+      });
+      if (!shiftInfo) {
+        throw new NotFoundException('Shift not found for ' + shiftId);
+      }
+
+      const roomFinderInput = plainToInstance(GetConsultingRoomDto, {
+        doctorId,
+        date: shiftInfo.date,
+        timeStart: shiftInfo.from,
+        timeEnd: shiftInfo.to,
+      });
+      const roomNumber = await this.scheduleRepository.findRoomByDoctorAndShift(roomFinderInput);
+      if (!roomNumber) {
+        throw new NotFoundException(`Room not found for shift with id ${shiftId}`);
+      }
+
+      const metadata = plainToInstance(AppointmentMetadata, {
+        doctorName: `${doctorInfo.user?.firstName ?? ''} ${doctorInfo.user?.lastName ?? ''}`,
+        department: doctorInfo.department,
+        date: shiftInfo.date,
+        from: shiftInfo.from,
+        to: shiftInfo.to,
+        room: roomNumber,
+      });
+
       const appointment = await this.appointmentRepository.create({
         patientId,
         description: description ?? '',
+        metadata: metadata,
         status: AppointmentStatus.SCHEDULED,
       });
 
@@ -171,7 +217,8 @@ export class ShiftService implements IShiftService {
         imageBase64s.map((img, index) => ({
           referenceId: appointment.id,
           referenceType: ImageReference.APPOINTMENT,
-          base64: img,
+          base64: img.base64,
+          fileName: img.fileName,
           order: index + 1,
           type: ImageType.PATIENT_SYMPTOMS
         }))

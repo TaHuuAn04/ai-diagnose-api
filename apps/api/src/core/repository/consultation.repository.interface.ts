@@ -1,5 +1,6 @@
  
 import { ConsultationEntity } from '@app/core/domain/entities';
+import { PaginatedResult } from '@app/core/dtos';
 
 import { GetConsultationHistoryDto } from '../../modules/consultation/dtos';
 
@@ -9,5 +10,5 @@ export interface IConsultationRepository extends IGenericRepository<Consultation
   findConsultationHistory(
     patientId: string,
     request: GetConsultationHistoryDto
-  ): Promise<{ consultations: ConsultationEntity[]; total: number }>;
+  ): Promise<PaginatedResult<ConsultationEntity>>;
 }
