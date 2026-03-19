@@ -1,5 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 
+import { AppointmentMetadata } from '@app/core/domain/entities';
 import { AppointmentStatus } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
@@ -19,6 +20,9 @@ export class Appointment extends BaseEntity {
 
   @Column('uuid')
   patientId: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  metadata?: AppointmentMetadata | null;
 
   @OneToOne(() => WorkingTime, (workingTime) => workingTime.appointment)
   workingTime?: WorkingTime | null; 

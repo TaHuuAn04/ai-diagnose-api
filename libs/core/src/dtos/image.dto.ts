@@ -8,6 +8,9 @@ export class ImageInfoDto {
 
   @Expose()
   description?: string | null;
+
+  @Expose()
+  fileName: string;
   
   @Expose()
   order?: number | null;
@@ -17,4 +20,12 @@ export class ImageInfoDto {
 
   @Expose()
   type: ImageType;
+}
+
+export class ImageUploadDto {
+  @Expose()
+  fileName: string;
+
+  @Expose()
+  base64: string;
 }

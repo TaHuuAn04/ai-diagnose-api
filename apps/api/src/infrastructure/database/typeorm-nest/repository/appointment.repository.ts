@@ -88,8 +88,6 @@ export class AppointmentRepository
     const queryBuilder = this.repository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.workingTime', 'workingTime')
-      .leftJoinAndSelect('workingTime.doctor', 'doctor')
-      .leftJoinAndSelect('doctor.user', 'user')
       .leftJoinAndSelect('workingTime.shift', 'shift')
       .where('appointment.patientId = :userId', { userId: userId })
       .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.EXAMINED, AppointmentStatus.CANCELLED] })

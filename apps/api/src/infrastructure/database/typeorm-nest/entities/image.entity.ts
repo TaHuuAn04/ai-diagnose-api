@@ -11,8 +11,11 @@ export class Image extends BaseEntity {
   referenceId: string;
 
   @Column({ type: 'enum', enum: ImageReference })
-  referenceType: ImageReference;  
-    
+  referenceType: ImageReference; 
+  
+  @Column({ type: 'varchar', length: 255 })
+  fileName: string;
+
   @Column({ type: 'varchar', nullable: true })
   dataUrl?: string | null;
 

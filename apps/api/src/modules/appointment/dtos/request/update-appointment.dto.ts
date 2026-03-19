@@ -21,7 +21,7 @@ export class UpdateAppointmentDto {
   @IsOptional()
   @IsFiles()
   @HasMimeType(
-    ['image/jpeg', 'image/png'],
+    ['image/jpeg', 'image/png', 'image/jpg'],
     { each: true }
   )
   images?: MemoryStoredFile[];  

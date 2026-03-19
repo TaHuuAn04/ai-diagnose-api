@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 
 import { ConsultationEntity } from '@app/core/domain/entities';
 import { SortDirection } from '@app/core/domain/enums';
+import { PaginatedResult } from '@app/core/dtos';
 
 import { GetConsultationHistoryDto } from '../../../../modules/consultation/dtos';
 import { Consultation } from '../entities';
@@ -35,7 +36,7 @@ export class ConsultationRepository
   async findConsultationHistory(
     patientId: string,
     request: GetConsultationHistoryDto
-  ): Promise<{ consultations: ConsultationEntity[]; total: number }> {
+  ): Promise<PaginatedResult<ConsultationEntity>> {
     const { department, startDate, endDate, sortDirection, keyword, skip, take } = request;
     
     const queryBuilder = this.repository
@@ -82,6 +83,9 @@ export class ConsultationRepository
 
     const [entities, total] = await queryBuilder.getManyAndCount();
 
-    return { consultations: entities.map((entity) => this._mapper.toDomain(entity)), total };
+    return plainToInstance(PaginatedResult<ConsultationEntity>, {
+      data: entities.map(entity => this._mapper.toDomain(entity)),
+      total,
+    });
   }
 }
