@@ -5,6 +5,8 @@ import { PatientEntity } from './patient';
 import { WorkingTimeEntity } from './working-time';
 
 export class AppointmentMetadata {
+  doctorId: string;
+
   doctorName: string;
 
   department: string;

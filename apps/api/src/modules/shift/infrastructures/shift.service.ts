@@ -185,6 +185,7 @@ export class ShiftService implements IShiftService {
       }
 
       const metadata = plainToInstance(AppointmentMetadata, {
+        doctorId,
         doctorName: `${doctorInfo.user?.firstName ?? ''} ${doctorInfo.user?.lastName ?? ''}`,
         department: doctorInfo.department,
         date: shiftInfo.date,
