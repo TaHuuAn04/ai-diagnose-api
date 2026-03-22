@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { IConsultationRepository, IDoctorRepository, IImageRepository, IWorkingTimeRepository } from '@api/core/repository';
+import { AppointmentCalendarRawResult, IAppointmentRepository, IConsultationRepository, IDoctorRepository, IImageRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
-import { ImageReference, SortDirection } from '@app/core/domain/enums';
+import { ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { IDoctorService } from '../doctor.interface';
-import { GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from '../dtos';
+import { AppointmentCalendarItemDto, GetAppointmentCalendarRequestDto, GetAppointmentCalendarResponseDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from '../dtos';
 
 
 @Injectable()
@@ -26,6 +26,9 @@ export class DoctorService implements IDoctorService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
     private readonly imageRepository: IImageRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
+    private readonly appointmentRepository: IAppointmentRepository
   ) {}
 
   async getListDoctors(
@@ -184,5 +187,106 @@ export class DoctorService implements IDoctorService {
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve information.');
     }
+  }
+
+  async getAppointmentCalendar(
+    doctorId: string,
+    request: GetAppointmentCalendarRequestDto
+  ): Promise<GetAppointmentCalendarResponseDto[]> {
+    try {
+      if (!request.startDate || !request.endDate || request.startDate > request.endDate) {
+        throw new BadRequestException('Invalid date range: startDate must be before endDate');
+      }
+
+      if (request.option == ShowAppointmentCalendarType.YEAR) {
+        const year = parseInt(request.startDate.substring(0, 4), 10);
+        const promises = Array.from({ length: 12 }, (_, i) => i + 1).map((month) =>
+          this.appointmentRepository.findAppointmentsForCalendarByYear(doctorId, year, month)
+        );
+
+        const yearlySummaries = await Promise.all(promises);
+
+        return yearlySummaries
+      }
+
+      const appointmentsResult = await this.appointmentRepository.findAppointmentsForCalendarByMonth(
+          doctorId,
+          request.startDate,
+          request.endDate,
+          request.batch ?? 3,
+        );
+
+      return this._mapToCalendarResponse(appointmentsResult);
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve appointment calendar.');
+    }
+  }
+
+  async getAppointmentDates(
+    doctorId: string,
+    date: string
+  ): Promise<GetAppointmentCalendarResponseDto> {
+    try {
+      const appointmentsResult = await this.appointmentRepository.findAppointmentsForCalendarByMonth(
+        doctorId,
+        date,
+        date
+      );
+
+      return plainToInstance(GetAppointmentCalendarResponseDto, {
+        appointment: appointmentsResult.entities,
+        total: appointmentsResult.raw?.length ?? 0,
+        date: new Date(date),
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve appointment dates.');
+    }
+  }
+
+  private _mapToCalendarResponse(appointmentsResult: AppointmentCalendarRawResult): GetAppointmentCalendarResponseDto[] {
+    const totalByApptId = new Map<string, number>(
+      appointmentsResult.raw?.map(item => [
+        item.appointment_id ?? item.id ?? '',
+        parseInt(item.day_total, 10) || 0
+      ])
+    );
+
+    // Group by date
+    const groupedData = appointmentsResult.entities.reduce<Record<string, GetAppointmentCalendarResponseDto>>((acc, appointment) => {
+      const dateString = appointment.metadata?.date;
+      if (!dateString) return acc;
+
+      if (!(dateString in acc)) {
+        acc[dateString] = Object.assign(new GetAppointmentCalendarResponseDto(), {
+          date: new Date(dateString),
+          total: totalByApptId.get(appointment.id) ?? 0,
+          appointments: [],
+        });
+      }
+
+      const user = appointment.patient?.user;
+      const patientName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';
+
+      const itemDto = plainToInstance(AppointmentCalendarItemDto, {
+        id: appointment.id,
+        patientId: appointment.patientId,
+        patientName,
+        dateOfBirth: user?.dateOfBirth,
+        gender: user?.gender,
+        from: appointment.metadata?.from,
+        to: appointment.metadata?.to,
+        doctorName: appointment.metadata?.doctorName,
+        department: appointment.metadata?.department,
+        description: appointment.description,
+        status: appointment.status,
+      });
+
+      acc[dateString].appointments?.push(itemDto);
+      return acc;
+    }, {});
+
+    return Object.values(groupedData).map(group =>
+      plainToInstance(GetAppointmentCalendarResponseDto, group)
+    );
   }
 }
