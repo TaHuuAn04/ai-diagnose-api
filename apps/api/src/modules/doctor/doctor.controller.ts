@@ -10,13 +10,17 @@ import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 
-import { GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from "./dtos";
-import { GetDoctorInfoQuery, GetListDoctorQuery, GetPersonalAppointmentsQuery } from "./use-cases";
+import { GetAppointmentCalendarRequestDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from "./dtos";
+import { GetAppointmentCalendarResponseDto } from "./dtos/response/get-appointment-calendar.response.dto";
+import { GetAppointmentCalendarQuery, GetDoctorInfoQuery, GetListDoctorQuery, GetPersonalAppointmentsQuery } from "./use-cases";
+import { GetAppointmentDatesQuery } from "./use-cases/get-appointment-dates.use-case";
 
 @ApiTags('Doctors')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @Controller("doctors")
+@UseGuards(RolesGuard)
+@Roles(UserRole.DOCTOR, UserRole.STAFF)
 export class DoctorController {
   constructor(
     private readonly queryBus: QueryBus
@@ -86,6 +90,51 @@ export class DoctorController {
       PageDto<GetPersonalAppointmentsResponseDto>
     >(query);
     
+    return result;
+  }
+
+  @Get(':doctorId/appointment-calendar')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR, UserRole.STAFF)
+  @ApiOperation({ summary: 'Get doctor appointment calendar' })
+  @ApiParam({ name: 'doctorId', type: 'string', description: 'ID of the doctor' })
+  @ApiResponse({ status: 200, description: 'Doctor appointment calendar retrieved successfully.', type: [GetAppointmentCalendarResponseDto] })
+  @ApiResponse({ status: 404, description: 'Doctor not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async getAppointmentCalendar(
+    @Param('doctorId') doctorId: string,
+    @Query() request: GetAppointmentCalendarRequestDto
+  ): Promise<GetAppointmentCalendarResponseDto[]> {
+    const query = new GetAppointmentCalendarQuery(doctorId, request);
+
+    const result = await this.queryBus.execute<
+      GetAppointmentCalendarQuery,
+      GetAppointmentCalendarResponseDto[]
+    >(query);
+
+    return result;
+  }
+
+  @Get(':doctorId/appointment-date/:date')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR, UserRole.STAFF)
+  @ApiOperation({ summary: 'Get doctor appointment dates' })
+  @ApiParam({ name: 'doctorId', type: 'string', description: 'ID of the doctor' })
+  @ApiParam({ name: 'date', type: 'string', description: 'Date for which to retrieve appointments' })
+  @ApiResponse({ status: 200, description: 'Doctor appointment dates retrieved successfully.', type: [String] })
+  @ApiResponse({ status: 404, description: 'Doctor not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async getAppointmentDates(
+    @Param('doctorId') doctorId: string,
+    @Param('date') date: string
+  ): Promise<GetAppointmentCalendarResponseDto> {
+    const query = new GetAppointmentDatesQuery(doctorId, date);
+
+    const result = await this.queryBus.execute<
+      GetAppointmentDatesQuery,
+      GetAppointmentCalendarResponseDto
+    >(query);
+
     return result;
   }
 }

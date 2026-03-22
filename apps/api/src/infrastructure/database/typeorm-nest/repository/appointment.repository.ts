@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { IAppointmentRepository } from 'apps/api/src/core/repository';
+import { AppointmentCalendarRawResult, AppointmentRawResult, IAppointmentRepository } from 'apps/api/src/core/repository';
 import { GetListAppointmentDto } from 'apps/api/src/modules/appointment/dtos';
+import { GetAppointmentCalendarResponseDto } from 'apps/api/src/modules/doctor/dtos';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 
 import { AppointmentEntity } from '@app/core/domain/entities';
 import { AppointmentStatus, SortDirection } from '@app/core/domain/enums';
@@ -13,6 +14,7 @@ import { PaginatedResult } from '@app/core/dtos';
 import { Appointment } from '../entities';
 
 import { GenericRepository } from './generic-repository';
+
 
 @Injectable()
 export class AppointmentRepository
@@ -97,5 +99,108 @@ export class AppointmentRepository
     const entity = await queryBuilder.getOne();
 
     return entity ? this._mapper.toDomain(entity) : null;
+  }
+
+  private  _queryAppointmentByDay(
+    startDate: string,
+    endDate: string,
+    doctorId?: string,
+    patientId?: string,
+    status: AppointmentStatus = AppointmentStatus.SCHEDULED
+  ): SelectQueryBuilder<Appointment> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .where('appointment.status = :status', { status })
+      .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
+      .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
+      .orderBy('appointment.metadata->>\'date\'', 'ASC')
+      .addOrderBy('appointment.metadata->>\'from\'', 'ASC');
+
+    if (doctorId) {
+      queryBuilder.andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId });
+    }
+
+    if (patientId) {
+      queryBuilder.andWhere('appointment.patientId = :patientId', { patientId });
+    }
+
+    return queryBuilder;
+  }
+
+  async findAppointmentsForCalendarByMonth(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+    take?: number
+  ): Promise<AppointmentCalendarRawResult> {
+    if (!take) {
+      const queryBuilder = this.repository.createQueryBuilder('appointment')
+        .innerJoin(
+          (qb) => {
+            qb.select('a.id', 'id')
+              .addSelect(`ROW_NUMBER() OVER (PARTITION BY (a.metadata->>'date') ORDER BY (a.metadata->>'from') ASC)`, 'rn')
+              .addSelect(`COUNT(a.id) OVER (PARTITION BY (a.metadata->>'date'))`, 'day_total')
+              .from(Appointment, 'a')
+              .where('a.status = :status', { status: AppointmentStatus.SCHEDULED })
+              .andWhere(`a.metadata->>'date' >= :startDate`, { startDate })
+              .andWhere(`a.metadata->>'date' <= :endDate`, { endDate });
+              
+            if (doctorId) {
+              qb.andWhere(`a.metadata->>'doctorId' = :doctorId`, { doctorId });
+            }
+            return qb;
+          },
+          'ranked',
+          '"ranked"."id" = appointment.id'
+        )
+        .leftJoinAndSelect('appointment.patient', 'patient')
+        .leftJoinAndSelect('patient.user', 'user')
+        .addSelect('ranked.day_total', 'day_total')
+        .orderBy(`appointment.metadata->>'date'`, 'ASC')
+        .addOrderBy(`appointment.metadata->>'from'`, 'ASC');
+
+      if (take) {
+        queryBuilder.andWhere('ranked.rn <= :take', { take });
+      }
+
+      const { entities, raw } = await queryBuilder.getRawAndEntities<AppointmentRawResult>();
+
+      return plainToInstance(AppointmentCalendarRawResult, {
+        entities: entities.map(entity => this._mapper.toDomain(entity)),
+        raw: raw
+      });
+    }
+
+    const queryBuilder = this._queryAppointmentByDay(startDate, endDate, doctorId)
+
+    queryBuilder.leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user');
+
+    const entities = await queryBuilder.getMany();
+
+    return plainToInstance(AppointmentCalendarRawResult, {
+      entities: entities.map(entity => this._mapper.toDomain(entity)),
+      raw: []
+    });
+
+  }
+
+  async findAppointmentsForCalendarByYear(
+    doctorId: string,
+    year: number,
+    month: number,
+  ): Promise<GetAppointmentCalendarResponseDto> {
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 0).toISOString();
+
+    const queryBuilder = this._queryAppointmentByDay(startDate, endDate, doctorId);
+
+    const [, total] = await queryBuilder.getManyAndCount();
+
+    return plainToInstance(GetAppointmentCalendarResponseDto, {
+      total: total,
+      date: `${year.toString()}-${month.toString().padStart(2, '0')}`,
+    });
+
   }
 }
