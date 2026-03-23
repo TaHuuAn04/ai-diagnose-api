@@ -5,7 +5,7 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
 import { ImageReference, SortDirection } from '@app/core/domain/enums';
-import { PageDto, PageMetaDto } from '@app/core/dtos';
+import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { IDoctorService } from '../doctor.interface';
@@ -176,7 +176,7 @@ export class DoctorService implements IDoctorService {
           description: appointment.appointment.description,
           previousDiseases: diseases,
           status: appointment.appointment.status,
-          images: imageEntities
+          images: plainToInstance(ImageInfoDto, imageEntities.data),
         });
       }));
 
