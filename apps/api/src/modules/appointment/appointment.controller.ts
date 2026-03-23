@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Param, Patch, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -7,13 +7,12 @@ import { FormDataRequest } from "nestjs-form-data";
 
 import { Roles } from "@app/core/decorators";
 import { UserRole } from "@app/core/domain/enums";
-import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
 
 import { UpdateOrDeleteResponseDto } from "../../common/dtos";
 
-import { GetAppointmentResponseDto, GetListAppointmentDto, UpdateAppointmentDto } from "./dtos";
-import { CancelAppointmentCommand, GetListAppointmentQuery, GetUpcomingAppointmentQuery, UpdateAppointmentCommand } from "./use-cases";
+import { UpdateAppointmentDto } from "./dtos";
+import { CancelAppointmentCommand, UpdateAppointmentCommand } from "./use-cases";
 
 @ApiTags('Appointments')
 @UseGuards(JwtAuthGuard)
@@ -25,53 +24,6 @@ export class AppointmentController {
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus
   ) {}
-
-  @Get('/:userId')
-  @Roles(UserRole.PATIENT, UserRole.STAFF)
-  @ApiOperation({ summary: "Get list of patient's appointments" })
-  @ApiParam({ name: 'userId', description: "ID of the patient (user)", type: String })
-  @ApiResponse({
-    status: 200,
-    description: "Information retrieved successfully.",
-    type: PageDto<GetAppointmentResponseDto>
-  })
-  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
-  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
-  async getAppointments(
-    @Param('userId') userId: string,
-    @Query() request: GetListAppointmentDto,
-  ): Promise<PageDto<GetAppointmentResponseDto>> {
-    const query = new GetListAppointmentQuery(userId, request);
-
-    const result = await this.queryBus.execute<
-      GetListAppointmentQuery, PageDto<GetAppointmentResponseDto>
-    >(query);
-
-    return result;
-  }
-
-  @Get('/:userId/upcoming')
-  @Roles(UserRole.PATIENT)
-  @ApiOperation({ summary: "Get patient's upcoming appointment" })
-  @ApiParam({ name: 'userId', description: "ID of the patient (user)", type: String })
-  @ApiResponse({
-    status: 200,
-    description: "Information retrieved successfully.",
-    type: GetAppointmentResponseDto
-  })
-  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
-  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
-  async getUpcomingAppointment(
-    @Param('userId') userId: string,
-  ): Promise<GetAppointmentResponseDto | null> {
-    const query = new GetUpcomingAppointmentQuery(userId);  
-
-    const result = await this.queryBus.execute<
-      GetUpcomingAppointmentQuery, GetAppointmentResponseDto | null
-    >(query);
-    
-    return result;
-  }
 
   @Patch('/:appointmentId')
   @Roles(UserRole.PATIENT)
