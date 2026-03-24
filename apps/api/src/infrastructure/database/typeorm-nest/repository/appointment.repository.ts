@@ -19,8 +19,7 @@ import { GenericRepository } from './generic-repository';
 @Injectable()
 export class AppointmentRepository
   extends GenericRepository<AppointmentEntity, Appointment>
-  implements IAppointmentRepository
-{
+  implements IAppointmentRepository {
   constructor(
     @InjectRepository(Appointment)
     public readonly repository: Repository<Appointment>,
@@ -74,7 +73,7 @@ export class AppointmentRepository
       queryBuilder.take(request.take);
     }
 
-    const [ entities, total ] = await queryBuilder.getManyAndCount();
+    const [entities, total] = await queryBuilder.getManyAndCount();
 
     const appointments = entities.map(entity => this._mapper.toDomain(entity));
 
@@ -99,6 +98,39 @@ export class AppointmentRepository
     const entity = await queryBuilder.getOne();
 
     return entity ? this._mapper.toDomain(entity) : null;
+  }
+
+  async countPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId })
+      .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
+      .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
+      .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.SCHEDULED, AppointmentStatus.CANCELLED] })
+    
+    const total = await queryBuilder.getCount();
+    return total;
+  }
+
+  async countDistinctPatientsInPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .select('COUNT(DISTINCT appointment.patientId)', 'count')
+      .andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId })
+      .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
+      .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
+      .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.SCHEDULED, AppointmentStatus.CANCELLED] })
+
+    const rawResult = await queryBuilder.getRawOne();
+    return rawResult ? parseInt(rawResult.count, 10) : 0;
   }
 
   private  _queryAppointmentByDay(
