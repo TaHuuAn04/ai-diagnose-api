@@ -6,10 +6,11 @@ import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data";
 
 import { ConsultationController } from "./consultation.controller";
 import { ConsultationService } from "./infrastructures";
-import { GetConsultationHistoryQueryHandler} from "./use-cases";
+import { GetConsultationHistoryQueryHandler, GetStatisticDiseaseQueryHandler } from "./use-cases";
 
 const Handlers = [
-  GetConsultationHistoryQueryHandler
+  GetConsultationHistoryQueryHandler,
+  GetStatisticDiseaseQueryHandler
 ];
 
 const Adapters = [

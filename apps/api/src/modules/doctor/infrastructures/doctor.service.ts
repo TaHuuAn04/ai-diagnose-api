@@ -1,16 +1,32 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { AppointmentCalendarRawResult, IAppointmentRepository, IConsultationRepository, IDoctorRepository, IImageRepository, IWorkingTimeRepository } from '@api/core/repository';
+import {
+  AppointmentCalendarRawResult,
+  IAppointmentRepository,
+  IConsultationRepository,
+  IDoctorRepository,
+  IImageRepository,
+  IWorkingTimeRepository
+} from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
-import { ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
+import { AppointmentStatus, ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { IDoctorService } from '../doctor.interface';
-import { AppointmentCalendarItemDto, GetAppointmentCalendarRequestDto, GetAppointmentCalendarResponseDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from '../dtos';
-
+import {
+  AppointmentCalendarItemDto,
+  DoctorDashboardStatisticsDto,
+  GetAppointmentCalendarRequestDto,
+  GetAppointmentCalendarResponseDto,
+  GetDoctorDashboardRequestDto,
+  GetDoctorResponseDto,
+  GetListDoctorRequestDto,
+  GetPersonalAppointmentsRequestDto,
+  GetPersonalAppointmentsResponseDto,
+} from '../dtos';
 
 @Injectable()
 export class DoctorService implements IDoctorService {
@@ -29,7 +45,7 @@ export class DoctorService implements IDoctorService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
     private readonly appointmentRepository: IAppointmentRepository
-  ) {}
+  ) { }
 
   async getListDoctors(
     request: GetListDoctorRequestDto
@@ -46,27 +62,26 @@ export class DoctorService implements IDoctorService {
         itemCount: paginatedResult.total,
       });
 
-      const doctorDtos = result.map(doctor =>
-        {
-          if (!doctor.user) {
-            throw new Error(`User not found for doctor with id ${doctor.userId}`);
-          }
-          const doctorMapping = {
-            ...doctor,
-            id: doctor.user.id,
-            firstName: doctor.user.firstName,
-            lastName: doctor.user.lastName,
-            email: doctor.user.email,
-            phoneNumber: doctor.user.phoneNumber,
-            role: doctor.user.role,
-            gender: doctor.user.gender,
-            dateOfBirth: doctor.user.dateOfBirth,
-            phoneCode: doctor.user.phoneCode,
-            avatarUrl: doctor.user.avatarUrl,
-            isOnBoardingCompleted: doctor.user.isOnBoardingCompleted,
-          }
-          return plainToInstance(GetDoctorResponseDto, doctorMapping);
+      const doctorDtos = result.map(doctor => {
+        if (!doctor.user) {
+          throw new Error(`User not found for doctor with id ${doctor.userId}`);
         }
+        const doctorMapping = {
+          ...doctor,
+          id: doctor.user.id,
+          firstName: doctor.user.firstName,
+          lastName: doctor.user.lastName,
+          email: doctor.user.email,
+          phoneNumber: doctor.user.phoneNumber,
+          role: doctor.user.role,
+          gender: doctor.user.gender,
+          dateOfBirth: doctor.user.dateOfBirth,
+          phoneCode: doctor.user.phoneCode,
+          avatarUrl: doctor.user.avatarUrl,
+          isOnBoardingCompleted: doctor.user.isOnBoardingCompleted,
+        }
+        return plainToInstance(GetDoctorResponseDto, doctorMapping);
+      }
       );
 
       return new PageDto<GetDoctorResponseDto>(doctorDtos, pageMeta);
@@ -78,7 +93,7 @@ export class DoctorService implements IDoctorService {
   async getDoctorInfo(doctorId: string): Promise<GetDoctorResponseDto> {
     try {
       const doctor = await this.doctorRepository.findOne({
-        where: { userId: doctorId },  
+        where: { userId: doctorId },
         relations: ['user']
       });
 
@@ -92,7 +107,7 @@ export class DoctorService implements IDoctorService {
 
       return plainToInstance(GetDoctorResponseDto, {
         ...doctor,
-        id: doctor.user.id, 
+        id: doctor.user.id,
         firstName: doctor.user.firstName,
         lastName: doctor.user.lastName,
         email: doctor.user.email,
@@ -102,7 +117,7 @@ export class DoctorService implements IDoctorService {
         phoneCode: doctor.user.phoneCode,
         avatarUrl: doctor.user.avatarUrl,
       });
-    } catch (error) { 
+    } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting doctor info');
     }
   }
@@ -142,7 +157,7 @@ export class DoctorService implements IDoctorService {
           throw new NotFoundException(`User infomation is not found for patient with id ${appointment.appointment.patientId}`);
         }
 
-        const patientConsultation =  await this.consultationRepository.findOne({
+        const patientConsultation = await this.consultationRepository.findOne({
           where: {
             patientId: appointment.appointment.patientId,
           },
@@ -154,7 +169,7 @@ export class DoctorService implements IDoctorService {
         });
 
         const diseases = patientConsultation ? patientConsultation.diagnosisResult?.diseases?.map((disease: { name: string }) => disease.name)
-                                             : [];
+          : [];
         
         
         const imageEntities = await this.imageRepository.findAll({
@@ -162,11 +177,11 @@ export class DoctorService implements IDoctorService {
             referenceId: appointment.appointment.id,
             referenceType: ImageReference.APPOINTMENT,
           },
-          sort: { 
+          sort: {
             sortBy: 'order',
             sortOrder: SortDirection.DESC
           },
-        });  
+        });
 
         return plainToInstance(GetPersonalAppointmentsResponseDto, {
           date: appointment.date,
@@ -210,11 +225,11 @@ export class DoctorService implements IDoctorService {
       }
 
       const appointmentsResult = await this.appointmentRepository.findAppointmentsForCalendarByMonth(
-          doctorId,
-          request.startDate,
-          request.endDate,
-          request.batch ?? 3,
-        );
+        doctorId,
+        request.startDate,
+        request.endDate,
+        request.batch ?? 3,
+      );
 
       return this._mapToCalendarResponse(appointmentsResult);
     } catch (error) {
@@ -303,5 +318,72 @@ export class DoctorService implements IDoctorService {
     return Object.values(groupedData).map(group =>
       plainToInstance(GetAppointmentCalendarResponseDto, group)
     );
+  }
+
+  async getDoctorDashboardStatistics(
+    doctorId: string,
+    input: GetDoctorDashboardRequestDto
+  ): Promise<DoctorDashboardStatisticsDto> {
+    try {
+      const { currentDate, startMonthDate, lastEndMonthDate, lastStartMonthDate, startWeekDate, lastEndWeekDate, lastStartWeekDate } = input;
+
+      const [currentMonthAppointmentsCount, previousMonthAppointmentsCount, currentWeekPatientsCount, previousWeekPatientsCount, appointments] = await Promise.all([
+        this.appointmentRepository.countPeriodExaminedAppointments(
+          doctorId,
+          startMonthDate,
+          currentDate,
+        ),
+        this.appointmentRepository.countPeriodExaminedAppointments(
+          doctorId,
+          lastStartMonthDate,
+          lastEndMonthDate,
+        ),
+        this.appointmentRepository.countDistinctPatientsInPeriodExaminedAppointments(
+          doctorId,
+          startWeekDate,
+          currentDate,
+        ),
+        this.appointmentRepository.countDistinctPatientsInPeriodExaminedAppointments(
+          doctorId,
+          lastStartWeekDate,
+          lastEndWeekDate,
+        ),
+        this.appointmentRepository.findAll({
+          where: {
+            metadata: {
+              jsonContains: {
+                date: currentDate,
+                doctorId
+              }
+            }
+          },
+          relations: ['patient', 'patient.user']
+        })
+      ])
+
+      let examinationsCount = 0;
+      let cancelledAppointmentsCount = 0;
+
+      appointments.data.forEach((appointment) => {
+        if (appointment.status === AppointmentStatus.CANCELLED) {
+          cancelledAppointmentsCount++;
+        } else if (appointment.status === AppointmentStatus.EXAMINING || appointment.status === AppointmentStatus.EXAMINED) {
+          examinationsCount++;
+        }
+      });
+      const totalAppointmentsCount = appointments.data.length - cancelledAppointmentsCount;
+
+      return plainToInstance(DoctorDashboardStatisticsDto, {
+        examinationsCount,
+        totalAppointmentsCount,
+        cancelledAppointmentsCount,
+        currentMonthAppointmentsCount,
+        previousMonthAppointmentsCount,
+        currentWeekPatientsCount,
+        previousWeekPatientsCount,
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve information.');
+    }
   }
 }

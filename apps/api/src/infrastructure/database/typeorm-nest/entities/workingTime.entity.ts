@@ -34,6 +34,6 @@ export class WorkingTime extends BaseEntityWithoutId {
   @JoinColumn({ name: 'shift_id' })
   shift: Shift;
 
-  @Column({ type: 'date'})
+  @PrimaryColumn({ type: 'date'})
   date: string;
 }

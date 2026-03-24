@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -10,17 +10,29 @@ import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 
-import { GetAppointmentCalendarRequestDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from "./dtos";
-import { GetAppointmentCalendarResponseDto } from "./dtos/response/get-appointment-calendar.response.dto";
-import { GetAppointmentCalendarQuery, GetDoctorInfoQuery, GetListDoctorQuery, GetPersonalAppointmentsQuery } from "./use-cases";
-import { GetAppointmentDatesQuery } from "./use-cases/get-appointment-dates.use-case";
+import {
+  DoctorDashboardStatisticsDto,
+  GetAppointmentCalendarRequestDto,
+  GetAppointmentCalendarResponseDto,
+  GetDoctorDashboardRequestDto,
+  GetDoctorResponseDto,
+  GetListDoctorRequestDto,
+  GetPersonalAppointmentsRequestDto,
+  GetPersonalAppointmentsResponseDto,
+} from "./dtos";
+import {
+  GetAppointmentCalendarQuery,
+  GetAppointmentDatesQuery,
+  GetDoctorDashboardStatisticsQuery,
+  GetDoctorInfoQuery,
+  GetListDoctorQuery,
+  GetPersonalAppointmentsQuery
+} from "./use-cases";
 
 @ApiTags('Doctors')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @Controller("doctors")
-@UseGuards(RolesGuard)
-@Roles(UserRole.DOCTOR, UserRole.STAFF)
 export class DoctorController {
   constructor(
     private readonly queryBus: QueryBus
@@ -135,6 +147,35 @@ export class DoctorController {
       GetAppointmentCalendarResponseDto
     >(query);
 
+    return result;
+  }
+
+  @Get('/doctor-info-dashboard')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get doctor dashboard statistics' })
+  @ApiResponse({
+    status: 200,
+    description: "Doctor dashboard statistics retrieved successfully.",
+    type: DoctorDashboardStatisticsDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getCurrentDayAppointments(
+    @CurrentUser() user: UserEntity,
+    @Query() input: GetDoctorDashboardRequestDto
+  ): Promise<DoctorDashboardStatisticsDto> {
+    // Implementation will go here
+    const query = new GetDoctorDashboardStatisticsQuery(
+      user.id,
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      GetDoctorDashboardStatisticsQuery,
+      DoctorDashboardStatisticsDto
+    >(query);
+    
     return result;
   }
 }

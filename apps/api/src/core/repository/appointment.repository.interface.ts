@@ -1,4 +1,5 @@
 import { AppointmentEntity } from '@app/core/domain/entities';
+import { AppointmentStatus } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListAppointmentDto } from '../../modules/appointment/dtos';
@@ -15,6 +16,18 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
   findUpcomingAppointment(
     userId: string
   ): Promise<AppointmentEntity | null>;
+
+  countPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number>;
+
+  countDistinctPatientsInPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number>;
 
   findAppointmentsForCalendarByMonth(
     doctorId: string,

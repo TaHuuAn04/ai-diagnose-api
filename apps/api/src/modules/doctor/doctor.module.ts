@@ -5,15 +5,22 @@ import { INJECTION_TOKEN } from "@api/enums";
 
 import { DoctorController } from "./doctor.controller";
 import { DoctorService } from "./infrastructures";
-import { GetAppointmentCalendarQueryHandler, GetDoctorInfoQueryHandler, GetListDoctorQueryHandler, GetPersonalAppointmentsQueryHandler } from "./use-cases";
-import { GetAppointmentDatesQueryHandler } from "./use-cases/get-appointment-dates.use-case";
+import {
+  GetAppointmentCalendarQueryHandler,
+  GetAppointmentDatesQueryHandler,
+  GetDoctorDashboardStatisticsQueryHandler,
+  GetDoctorInfoQueryHandler,
+  GetListDoctorQueryHandler,
+  GetPersonalAppointmentsQueryHandler,
+} from "./use-cases";
 
 const Handlers = [
   GetListDoctorQueryHandler,
   GetDoctorInfoQueryHandler,
   GetPersonalAppointmentsQueryHandler,
   GetAppointmentCalendarQueryHandler,
-  GetAppointmentDatesQueryHandler
+  GetAppointmentDatesQueryHandler,
+  GetDoctorDashboardStatisticsQueryHandler,
 ];
 
 const Adapters = [

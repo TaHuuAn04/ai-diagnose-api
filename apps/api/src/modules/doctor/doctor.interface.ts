@@ -1,6 +1,15 @@
 import { PageDto } from '@app/core/dtos';
 
-import { GetAppointmentCalendarRequestDto, GetAppointmentCalendarResponseDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from './dtos';
+import {
+  DoctorDashboardStatisticsDto,
+  GetAppointmentCalendarRequestDto,
+  GetAppointmentCalendarResponseDto,
+  GetDoctorDashboardRequestDto,
+  GetDoctorResponseDto,
+  GetListDoctorRequestDto,
+  GetPersonalAppointmentsRequestDto,
+  GetPersonalAppointmentsResponseDto,
+} from './dtos';
 
 export interface IDoctorService {
   getListDoctors(request: GetListDoctorRequestDto): Promise<PageDto<GetDoctorResponseDto>>;
@@ -12,4 +21,6 @@ export interface IDoctorService {
   getAppointmentCalendar(doctorId: string, request: GetAppointmentCalendarRequestDto): Promise<GetAppointmentCalendarResponseDto[]>;
 
   getAppointmentDates(doctorId: string, date: string): Promise<GetAppointmentCalendarResponseDto>;
+
+  getDoctorDashboardStatistics(doctorId: string, input: GetDoctorDashboardRequestDto): Promise<DoctorDashboardStatisticsDto>;
 }
