@@ -106,15 +106,18 @@ export class AppointmentRepository
     endDate: string,
     doctorId?: string,
     patientId?: string,
-    status: AppointmentStatus = AppointmentStatus.SCHEDULED
+    status?: AppointmentStatus 
   ): SelectQueryBuilder<Appointment> {
     const queryBuilder = this.repository
       .createQueryBuilder('appointment')
-      .where('appointment.status = :status', { status })
       .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
       .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
       .orderBy('appointment.metadata->>\'date\'', 'ASC')
       .addOrderBy('appointment.metadata->>\'from\'', 'ASC');
+
+    if(status) {
+      queryBuilder.andWhere('appointment.status = :status', { status });
+    }
 
     if (doctorId) {
       queryBuilder.andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId });
@@ -133,8 +136,10 @@ export class AppointmentRepository
     endDate: string,
     take?: number
   ): Promise<AppointmentCalendarRawResult> {
-    if (!take) {
-      const queryBuilder = this.repository.createQueryBuilder('appointment')
+    let queryBuilder: SelectQueryBuilder<Appointment>;
+
+    if (take) {
+      queryBuilder = this.repository.createQueryBuilder('appointment')
         .innerJoin(
           (qb) => {
             qb.select('a.id', 'id')
@@ -169,9 +174,7 @@ export class AppointmentRepository
         entities: entities.map(entity => this._mapper.toDomain(entity)),
         raw: raw
       });
-    }
-
-    const queryBuilder = this._queryAppointmentByDay(startDate, endDate, doctorId)
+    } else queryBuilder = this._queryAppointmentByDay(startDate, endDate, doctorId)
 
     queryBuilder.leftJoinAndSelect('appointment.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'user');

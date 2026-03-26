@@ -233,9 +233,24 @@ export class DoctorService implements IDoctorService {
         date
       );
 
+      const appointments = appointmentsResult.entities.map(appointment => {
+        return plainToInstance(AppointmentCalendarItemDto, {
+          id: appointment.id,
+          patientId: appointment.patientId,
+          patientName: appointment.patient?.user ? `${appointment.patient.user.firstName || ''} ${appointment.patient.user.lastName || ''}`.trim() : '',
+          dateOfBirth: appointment.patient?.user?.dateOfBirth,
+          from: appointment.metadata?.from,
+          to: appointment.metadata?.to,
+          doctorName: appointment.metadata?.doctorName,
+          department: appointment.metadata?.department,
+          description: appointment.description,
+          status: appointment.status,
+        })
+      });
+
       return plainToInstance(GetAppointmentCalendarResponseDto, {
-        appointment: appointmentsResult.entities,
-        total: appointmentsResult.raw?.length ?? 0,
+        appointments: appointments,
+        total: appointments.length,
         date: new Date(date),
       });
     } catch (error) {
