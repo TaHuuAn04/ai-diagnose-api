@@ -8,6 +8,7 @@ import {
   IsNumberString,
   IsString,
   MinLength,
+  IsOptional,
   validateSync,
 } from 'class-validator';
 
@@ -28,20 +29,23 @@ class EnvironmentVariables {
   @IsNumber()
   WORKER_PORT: number;
 
-  @IsDefined()
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   NOVU_SERVER_URL: string;
 
-  @IsDefined()
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   NOVU_API_KEY: string;
 
   @IsDefined()
   @IsNumberString()
   @MinLength(1)
   REDIS_DB: string;
+
+  @IsDefined()
+  @IsString()
+  @MinLength(1)
+  AI_SERVICE_BASE_URL: string;
 }
 
 export function validateConfig(configuration: Record<string, unknown>) {
@@ -64,3 +68,4 @@ export function validateConfig(configuration: Record<string, unknown>) {
 
   return finalConfig;
 }
+

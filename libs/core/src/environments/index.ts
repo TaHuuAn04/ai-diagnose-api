@@ -62,3 +62,9 @@ export const DIFY_AI_ACCESS_TOKEN_EXPIRE: number = process.env
 
 // API Base URL
 export const API_BASE_URL: string = process.env.API_BASE_URL ?? '';
+
+// AI Service (VLM Model)
+export const AI_SERVICE_BASE_URL: string = process.env.AI_SERVICE_BASE_URL ?? 'http://localhost:8000';
+
+export const API_CALLBACK_BASE_URL: string = process.env.API_CALLBACK_BASE_URL ?? 'http://localhost:3001';
+
