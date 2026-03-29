@@ -8,9 +8,6 @@ import { WorkingTime } from './workingTime.entity';
 
 @Entity()
 export class Shift extends BaseEntity {
-  @Column({ type: 'date'})
-  date: string;
-
   @Column({ type: 'timetz' })
   from: string;
 

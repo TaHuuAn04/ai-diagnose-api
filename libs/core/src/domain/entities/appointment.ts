@@ -32,4 +32,6 @@ export class AppointmentEntity extends BaseEntity {
   patient?: PatientEntity | null;
 
   workingTime?: WorkingTimeEntity | null;
+
+  note?: string | null;
 }

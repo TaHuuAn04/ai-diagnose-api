@@ -175,7 +175,7 @@ export class ShiftService implements IShiftService {
 
       const roomFinderInput = plainToInstance(GetConsultingRoomDto, {
         doctorId,
-        date: shiftInfo.date,
+        date: workingTime.date,
         timeStart: shiftInfo.from,
         timeEnd: shiftInfo.to,
       });
@@ -188,7 +188,7 @@ export class ShiftService implements IShiftService {
         doctorId,
         doctorName: `${doctorInfo.user?.firstName ?? ''} ${doctorInfo.user?.lastName ?? ''}`,
         department: doctorInfo.department,
-        date: shiftInfo.date,
+        date: workingTime.date,
         from: shiftInfo.from,
         to: shiftInfo.to,
         room: roomNumber,
