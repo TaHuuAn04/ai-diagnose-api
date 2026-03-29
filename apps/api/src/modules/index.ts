@@ -1,3 +1,4 @@
+import { AdminModule } from './admin/admin.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { AuthModule } from './auth/auth.module';
 import { ConsultationModule } from './consultation/consultation.module';
@@ -10,6 +11,7 @@ import { ShiftModule } from './shift/shift.module';
 import { StaffModule } from './staff/staff.module';
 import { UserModule } from './user/user.module';
 export const modules = [
+  AdminModule,
   UserModule,
   AuthModule,
   ShiftModule,
