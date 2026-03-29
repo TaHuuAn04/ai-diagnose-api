@@ -169,7 +169,7 @@ export class DoctorService implements IDoctorService {
         });  
 
         return plainToInstance(GetPersonalAppointmentsResponseDto, {
-          date: appointment.shift?.date,
+          date: appointment.date,
           from: appointment.shift?.from,
           to: appointment.shift?.to,
           patientName: appointment.appointment.patient.user.firstName + ' ' + appointment.appointment.patient.user.lastName,

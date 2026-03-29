@@ -5,16 +5,23 @@ import { BaseEntity } from './base';
 import { ConsultationEntity } from './consultation';
 import { DiagnoseModelEntity } from './diagnose-model';
 
+export interface SuggestedDiagnosis {
+  diseaseName: string;
+  accuracy: number;
+}
+
 export class AIDiagnosisResultEntity extends BaseEntity {
   consultationId: string;
 
   diagnoseModelId: string;
 
-  suggestedDiagnosis: string;
+  suggestedDiagnosis: SuggestedDiagnosis[];
 
   proof?: string | null;
 
-  severityLevel: SeverityLevel;
+  aiAdvice?: string | null;
+
+  severityLevel?: SeverityLevel | null;
 
   consultation?: ConsultationEntity | null;
 

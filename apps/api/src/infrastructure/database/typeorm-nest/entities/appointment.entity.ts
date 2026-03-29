@@ -11,7 +11,7 @@ import { WorkingTime } from './workingTime.entity';
 
 @Entity()
 export class Appointment extends BaseEntity {
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string | null;
 
   @Column({ type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
@@ -33,4 +33,7 @@ export class Appointment extends BaseEntity {
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patient_id' }) 
   patient?: Patient | null;
+
+  @Column({ type: 'text', nullable: true })
+  note?: string | null;
 }

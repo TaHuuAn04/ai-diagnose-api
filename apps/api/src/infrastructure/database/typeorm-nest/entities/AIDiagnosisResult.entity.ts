@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { SeverityLevel } from '@app/core/domain/enums';
+import { SuggestedDiagnosis } from '@app/core/domain/entities/ai-diagnosis-result';
 
 import { BaseEntity } from '../base.entity';
 
@@ -16,14 +17,17 @@ export class AIDiagnosisResult extends BaseEntity {
   @Column('uuid')
   diagnoseModelId: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  suggestedDiagnosis: string;
+  @Column({ type: 'jsonb', default: [] })
+  suggestedDiagnosis: SuggestedDiagnosis[];
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'text', nullable: true })
   proof?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  aiAdvice?: string | null;
     
-  @Column({ type: 'enum', enum: SeverityLevel, nullable: true }) //Maybe no suggested disease
-  severityLevel: SeverityLevel;
+  @Column({ type: 'enum', enum: SeverityLevel, nullable: true })
+  severityLevel?: SeverityLevel | null;
 
   @OneToOne(() => Consultation)
   @JoinColumn({ name: 'consultation_id' }) 

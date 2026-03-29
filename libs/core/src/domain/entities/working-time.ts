@@ -19,4 +19,6 @@ export class WorkingTimeEntity extends BaseEntityWithoutId {
   appointment?: AppointmentEntity | null;
 
   shift?: ShiftEntity;
+
+  date: string;
 }

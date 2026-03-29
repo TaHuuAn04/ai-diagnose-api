@@ -33,4 +33,7 @@ export class WorkingTime extends BaseEntityWithoutId {
   @ManyToOne(() => Shift, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'shift_id' })
   shift: Shift;
+
+  @Column({ type: 'date'})
+  date: string;
 }

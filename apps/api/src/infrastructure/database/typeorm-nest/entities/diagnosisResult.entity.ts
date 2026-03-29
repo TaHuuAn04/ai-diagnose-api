@@ -1,3 +1,4 @@
+import { PrescriptionItem } from '@app/core/domain/entities/diagnosis-result';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 
 import { BaseEntity } from '../base.entity';
@@ -7,14 +8,20 @@ import { ResultDisease } from './resultDisease.entity';
 
 @Entity()
 export class DiagnosisResult extends BaseEntity {
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'text', nullable: true })
   advices: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  prescription: string
+  @Column({ type: 'jsonb', nullable: true, default: [] })
+  prescription: PrescriptionItem[];
+
+  @Column({ type: 'text', nullable: true })
+  description?: string | null;
     
   @Column({ type: 'varchar', length: 255 })
   symstomsText: string
+
+  @Column({ type: 'text', nullable: true })
+  feedBackAI?: string | null;
 
   @Column('uuid')
   consultationId: string;
