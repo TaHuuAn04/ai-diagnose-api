@@ -3,4 +3,5 @@ export const CONFIG_KEY = {
   NOVU: 'NOVU',
   WINSTON: 'WINSTON',
   CACHE: 'CACHE',
+  AI_SERVICE: 'AI_SERVICE',
 };

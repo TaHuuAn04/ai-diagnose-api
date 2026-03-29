@@ -1,3 +1,4 @@
+import { AiDiagnosisModule } from './modules/ai-diagnosis/ai-diagnosis.module';
 import { AiTemplateModule } from './modules/ai-template/ai-template.module';
 import { DifyDatasetTemplateModule } from './modules/dify-dataset-template/dify-dataset-template.module';
 import { EscalationModule } from './modules/escalation/escalation.module';
@@ -14,4 +15,5 @@ export const modules = [
   HealthModule,
   WebhooksModule,
   DifyDatasetTemplateModule,
+  AiDiagnosisModule,
 ];

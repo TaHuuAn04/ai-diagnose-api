@@ -1,3 +1,4 @@
+import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 
@@ -13,6 +14,8 @@ import {
   GetListDoctorQueryHandler,
   GetPersonalAppointmentsQueryHandler,
 } from "./use-cases";
+import { CreateAiDiagnosisCommandHandler, GetAiDiagnosisResultQueryHandler, GetAppointmentCalendarQueryHandler, GetDoctorInfoQueryHandler, GetListDoctorQueryHandler, GetPersonalAppointmentsQueryHandler } from "./use-cases";
+import { GetAppointmentDatesQueryHandler } from "./use-cases/get-appointment-dates.use-case";
 
 const Handlers = [
   GetListDoctorQueryHandler,
@@ -21,6 +24,9 @@ const Handlers = [
   GetAppointmentCalendarQueryHandler,
   GetAppointmentDatesQueryHandler,
   GetDoctorDashboardStatisticsQueryHandler,
+  GetAppointmentDatesQueryHandler,
+  CreateAiDiagnosisCommandHandler,
+  GetAiDiagnosisResultQueryHandler
 ];
 
 const Adapters = [
@@ -31,7 +37,7 @@ const Adapters = [
 ];
 
 @Module({  
-  imports: [CqrsModule],
+  imports: [CqrsModule, HttpModule],
   controllers: [DoctorController],
   providers: [...Adapters, ...Handlers],
   exports: [...Adapters, ...Handlers],

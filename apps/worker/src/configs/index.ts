@@ -1,3 +1,4 @@
+import AiServiceConfig from './ai-service/ai-service.config';
 import BullMqConfig from './bull-mq/bull-mq.config';
 import CacheConfig from './cache/redis-cache.config';
 import NovuConfig from './novu/novu.config';
@@ -8,6 +9,7 @@ export const configurations = [
   NovuConfig,
   WinstonConfig,
   CacheConfig,
+  AiServiceConfig,
 ];
 
-export { BullMqConfig, CacheConfig, NovuConfig, WinstonConfig };
+export { AiServiceConfig, BullMqConfig, CacheConfig, NovuConfig, WinstonConfig };

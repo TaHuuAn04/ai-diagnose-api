@@ -1,6 +1,10 @@
-import { Body, Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
-import { QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Param, Post, Query , UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { CommandBus , QueryBus} from "@nestjs/cqrs";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam , ApiResponse, ApiTags} from "@nestjs/swagger";
+
+
+
 
 import { JwtAuthGuard } from "@api/guards";
 
@@ -11,22 +15,30 @@ import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 
 import {
+  CreateAiDiagnosisRequestDto,
+  CreateAiDiagnosisResponseDto,
   DoctorDashboardStatisticsDto,
+  GetAiDiagnosisResultResponseDto,
   GetAppointmentCalendarRequestDto,
   GetAppointmentCalendarResponseDto,
   GetDoctorDashboardRequestDto,
   GetDoctorResponseDto,
+
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
-} from "./dtos";
+  HandleAiDiagnosisCallbackRequestDto} from "./dtos";
 import {
+  CreateAiDiagnosisCommand,
+  GetAiDiagnosisResultQuery,
   GetAppointmentCalendarQuery,
   GetAppointmentDatesQuery,
   GetDoctorDashboardStatisticsQuery,
-  GetDoctorInfoQuery,
+  GetDoctorInfoQuery
+,
   GetListDoctorQuery,
-  GetPersonalAppointmentsQuery
+  GetPersonalAppointmentsQuery,
+  HandleAiDiagnosisCallbackCommand,
 } from "./use-cases";
 
 @ApiTags('Doctors')
@@ -35,6 +47,7 @@ import {
 @Controller("doctors")
 export class DoctorController {
   constructor(
+    private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus
   ) {}
 
@@ -177,5 +190,48 @@ export class DoctorController {
     >(query);
     
     return result;
+  }
+
+  @Post('ai-diagnosis')
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Create an AI diagnosis job' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateAiDiagnosisRequestDto })
+  @ApiResponse({ status: 201, description: 'Job created', type: CreateAiDiagnosisResponseDto })
+  @UseInterceptors(FileInterceptor('file'))
+  async createAiDiagnosis(
+    @Body() request: CreateAiDiagnosisRequestDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<CreateAiDiagnosisResponseDto> {
+    const imageBase64 = file.buffer.toString('base64');
+    
+    const command = new CreateAiDiagnosisCommand(request, imageBase64);
+
+    return this.commandBus.execute<CreateAiDiagnosisCommand, CreateAiDiagnosisResponseDto>(command);
+  }
+
+  @Get('ai-diagnosis/:consultationId')
+  @Roles(UserRole.DOCTOR, UserRole.PATIENT)
+  @ApiOperation({ summary: 'Get AI diagnosis result' })
+  @ApiParam({ name: 'consultationId', type: 'string' })
+  @ApiResponse({ status: 200, type: GetAiDiagnosisResultResponseDto })
+  async getAiDiagnosisResult(
+    @Param('consultationId') consultationId: string,
+  ): Promise<GetAiDiagnosisResultResponseDto> {
+    const query = new GetAiDiagnosisResultQuery(consultationId);
+
+    return this.queryBus.execute<GetAiDiagnosisResultQuery, GetAiDiagnosisResultResponseDto>(query);
+  }
+
+  @Post('ai-diagnosis/callback')
+  @IsPublic() // This should be public since worker calls it over local network. Maybe add internal middleware later.
+  @ApiOperation({ summary: 'Callback for AI diagnosis worker (Internal)' })
+  @ApiBody({ type: HandleAiDiagnosisCallbackRequestDto })
+  @ApiResponse({ status: 201, description: 'Result saved successfully' })
+  async handleAiDiagnosisCallback(
+    @Body() request: HandleAiDiagnosisCallbackRequestDto,
+  ): Promise<void> {
+    const command = new HandleAiDiagnosisCallbackCommand(request);
+    await this.commandBus.execute(command);
   }
 }
