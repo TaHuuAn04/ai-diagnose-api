@@ -1,7 +1,6 @@
 import { WorkingTimeEntity } from '@app/core/domain/entities/working-time';
 import { PaginatedResult } from '@app/core/dtos';
 
-import { GetPersonalAppointmentsRequestDto } from '../../modules/doctor/dtos';
 import { GetShiftsByDoctorIdRequestDto } from '../../modules/shift/dtos/requests/get-available-shifts.request.dto';
 
 import { IGenericRepository } from './generic-repository.interface';
@@ -16,9 +15,4 @@ export interface IWorkingTimeRepository extends IGenericRepository<WorkingTimeEn
     doctorId: string,
     input: GetShiftsByDoctorIdRequestDto
   ): Promise<number>;
-
-  findDoctorAppointments(
-    doctorId: string,
-    input: GetPersonalAppointmentsRequestDto
-  ): Promise<PaginatedResult<WorkingTimeEntity>>;
 }

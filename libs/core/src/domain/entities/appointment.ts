@@ -1,6 +1,7 @@
 import { AppointmentStatus } from '../enums';
 
 import { BaseEntity } from './base';
+import { ConsultationEntity } from './consultation';
 import { PatientEntity } from './patient';
 import { WorkingTimeEntity } from './working-time';
 
@@ -32,6 +33,8 @@ export class AppointmentEntity extends BaseEntity {
   patient?: PatientEntity | null;
 
   workingTime?: WorkingTimeEntity | null;
+
+  consultation?: ConsultationEntity | null;
 
   note?: string | null;
 }

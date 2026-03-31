@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { AppointmentCalendarRawResult, AppointmentRawResult, IAppointmentRepository } from 'apps/api/src/core/repository';
 import { GetListAppointmentDto } from 'apps/api/src/modules/appointment/dtos';
-import { GetAppointmentCalendarResponseDto } from 'apps/api/src/modules/doctor/dtos';
+import { GetAppointmentCalendarResponseDto, GetPersonalAppointmentsRequestDto } from 'apps/api/src/modules/doctor/dtos';
 import { plainToInstance } from 'class-transformer';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
@@ -92,8 +92,8 @@ export class AppointmentRepository
       .leftJoinAndSelect('workingTime.shift', 'shift')
       .where('appointment.patientId = :userId', { userId: userId })
       .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.EXAMINED, AppointmentStatus.CANCELLED] })
-      .andWhere('shift.date + shift.to >= :date', { date: new Date() })
-      .orderBy('shift.date', 'ASC').addOrderBy('shift.from', 'ASC')
+      .andWhere('workingTime.date + shift.to >= :date', { date: new Date() })
+      .orderBy('workingTime.date', 'ASC').addOrderBy('shift.from', 'ASC')
 
     const entity = await queryBuilder.getOne();
 
@@ -236,6 +236,59 @@ export class AppointmentRepository
       total: total,
       date: `${year.toString()}-${month.toString().padStart(2, '0')}`,
     });
+  }
 
+  async findDoctorAppointments(
+    doctorId: string,
+    input: GetPersonalAppointmentsRequestDto
+  ): Promise<PaginatedResult<AppointmentEntity>> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .innerJoinAndSelect('appointment.workingTime', 'workingTime')
+      .innerJoinAndSelect('workingTime.shift', 'shift')
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user')
+      .where('workingTime.doctorId = :doctorId', { doctorId })
+      .andWhere('workingTime.date >= :startDate', { startDate: input.startDate })
+      .andWhere('workingTime.date <= :endDate', { endDate: input.endDate });
+
+    if (input.from) {
+      queryBuilder.andWhere('shift.from >= :from', { from: input.from });
+    }
+
+    if (input.to) {
+      queryBuilder.andWhere('shift.to <= :to', { to: input.to });
+    }
+
+    if (input.keyword) {
+      queryBuilder.andWhere(
+        '(user.firstName ILIKE :keyword OR user.lastName ILIKE :keyword OR user.phoneNumber ILIKE :keyword)',
+        { keyword: `%${input.keyword}%` }
+      );
+    }
+
+    if (input.status) {
+      queryBuilder.andWhere('appointment.status = :status', { status: input.status });
+    }
+
+    const sortField = input.sort ?? 'date';
+    const sortOrder = input.sortDirection ?? SortDirection.DESC;
+    queryBuilder.orderBy(`workingTime.${sortField}`, sortOrder as 'ASC' | 'DESC');
+
+    if (input.skip) {
+      queryBuilder.skip(input.skip);
+    }
+    if (input.take) {
+      queryBuilder.take(input.take);
+    }
+
+    const [entities, total] = await queryBuilder.getManyAndCount();
+
+    const appointments = entities.map((entity) => this._mapper.toDomain(entity));
+
+    return plainToInstance(PaginatedResult<AppointmentEntity>, {
+      data: appointments,
+      total,
+    });
   }
 }
