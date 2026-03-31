@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { IWorkingTimeRepository } from "@api/core/repository/working-time.repository.interface";
-import { GetPersonalAppointmentsRequestDto } from "apps/api/src/modules/doctor/dtos";
 import { GetShiftsByDoctorIdRequestDto } from "apps/api/src/modules/shift/dtos/requests/get-available-shifts.request.dto";
 import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
@@ -44,18 +43,18 @@ export class WorkingTimeRepository
       .where('workingTime.doctorId = :doctorId', { doctorId })
 
     if (input.startDate) {
-      queryBuilder.andWhere('shift.date >= :startDate', { startDate: input.startDate });
+      queryBuilder.andWhere('workingTime.date >= :startDate', { startDate: input.startDate });
     }
 
     if (input.endDate) {
-      queryBuilder.andWhere('shift.date <= :endDate', { endDate: input.endDate });
+      queryBuilder.andWhere('workingTime.date <= :endDate', { endDate: input.endDate });
     }
 
     if (input.status) {
       queryBuilder.andWhere('workingTime.status = :status', { status: input.status });
     }
 
-    const sortField = input.sort ? `shift.${input.sort}` : 'shift.date';
+    const sortField = input.sort ? `shift.${input.sort}` : 'workingTime.date';
     const sortDirection = input.sortDirection ?? SortDirection.ASC;
     queryBuilder.orderBy(sortField, sortDirection)
       .addOrderBy('shift.from', 'ASC');
@@ -84,11 +83,11 @@ export class WorkingTimeRepository
       .where('workingTime.doctorId = :doctorId', { doctorId })
 
     if (input.startDate) {
-      queryBuilder.andWhere('shift.date >= :startDate', { startDate: input.startDate });
+      queryBuilder.andWhere('workingTime.date >= :startDate', { startDate: input.startDate });
     }
 
     if (input.endDate) {
-      queryBuilder.andWhere('shift.date <= :endDate', { endDate: input.endDate });
+      queryBuilder.andWhere('workingTime.date <= :endDate', { endDate: input.endDate });
     }
 
     if (input.status) {
@@ -97,58 +96,4 @@ export class WorkingTimeRepository
 
     return await queryBuilder.getCount();
   }
-
-  async findDoctorAppointments(
-    doctorId: string,
-    input: GetPersonalAppointmentsRequestDto
-  ): Promise<PaginatedResult<WorkingTimeEntity>> {
-    const queryBuilder = this.repository
-      .createQueryBuilder('workingTime')
-      .where('workingTime.doctorId = :doctorId', { doctorId })
-      .andWhere('workingTime.appointmentId IS NOT NULL')
-      .leftJoinAndSelect('workingTime.shift', 'shift')
-      .leftJoinAndSelect('workingTime.appointment', 'appointment')
-      .leftJoinAndSelect('appointment.patient', 'patient')
-      .leftJoinAndSelect('patient.user', 'user')
-      .andWhere('shift.date >= :startDate', { startDate: input.startDate })
-      .andWhere('shift.date <= :endDate', { endDate: input.endDate });
-    
-    if (input.from) {
-      queryBuilder.andWhere('shift.from >= :from', { from: input.from });
-    }
-
-    if (input.to) {
-      queryBuilder.andWhere('shift.to <= :to', { to: input.to });
-    }
-
-    if (input.keyword) {
-      queryBuilder.andWhere(
-        '(user.firstName ILIKE :keyword OR user.lastName ILIKE :keyword OR user.phoneNumber ILIKE :keyword)',
-        { keyword: `%${input.keyword}%` }
-      );
-    }
-
-    if (input.status) {
-      queryBuilder.andWhere('appointment.status = :status', { status: input.status });
-    }
-
-    const sortField = input.sort ?? 'updatedAt';
-    const sortOrder = input.sortDirection ?? SortDirection.DESC;
-    queryBuilder.orderBy(`shift.${sortField}`, sortOrder as 'ASC' | 'DESC');
-
-    if (input.skip) {
-      queryBuilder.skip(input.skip);
-    }
-    if (input.take) {
-      queryBuilder.take(input.take);
-    }
-
-    const [ entities, total ] = await queryBuilder.getManyAndCount();
-    const workingTimes = entities.map((entity) => this._mapper.toDomain(entity));
-
-    return plainToInstance(PaginatedResult<WorkingTimeEntity>, {
-      data: workingTimes,
-      total
-    });
-  } 
 }

@@ -3,7 +3,7 @@ import { AppointmentStatus } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListAppointmentDto } from '../../modules/appointment/dtos';
-import { GetAppointmentCalendarResponseDto } from '../../modules/doctor/dtos';
+import { GetAppointmentCalendarResponseDto, GetPersonalAppointmentsRequestDto } from '../../modules/doctor/dtos';
 
 import { IGenericRepository } from './generic-repository.interface';
 
@@ -40,7 +40,12 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
     doctorId: string,
     year: number,
     month: number,
-  ): Promise<GetAppointmentCalendarResponseDto>
+  ): Promise<GetAppointmentCalendarResponseDto>;
+
+  findDoctorAppointments(
+    doctorId: string,
+    input: GetPersonalAppointmentsRequestDto
+  ): Promise<PaginatedResult<AppointmentEntity>>;
 }
 
 export interface AppointmentRawResult {

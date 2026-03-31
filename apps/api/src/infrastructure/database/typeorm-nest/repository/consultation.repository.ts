@@ -53,11 +53,11 @@ export class ConsultationRepository
     }
 
     if (startDate) {
-      queryBuilder.andWhere('shift.date >= :startDate', { startDate });
+      queryBuilder.andWhere('workingTime.date >= :startDate', { startDate });
     }
 
     if (endDate) {
-      queryBuilder.andWhere('shift.date <= :endDate', { endDate });
+      queryBuilder.andWhere('workingTime.date <= :endDate', { endDate });
     }
 
     if (keyword) {
@@ -87,5 +87,29 @@ export class ConsultationRepository
       data: entities.map(entity => this._mapper.toDomain(entity)),
       total,
     });
+  }
+
+  async findLatestConsultationsByPatientIds(
+    patientIds: string[]
+  ): Promise<ConsultationEntity[]> {
+    if (!patientIds || patientIds.length === 0) return [];
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('consultation')
+      .innerJoin(
+        (qb) => qb
+          .select('c.patientId', 'patientId')
+          .addSelect('MAX(c.createdAt)', 'maxCreatedAt')
+          .from(Consultation, 'c')
+          .groupBy('c.patientId')
+          .where('c.patientId IN (:...patientIds)', { patientIds }),
+        'max_c',
+        'consultation.patientId = max_c.patientId AND consultation.createdAt = max_c.maxCreatedAt'
+      )
+      .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
+      .leftJoinAndSelect('diagnosisResult.diseases', 'diseases');
+
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this._mapper.toDomain(entity));
   }
 }
