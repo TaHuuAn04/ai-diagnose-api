@@ -11,4 +11,8 @@ export interface IConsultationRepository extends IGenericRepository<Consultation
     patientId: string,
     request: GetConsultationHistoryDto
   ): Promise<PaginatedResult<ConsultationEntity>>;
+
+  findLatestConsultationsByPatientIds(
+    patientIds: string[]
+  ): Promise<ConsultationEntity[]>;
 }

@@ -7,6 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { ConsultationEntity, ImageEntity } from '@app/core/domain/entities';
 
 import { IDoctorService } from '../doctor.interface';
 import { AppointmentCalendarItemDto, GetAppointmentCalendarRequestDto, GetAppointmentCalendarResponseDto, GetDoctorResponseDto, GetListDoctorRequestDto, GetPersonalAppointmentsRequestDto, GetPersonalAppointmentsResponseDto } from '../dtos';
@@ -120,7 +121,7 @@ export class DoctorService implements IDoctorService {
         throw new BadRequestException('Invalid time range: from must be before to');
       }
 
-      const result = await this.workingTimeRepository.findDoctorAppointments(doctorId, request);
+      const result = await this.appointmentRepository.findDoctorAppointments(doctorId, request);
       const appointments = result.data;
 
       const pageMeta = new PageMetaDto({
@@ -129,59 +130,62 @@ export class DoctorService implements IDoctorService {
         itemCount: result.total,
       });
 
-      const appointmentDtos = await Promise.all(appointments.map(async appointment => {
-        if (!appointment.appointment) {
-          throw new NotFoundException(`Appointment not found`);
+      const appointmentIds = appointments.map(a => a.id);
+      const imagesResult = await this.imageRepository.findAll({
+        where: {
+          referenceId: { in: appointmentIds },
+          referenceType: ImageReference.APPOINTMENT,
+        },
+        sort: { 
+          sortBy: 'order',
+          sortOrder: SortDirection.DESC
+        },
+      });
+
+      const imagesMap = new Map<string, ImageEntity[]>();
+      imagesResult.data.forEach(image => {
+        const list = imagesMap.get(image.referenceId) || [];
+        list.push(image);
+        imagesMap.set(image.referenceId, list);
+      });
+
+      const patientIds = appointments.map(a => a.patientId);
+      const uniquePatientIds = [...new Set(patientIds)];
+      
+      const historyMap = new Map<string, ConsultationEntity>();
+      if (uniquePatientIds.length > 0) {
+        const latestConsultations = await this.consultationRepository.findLatestConsultationsByPatientIds(uniquePatientIds);
+
+        latestConsultations.forEach(c => historyMap.set(c.patientId, c));
+      }
+
+      const appointmentDtos = appointments.map(appointment => {
+        if (!appointment.patient) {
+          throw new NotFoundException(`Patient not found for appointment with id ${appointment.id}`);
         }
 
-        if (!appointment.appointment.patient) {
-          throw new NotFoundException(`Patient not found for appointment with id ${appointment.appointment.id}`);
+        if (!appointment.patient.user) {
+          throw new NotFoundException(`User information is not found for patient with id ${appointment.patientId}`);
         }
 
-        if (!appointment.appointment.patient.user) {
-          throw new NotFoundException(`User infomation is not found for patient with id ${appointment.appointment.patientId}`);
-        }
-
-        const patientConsultation =  await this.consultationRepository.findOne({
-          where: {
-            patientId: appointment.appointment.patientId,
-          },
-          sort: {
-            sortBy: 'createdAt',
-            sortOrder: SortDirection.DESC
-          },
-          relations: ['diagnosisResult', 'diagnosisResult.diseases']
-        });
-
-        const diseases = patientConsultation ? patientConsultation.diagnosisResult?.diseases?.map((disease: { name: string }) => disease.name)
-                                             : [];
-        
-        
-        const imageEntities = await this.imageRepository.findAll({
-          where: {
-            referenceId: appointment.appointment.id,
-            referenceType: ImageReference.APPOINTMENT,
-          },
-          sort: { 
-            sortBy: 'order',
-            sortOrder: SortDirection.DESC
-          },
-        });  
+        const latestConsultation = historyMap.get(appointment.patientId);
+        const diseases = latestConsultation?.diagnosisResult?.diseases?.map(d => d.name) || [];
+        const appointmentImages = imagesMap.get(appointment.id) || [];
 
         return plainToInstance(GetPersonalAppointmentsResponseDto, {
-          date: appointment.date,
-          from: appointment.shift?.from,
-          to: appointment.shift?.to,
-          patientName: appointment.appointment.patient.user.firstName + ' ' + appointment.appointment.patient.user.lastName,
-          dateOfBirth: appointment.appointment.patient.user.dateOfBirth,
-          phoneNumber: appointment.appointment.patient.user.phoneNumber,
-          gender: appointment.appointment.patient.user.gender,
-          description: appointment.appointment.description,
+          date: appointment.workingTime?.date,
+          from: appointment.workingTime?.shift?.from,
+          to: appointment.workingTime?.shift?.to,
+          patientName: appointment.patient.user.firstName + ' ' + appointment.patient.user.lastName,
+          dateOfBirth: appointment.patient.user.dateOfBirth,
+          phoneNumber: appointment.patient.user.phoneNumber,
+          gender: appointment.patient.user.gender,
+          description: appointment.description,
           previousDiseases: diseases,
-          status: appointment.appointment.status,
-          images: plainToInstance(ImageInfoDto, imageEntities.data),
+          status: appointment.status,
+          images: plainToInstance(ImageInfoDto, appointmentImages),
         });
-      }));
+      });
 
       return new PageDto<GetPersonalAppointmentsResponseDto>(appointmentDtos, pageMeta);
     } catch (error) {
