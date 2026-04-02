@@ -2,18 +2,18 @@ import { Expose, Type } from 'class-transformer';
 
 import { WorkingTimeStatus } from '@app/core/domain/enums';
 
-class ShiftInfo {
+export class ShiftInfo {
   @Expose()
   id: string;
-
-  @Expose()
-  date: string;
 
   @Expose()
   from: string;
 
   @Expose()
   to: string;
+
+  @Expose()
+  status: WorkingTimeStatus;
 }
 
 export class AvailableShiftResponseDto {
@@ -21,12 +21,9 @@ export class AvailableShiftResponseDto {
   doctorId: string;
 
   @Expose()
-  shiftId: string;
-
-  @Expose()
-  status: WorkingTimeStatus;
+  date: string;
 
   @Expose()
   @Type(() => ShiftInfo)
-  shift: ShiftInfo;
+  shift: ShiftInfo[];
 }

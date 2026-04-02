@@ -9,25 +9,21 @@ import { GetListShiftResponseDto } from "../dtos/response";
 import { IShiftService } from "../interfaces";
 
 export class GetListShiftQuery {
-  constructor(
-    public readonly pageOptionsDto: PageOptionsDto
-  ) {}
+  constructor() {}
 }
 
 @QueryHandler(GetListShiftQuery)
 export class GetListShiftQueryHandler 
-  implements IQueryHandler<GetListShiftQuery, PageDto<GetListShiftResponseDto>> 
+  implements IQueryHandler<GetListShiftQuery, GetListShiftResponseDto[]> 
 {
   constructor(
     @Inject(INJECTION_TOKEN.SHIFT_SERVICE)
     private readonly shiftService: IShiftService
   ) {}
 
-  async execute(query: GetListShiftQuery): Promise<PageDto<GetListShiftResponseDto>> {
+  async execute(query: GetListShiftQuery): Promise<GetListShiftResponseDto[]> {
     // Implement the logic to get the list of shifts for the user
-    const shifts = await this.shiftService.getListShifts(
-      query.pageOptionsDto
-    );
+    const shifts = await this.shiftService.getListShifts();
 
     return shifts;
   }

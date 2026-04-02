@@ -16,10 +16,10 @@ export class GetConsultingRoomDto {
   @ApiProperty({ type: String, example: '09:00' })
   @IsNotEmpty()
   @IsString()
-  timeStart: string;
+  from: string;
 
   @ApiProperty({ type: String, example: '10:00' })
   @IsNotEmpty()
   @IsString()
-  timeEnd: string;
+  to: string;
 }

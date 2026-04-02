@@ -30,15 +30,4 @@ export class ScheduleRepository
       }
     });
   }
-
-  async findRoomByDoctorAndShift( input: GetConsultingRoomDto ): Promise<string | null> {
-    const queryBuilder = this.repository
-      .createQueryBuilder('schedule')
-      .where('schedule.doctor = :doctorId', { doctorId: input.doctorId })
-      .andWhere('schedule.date = :date', { date: input.date })
-      .andWhere('schedule.from <= :timeStart', { timeStart: input.timeStart })
-      .andWhere('schedule.to >= :timeEnd', { timeEnd: input.timeEnd });
-    const schedule = await queryBuilder.getOne();
-    return schedule ? schedule.room : null;
-  }
 }

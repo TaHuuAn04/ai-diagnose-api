@@ -9,9 +9,6 @@ export class GetListShiftResponseDto {
   id: string;
 
   @Expose()
-  date: string;
-
-  @Expose()
   from: string;
 
   @Expose()
