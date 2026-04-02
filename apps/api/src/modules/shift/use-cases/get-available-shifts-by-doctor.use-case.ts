@@ -18,14 +18,14 @@ export class GetShiftsByDoctorQuery {
 
 @QueryHandler(GetShiftsByDoctorQuery)
 export class GetShiftsByDoctorQueryHandler
-  implements IQueryHandler<GetShiftsByDoctorQuery, PageDto<AvailableShiftResponseDto>>
+  implements IQueryHandler<GetShiftsByDoctorQuery, AvailableShiftResponseDto[]>
 {
   constructor(
     @Inject(INJECTION_TOKEN.SHIFT_SERVICE)
     private readonly shiftService: IShiftService
   ) {}
 
-  async execute(query: GetShiftsByDoctorQuery): Promise<PageDto<AvailableShiftResponseDto>> {
+  async execute(query: GetShiftsByDoctorQuery): Promise<AvailableShiftResponseDto[]> {
     return await this.shiftService.getShiftsByDoctor(
       query.doctorId,
       query.input

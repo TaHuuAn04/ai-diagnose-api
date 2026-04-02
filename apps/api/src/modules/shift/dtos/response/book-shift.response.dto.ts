@@ -20,6 +20,9 @@ export class BookShiftResponseDto {
   shiftId: string;
 
   @Expose()
+  date: string;
+
+  @Expose()
   appointmentStatus: AppointmentStatus;
 
   @Expose()

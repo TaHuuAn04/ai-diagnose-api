@@ -34,16 +34,13 @@ export class ShiftController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async getListShifts(
-    @Query() pageOptions: PageOptionsDto
-  ): Promise<PageDto<GetListShiftResponseDto>> {
+  ): Promise<GetListShiftResponseDto[]> {
     // Implementation will go here
-    const query = new GetListShiftQuery(
-      pageOptions
-    );
+    const query = new GetListShiftQuery();
 
     const result = await this.queryBus.execute<
       GetListShiftQuery,
-      PageDto<GetListShiftResponseDto>
+      GetListShiftResponseDto[]
     >(query)
 
     return result;
@@ -59,7 +56,7 @@ export class ShiftController {
   async getShiftsByDoctor(
     @Param('doctorId') doctorId: string,
     @Query() input: GetShiftsByDoctorIdRequestDto
-  ): Promise<PageDto<AvailableShiftResponseDto>> {
+  ): Promise<AvailableShiftResponseDto[]> {
     const query = new GetShiftsByDoctorQuery(
       doctorId,
       input
@@ -67,7 +64,7 @@ export class ShiftController {
 
     const result = await this.queryBus.execute<
       GetShiftsByDoctorQuery,
-      PageDto<AvailableShiftResponseDto>
+      AvailableShiftResponseDto[]
     >(query);
 
     return result;

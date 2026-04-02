@@ -4,7 +4,7 @@ import { IsDateString, IsEnum, IsOptional } from 'class-validator';
 
 import { WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageOptionsDto } from '@app/core/dtos';
-export class GetShiftsByDoctorIdRequestDto extends PageOptionsDto {
+export class GetShiftsByDoctorIdRequestDto {
   @ApiProperty({ 
     description: 'Start date filter (optional)',
     example: '2025-12-11',

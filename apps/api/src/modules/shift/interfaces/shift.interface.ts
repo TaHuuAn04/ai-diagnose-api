@@ -7,14 +7,12 @@ import { BookShiftResponseDto } from "../dtos/response/book-shift.response.dto";
 import { GetListShiftResponseDto } from "../dtos/response/shift.response.dto";
 
 export interface IShiftService {
-  getListShifts(
-    pageOptionsDto: PageOptionsDto
-  ): Promise<PageDto<GetListShiftResponseDto>>;
+  getListShifts(): Promise<GetListShiftResponseDto[]>;
 
   getShiftsByDoctor(
     doctorId: string,
     input: GetShiftsByDoctorIdRequestDto
-  ): Promise<PageDto<AvailableShiftResponseDto>>;
+  ): Promise<AvailableShiftResponseDto[]>;
 
   bookShift(
     bookShiftDto: BookShiftRequestDto

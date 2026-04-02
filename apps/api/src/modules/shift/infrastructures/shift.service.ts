@@ -52,31 +52,15 @@ export class ShiftService implements IShiftService {
     private readonly doctorRepository: IDoctorRepository,
   ) {}
 
-  async getListShifts(
-    pageOptionsDto: PageOptionsDto
-  ) : Promise<PageDto<GetListShiftResponseDto>> {
+  async getListShifts() : Promise<GetListShiftResponseDto[]> {
     try {
-      const { take, page } = pageOptionsDto;
-
-      // Use findAll with QueryOptions for better querying
-      const result = await this.shiftRepository.findAll({
-        pagination: {
-          page,
-          limit: take,
-        },
-      });
-
-      const pageMeta = new PageMetaDto({
-        take,
-        page,
-        itemCount: result.meta?.total ?? 0,
-      });
+      const result = await this.shiftRepository.findAll();
 
       const shiftDtos = result.data.map(shift => 
         plainToInstance(GetListShiftResponseDto, shift)
       );
 
-      return new PageDto<GetListShiftResponseDto>(shiftDtos, pageMeta);
+      return shiftDtos
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting list shifts');
     }
@@ -85,36 +69,56 @@ export class ShiftService implements IShiftService {
   async getShiftsByDoctor(
     doctorId: string,
     input: GetShiftsByDoctorIdRequestDto
-  ): Promise<PageDto<AvailableShiftResponseDto>> {
+  ): Promise<AvailableShiftResponseDto[]> {
     try {
-      const { take, page } = input;
-
       if (input.startDate && input.endDate && input.startDate > input.endDate) {
         throw new BadRequestException('Start date must be before end date');
       }
 
-      const [workingTimes, total] = await Promise.all([
-        this.workingTimeRepository.findShiftsByDoctor(
-          doctorId,
-          input
-        ),
-        this.workingTimeRepository.countShiftsByDoctor(
-          doctorId,
-          input
-        ),
-      ]);
 
-      const pageMeta = new PageMetaDto({
-        take,
-        page,
-        itemCount: total,
+      const { data: workingTimeRecords } = await this.workingTimeRepository.findAll({
+        where: {
+          doctorId: doctorId,
+          date: {
+            gte: input.startDate,
+            lte: input.endDate,
+          },
+        },
+        relations: ['shift'],
+        sort: [
+          { sortBy: 'date', sortOrder: 'ASC' },
+          { 
+            sortBy: 'shift' as any, 
+            sortOrder: { from: 'ASC' } as any
+          }
+        ],
       });
 
-      const availableShiftDtos = workingTimes.map(workingTime => 
-        plainToInstance(AvailableShiftResponseDto, workingTime, { excludeExtraneousValues: true })
+      const groupedData = workingTimeRecords.reduce<Record<string, AvailableShiftResponseDto>>((acc, current) => {
+        const dateKey = current.date;
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            doctorId: current.doctorId,
+            date: dateKey,
+            shift: []
+          };
+        }
+        if (current.shift) {
+          acc[dateKey].shift.push({
+            id: current.shift.id,
+            from: current.shift.from,
+            to: current.shift.to,
+            status: current.status,
+          });
+        }
+        return acc;
+      }, {});
+
+      const availableShiftDtos = Object.values(groupedData).map(data => 
+        plainToInstance(AvailableShiftResponseDto, data, { excludeExtraneousValues: true })
       );
 
-      return new PageDto<AvailableShiftResponseDto>(availableShiftDtos, pageMeta);
+      return availableShiftDtos;
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting available shifts by doctor');
     }
@@ -123,7 +127,7 @@ export class ShiftService implements IShiftService {
   @Transactional()
   async bookShift(bookShiftDto: BookShiftRequestDto): Promise<BookShiftResponseDto> {
     try {
-      const { doctorId, shiftId, patientId, images, description } = bookShiftDto;
+      const { doctorId, shiftId, patientId, images, description, date } = bookShiftDto;
 
       // Validate if the patient has fully completed their profile
       const patientInfo = await this.patientRepository.findOne({
@@ -147,7 +151,9 @@ export class ShiftService implements IShiftService {
         where: { 
           doctorId: doctorId,
           shiftId: shiftId,
+          date: date,
         },
+        relations: ['doctor','doctor.user']
       });
 
       if (!workingTime) {
@@ -158,39 +164,29 @@ export class ShiftService implements IShiftService {
         throw new BadRequestException('This shift has already been booked');
       }
 
-      const doctorInfo = await this.doctorRepository.findOne({
-        where: { userId: doctorId },
-        relations: ['user'],
+      const roomNumber = await this.scheduleRepository.findOne({
+        where: {
+          doctorId: doctorId,
+          date: workingTime.date,
+          from: {
+            gte: workingTime.shift?.from,
+          },
+          to: {
+            lte: workingTime.shift?.to,
+          },
+        },
       });
-      if (!doctorInfo || doctorInfo.user === null) {
-        throw new NotFoundException('Doctor not found for ' + doctorId);
-      }
-
-      const shiftInfo = await this.shiftRepository.findOne({
-        where: { id: shiftId },
-      });
-      if (!shiftInfo) {
-        throw new NotFoundException('Shift not found for ' + shiftId);
-      }
-
-      const roomFinderInput = plainToInstance(GetConsultingRoomDto, {
-        doctorId,
-        date: workingTime.date,
-        timeStart: shiftInfo.from,
-        timeEnd: shiftInfo.to,
-      });
-      const roomNumber = await this.scheduleRepository.findRoomByDoctorAndShift(roomFinderInput);
       if (!roomNumber) {
         throw new NotFoundException(`Room not found for shift with id ${shiftId}`);
       }
 
       const metadata = plainToInstance(AppointmentMetadata, {
         doctorId,
-        doctorName: `${doctorInfo.user?.firstName ?? ''} ${doctorInfo.user?.lastName ?? ''}`,
-        department: doctorInfo.department,
+        doctorName: `${workingTime.doctor?.user?.firstName ?? ''} ${workingTime.doctor?.user?.lastName ?? ''}`,
+        department: workingTime.doctor?.department,
         date: workingTime.date,
-        from: shiftInfo.from,
-        to: shiftInfo.to,
+        from: workingTime.shift?.from,
+        to: workingTime.shift?.to,
         room: roomNumber,
       });
 
@@ -202,7 +198,11 @@ export class ShiftService implements IShiftService {
       });
 
       const updatedWorkingTimes = await this.workingTimeRepository.updateMany(
-        { doctorId, shiftId },
+        {
+          doctorId: doctorId,
+          shiftId: shiftId,
+          date: date,
+        },
         {
           appointmentId: appointment.id,
           status: WorkingTimeStatus.BOOKED,
@@ -231,6 +231,7 @@ export class ShiftService implements IShiftService {
         doctorId,
         patientId,
         shiftId,
+        date: workingTime.date,
         appointmentStatus: AppointmentStatus.SCHEDULED,
         workingTimeStatus: WorkingTimeStatus.BOOKED,
         description: description ?? '',

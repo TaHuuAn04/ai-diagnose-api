@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
 import { HasMimeType, IsFiles, MemoryStoredFile } from 'nestjs-form-data';
 
 export class BookShiftRequestDto {
@@ -19,6 +19,14 @@ export class BookShiftRequestDto {
   @IsUUID()
   @IsNotEmpty()
   shiftId: string;
+
+  @ApiProperty({ 
+    description: 'Date to book',
+    example: '2026-04-02'
+  })
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
 
   @ApiProperty({ 
     description: 'Patient ID',
