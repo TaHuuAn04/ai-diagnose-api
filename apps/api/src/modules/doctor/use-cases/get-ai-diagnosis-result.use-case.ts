@@ -3,10 +3,12 @@ import { IQuery, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { IAIDiagnosisResultRepository } from '@api/repository';
+import { plainToInstance } from 'class-transformer';
 
+import { AIResultDiseaseEntity } from '@app/core/domain/entities';
 import { NotFoundException } from '@app/core/exception';
 
-import { GetAiDiagnosisResultResponseDto } from '../dtos';
+import { AiResultDiseaseDto, GetAiDiagnosisResultResponseDto } from '../dtos';
 
 export class GetAiDiagnosisResultQuery implements IQuery {
   constructor(public readonly consultationId: string) {}
@@ -26,15 +28,7 @@ export class GetAiDiagnosisResultQueryHandler
   ): Promise<GetAiDiagnosisResultResponseDto> {
     const result = await this.aiDiagnosisResultRepository.findOne({
       where: { consultationId: query.consultationId },
-      relations: [
-        {
-          relation: 'diseases',
-        },
-        // We need disease details (like name)
-        {
-          relation: 'diseases.disease',
-        },
-      ],
+      relations: ['diseases', 'diseases.disease'],
     });
 
     if (!result) {
@@ -43,17 +37,17 @@ export class GetAiDiagnosisResultQueryHandler
       );
     }
 
-    return {
+    return plainToInstance(GetAiDiagnosisResultResponseDto, {
       consultationId: result.consultationId,
-      suggestedDiagnosis: result.suggestedDiagnosis,
-      severityLevel: result.severityLevel,
+      suggestedDiagnosis: result.proof ?? '',
+      severityLevel: result.severityLevel ?? undefined,
       aiAdvice: result.aiAdvice ?? undefined,
       diseases:
-        result.diseases?.map((d: any) => ({
+        result.diseases?.map((d: AIResultDiseaseEntity) => plainToInstance(AiResultDiseaseDto, {
           diseaseId: d.diseaseId,
-          diseaseName: d.disease?.name || 'Unknown',
+          diseaseName: d.disease?.name ?? 'Unknown',
           accuracy: d.accuracy,
-        })) || [],
-    };
+        })) ?? [],
+    });
   }
 }

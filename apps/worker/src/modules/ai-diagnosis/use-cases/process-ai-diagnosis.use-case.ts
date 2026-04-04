@@ -1,4 +1,5 @@
 import { HttpService } from '@nestjs/axios';
+import { Logger } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
 import { lastValueFrom } from 'rxjs';
@@ -17,6 +18,7 @@ export class ProcessAiDiagnosisCommand implements ICommand {
 export class ProcessAiDiagnosisCommandHandler
   implements ICommandHandler<ProcessAiDiagnosisCommand, void>
 {
+  private readonly logger = new Logger(ProcessAiDiagnosisCommandHandler.name);
   constructor(
     private readonly aiDiagnosisHttpService: AiDiagnosisHttpService,
     private readonly httpService: HttpService,
@@ -41,7 +43,7 @@ export class ProcessAiDiagnosisCommandHandler
         aiAdvice: aiResponse.full_flow_result.ai_advice,
       };
 
-      const url = `${API_CALLBACK_BASE_URL}/api/doctors/ai-diagnosis/callback`;
+      const url = `${API_CALLBACK_BASE_URL}/doctors/ai-diagnosis/callback`;
       await lastValueFrom(
         this.httpService.post(url, resultPayload),
       );
@@ -50,6 +52,7 @@ export class ProcessAiDiagnosisCommandHandler
       if (error instanceof Exception) {
         throw error;
       }
+      this.logger.error(`Error processing AI diagnosis: ${error?.message}`);
 
       throw new AiInternalServerError(
         (error?.message || 'Error processing AI diagnosis') as string,

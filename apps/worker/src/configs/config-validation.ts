@@ -6,9 +6,9 @@ import {
   IsEnum,
   IsNumber,
   IsNumberString,
+  IsOptional,
   IsString,
   MinLength,
-  IsOptional,
   validateSync,
 } from 'class-validator';
 

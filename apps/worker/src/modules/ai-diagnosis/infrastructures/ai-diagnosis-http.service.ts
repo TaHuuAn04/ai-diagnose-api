@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 
-import FormData from 'form-data';
+import * as FormData from 'form-data';
 import { lastValueFrom } from 'rxjs';
 
 import { AiInternalServerError } from '@app/core/exception';
@@ -47,7 +47,7 @@ export class AiDiagnosisHttpService {
         contentType: 'image/jpeg',
       });
 
-      const url = `${this.aiServiceConfig.baseUrl}/model-ai/full-flow`;
+      const url = `${this.aiServiceConfig.baseUrl}/api/v1/model-ai/full-flow`;
       
       const response = await lastValueFrom(
         this.httpService.post<FullFlowResponseDto>(url, formData, {

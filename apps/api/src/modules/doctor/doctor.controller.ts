@@ -18,27 +18,32 @@ import {
   CreateAiDiagnosisRequestDto,
   CreateAiDiagnosisResponseDto,
   DoctorDashboardStatisticsDto,
+  FinishExaminationRequestDto,
   GetAiDiagnosisResultResponseDto,
   GetAppointmentCalendarRequestDto,
   GetAppointmentCalendarResponseDto,
   GetDoctorDashboardRequestDto,
-  GetDoctorResponseDto,
 
+  GetDoctorResponseDto,
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
-  HandleAiDiagnosisCallbackRequestDto} from "./dtos";
+  HandleAiDiagnosisCallbackRequestDto,
+  StartExaminationRequestDto,
+  StartExaminationResponseDto
+} from "./dtos";
 import {
   CreateAiDiagnosisCommand,
+  FinishExaminationCommand,
   GetAiDiagnosisResultQuery,
   GetAppointmentCalendarQuery,
   GetAppointmentDatesQuery,
   GetDoctorDashboardStatisticsQuery,
-  GetDoctorInfoQuery
-,
+  GetDoctorInfoQuery,
   GetListDoctorQuery,
   GetPersonalAppointmentsQuery,
   HandleAiDiagnosisCallbackCommand,
+  StartExaminationCommand
 } from "./use-cases";
 
 @ApiTags('Doctors')
@@ -220,7 +225,40 @@ export class DoctorController {
   ): Promise<GetAiDiagnosisResultResponseDto> {
     const query = new GetAiDiagnosisResultQuery(consultationId);
 
-    return this.queryBus.execute<GetAiDiagnosisResultQuery, GetAiDiagnosisResultResponseDto>(query);
+    const result = await this.queryBus.execute<GetAiDiagnosisResultQuery, GetAiDiagnosisResultResponseDto>(query);
+    return result;
+  }
+
+  @Post('start-examination')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Start patient examination' })
+  @ApiBody({ type: StartExaminationRequestDto })
+  @ApiResponse({ status: 201, description: 'Examination started successfully', type: StartExaminationResponseDto })
+  async startExamination(
+    @CurrentUser() user: UserEntity,
+    @Body() request: StartExaminationRequestDto,
+  ): Promise<StartExaminationResponseDto> {
+    const consultationId = await this.commandBus.execute<StartExaminationCommand, string>(
+      new StartExaminationCommand(user.id, request.appointmentId, request.patientId)
+    );
+
+    return { consultationId };
+  }
+
+  @Post('finish-examination')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Finish patient examination' })
+  @ApiBody({ type: FinishExaminationRequestDto })
+  @ApiResponse({ status: 200, description: 'Examination finished successfully' })
+  async finishExamination(
+    @CurrentUser() user: UserEntity,
+    @Body() request: FinishExaminationRequestDto,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new FinishExaminationCommand(user.id, request)
+    );
   }
 
   @Post('ai-diagnosis/callback')

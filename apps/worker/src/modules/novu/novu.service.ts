@@ -19,10 +19,15 @@ export class NovuService extends Novu {
     @InjectQueue(NOVU_QUEUE_NAME)
     private readonly novuQueue: Queue,
   ) {
-    super(config.novuApiKey, { backendUrl: config.novuServerUrl });
+    super(config.novuApiKey || 'mock_key_for_ignore', { backendUrl: config.novuServerUrl || 'http://localhost:3000' });
   }
 
   async sendLoginOtpToSubscriber(dto: OtpDto): Promise<void> {
+    if (!this.config.novuApiKey) {
+      console.warn('NOVU_API_KEY is not set. Ignoring Novu OTP : ', NOVU_QUEUE_JOBS.SEND_LOGIN_OTP);
+      return;
+    }
+
     const { otp, userId, userName, email } = dto;
 
     const otpPayload: OTPJobData = {
@@ -36,6 +41,11 @@ export class NovuService extends Novu {
   }
 
   async sendRegisterOtpToSubscriber(dto: OtpDto): Promise<void> {
+    if (!this.config.novuApiKey) {
+      console.warn('NOVU_API_KEY is not set. Ignoring Novu OTP : ', NOVU_QUEUE_JOBS.SEND_REGISTER_OTP);
+      return;
+    }
+
     const { otp, userId, userName, email } = dto;
 
     const otpPayload: OTPJobData = {

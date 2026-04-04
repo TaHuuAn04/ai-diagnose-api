@@ -11,10 +11,10 @@ import {
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 
+import { ConsultationEntity, ImageEntity } from '@app/core/domain/entities';
 import { AppointmentStatus, ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
-import { ConsultationEntity, ImageEntity } from '@app/core/domain/entities';
 
 import { IDoctorService } from '../doctor.interface';
 import {
@@ -188,6 +188,8 @@ export class DoctorService implements IDoctorService {
         const appointmentImages = imagesMap.get(appointment.id) || [];
 
         return plainToInstance(GetPersonalAppointmentsResponseDto, {
+          id: appointment.id,
+          patientId: appointment.patientId,
           date: appointment.workingTime?.date,
           from: appointment.workingTime?.shift?.from,
           to: appointment.workingTime?.shift?.to,
