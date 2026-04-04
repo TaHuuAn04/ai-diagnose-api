@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class ProcessAiDiagnosisInputDto {
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   consultationId: string;
 

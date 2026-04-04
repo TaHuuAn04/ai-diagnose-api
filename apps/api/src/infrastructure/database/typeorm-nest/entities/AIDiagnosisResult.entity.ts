@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
-import { SeverityLevel } from '@app/core/domain/enums';
 import { SuggestedDiagnosis } from '@app/core/domain/entities/ai-diagnosis-result';
+import { SeverityLevel } from '@app/core/domain/enums';
 
 import { BaseEntity } from '../base.entity';
 

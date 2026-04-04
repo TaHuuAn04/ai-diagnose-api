@@ -8,3 +8,5 @@ export * from './get-ai-diagnosis-result.use-case';
 export * from './handle-ai-diagnosis-callback.use-case';
 export * from './get-doctor-dashboard.use-case';
 export * from './get-appointment-dates.use-case';
+export * from './start-examination.use-case';
+export * from './finish-examination.use-case';

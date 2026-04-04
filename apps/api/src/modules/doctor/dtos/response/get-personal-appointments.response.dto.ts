@@ -8,6 +8,14 @@ import { ImageInfoDto } from '@app/core/dtos';
 @Exclude()
 export class GetPersonalAppointmentsResponseDto {
   @Expose()
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  id: string;
+
+  @Expose()
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  patientId: string;
+
+  @Expose()
   @ApiProperty({ example: '2026-03-15' })
   date: string;
 

@@ -1,14 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
 
 export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   consultationId: string;
 
   @ApiProperty()
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
   diagnoseModelId: string;
 
