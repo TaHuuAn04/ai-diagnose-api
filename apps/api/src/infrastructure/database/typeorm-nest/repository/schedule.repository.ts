@@ -11,6 +11,8 @@ import { GetConsultingRoomDto } from '../../../../modules/appointment/dtos';
 import { Schedule } from '../entities';
 
 import { GenericRepository } from './generic-repository';
+import { GetScheduleRequestDto } from 'apps/api/src/modules/staff/dtos';
+import { BadRequestException } from '@app/core/exception';
 
 @Injectable()
 export class ScheduleRepository
@@ -29,5 +31,26 @@ export class ScheduleRepository
         return plainToInstance(Schedule, domainEntity);
       }
     });
+  }
+
+  async findSchedulesWithDepartmentForStaff(
+    department: string,
+    request: GetScheduleRequestDto
+  ): Promise<ScheduleEntity[]> {
+    const { startDate, endDate } = request;
+    if (startDate > endDate) {
+      throw new BadRequestException('Start date must be before end date');
+    }
+
+    const queryBuilder = this.repository.createQueryBuilder('schedule')
+      .leftJoinAndSelect('schedule.doctor', 'doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+      .where('doctor.department = :department', { department })
+      .andWhere('schedule.date BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .orderBy('schedule.date', 'ASC')
+      .addOrderBy('schedule.from', 'ASC');
+
+    const schedules = await queryBuilder.getMany();
+    return schedules.map(schedule => this._mapper.toDomain(schedule));
   }
 }

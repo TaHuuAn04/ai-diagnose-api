@@ -4,8 +4,8 @@ import { ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { IStaffService } from '../interfaces';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
-import { IAdmissionStaffRepository, IAppointmentRepository, IDoctorRepository } from '@api/core/repository';
-import { GetActiveDoctorsResponseDto, GetTodayAppointmentsRequestDto, GetTodayAppointmentsResponseDto } from '../dtos';
+import { IAdmissionStaffRepository, IAppointmentRepository, IDoctorRepository, IScheduleRepository } from '@api/core/repository';
+import { GetActiveDoctorsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto, GetTodayAppointmentsRequestDto, GetTodayAppointmentsResponseDto } from '../dtos';
 import { ActiveStatus, AppointmentStatus } from '@app/core/domain/enums';
 import { plainToInstance } from 'class-transformer';
 
@@ -19,7 +19,10 @@ export class StaffService implements IStaffService {
     private readonly admissionStaffRepository: IAdmissionStaffRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.DOCTOR_REPOSITORY)
-    private readonly doctorRepository: IDoctorRepository
+    private readonly doctorRepository: IDoctorRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.SCHEDULE_REPOSITORY)
+    private readonly scheduleRepository: IScheduleRepository
   ) {}
 
   async getTodayAppointments(
@@ -132,6 +135,45 @@ export class StaffService implements IStaffService {
       return plainToInstance(GetActiveDoctorsResponseDto, Array.from(doctorMap.values()));
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error getting active doctors');
+    }
+  }
+
+  async getScheduleInfo(
+    staffId: string,
+    request: GetScheduleRequestDto
+  ): Promise<GetScheduleResponseDto[]> {
+    try {
+      const staff = await this.admissionStaffRepository.findOne({
+        where: { userId: staffId },
+      });
+      if (!staff) {
+        throw new NotFoundException(`Staff not found with id ${staffId}`);
+      }
+
+      const schedules = await this.scheduleRepository.findSchedulesWithDepartmentForStaff(
+        staff.department,
+        request
+      )
+
+      const scheduleDtos = schedules.map((schedule) => {
+        if (!schedule.doctor || !schedule.doctor.user) {
+          throw new NotFoundException(`Doctor not found with id ${schedule.doctorId}`);
+        }
+
+        return {
+          scheduleId: schedule.id,
+          doctorId: schedule.doctorId,
+          date: schedule.date,
+          from: schedule.from,
+          to: schedule.to,
+          room: schedule.room,
+          doctorName: schedule.doctor?.user?.lastName + ' ' + schedule.doctor?.user?.firstName,
+        };
+      });
+
+      return plainToInstance(GetScheduleResponseDto, scheduleDtos);
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error getting schedule info');
     }
   }
 }

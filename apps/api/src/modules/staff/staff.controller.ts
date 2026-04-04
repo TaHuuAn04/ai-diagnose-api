@@ -10,8 +10,8 @@ import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
 
-import { GetTodayAppointmentsResponseDto, GetTodayAppointmentsRequestDto, GetActiveDoctorsResponseDto } from "./dtos";
-import { GetActiveDoctorsQuery, GetTodayAppointmentsQuery } from "./use-cases";
+import { GetTodayAppointmentsResponseDto, GetTodayAppointmentsRequestDto, GetActiveDoctorsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto } from "./dtos";
+import { GetActiveDoctorsQuery, GetScheduleQuery, GetTodayAppointmentsQuery } from "./use-cases";
 
 
 @ApiTags('Staffs')
@@ -72,6 +72,31 @@ export class StaffController {
 
     const result = await this.queryBus.execute<
       GetActiveDoctorsQuery, GetActiveDoctorsResponseDto[]
+    >(query);
+
+    return result;
+  }
+
+  @Get('/schedule')
+  @ApiOperation({ summary: "Get information of schedule" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: GetScheduleResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getSchedule(
+    @CurrentUser() user: UserEntity,
+    @Query() input: GetScheduleRequestDto
+  ): Promise<GetScheduleResponseDto[]> {
+    const query = new GetScheduleQuery(
+      user.id,
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      GetScheduleQuery, GetScheduleResponseDto[]
     >(query);
 
     return result;
