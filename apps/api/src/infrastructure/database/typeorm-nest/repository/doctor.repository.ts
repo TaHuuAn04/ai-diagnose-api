@@ -6,7 +6,7 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { DoctorEntity } from '@app/core/domain/entities';
-import { SortDirection } from '@app/core/domain/enums';
+import { AppointmentStatus, SortDirection } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListDoctorRequestDto } from '../../../../modules/doctor/dtos';
@@ -78,4 +78,22 @@ export class DoctorRepository
       total,
     });
   }    
+
+  async findActiveDoctors(
+    department: string,
+    date: string
+  ): Promise<DoctorEntity[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('doctor')
+      .andWhere('doctor.department = :department', { department })
+      .leftJoinAndSelect('doctor.user', 'user')
+      .leftJoinAndSelect('doctor.workingTime', 'workingTime', 'workingTime.date = :date', { date })
+      .leftJoinAndSelect('workingTime.appointment', 'appointment', 'appointment.status NOT IN (:...status)', { status: [AppointmentStatus.EXAMINED, AppointmentStatus.CANCELLED] })
+
+    const doctors = await queryBuilder.getMany();
+    
+    const result = doctors.map((doctor) => this._mapper.toDomain(doctor));
+
+    return plainToInstance(DoctorEntity, result);
+  }
 }

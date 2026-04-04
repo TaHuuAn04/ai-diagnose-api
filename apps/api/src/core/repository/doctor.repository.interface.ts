@@ -10,4 +10,9 @@ export interface IDoctorRepository extends IGenericRepository<DoctorEntity> {
   findListDoctors(
     request: GetListDoctorRequestDto
   ): Promise<PaginatedResult<DoctorEntity>>;
+
+  findActiveDoctors(
+    department: string,
+    date: string
+  ): Promise<DoctorEntity[]>;
 }
