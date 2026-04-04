@@ -17,6 +17,12 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
     userId: string
   ): Promise<AppointmentEntity | null>;
 
+  findTodayAppointmentsForStaff(
+    department: string,
+    date: string, 
+    from?: string
+  ): Promise<AppointmentEntity[]>;
+
   countPeriodExaminedAppointments(
     doctorId: string,
     startDate: string,

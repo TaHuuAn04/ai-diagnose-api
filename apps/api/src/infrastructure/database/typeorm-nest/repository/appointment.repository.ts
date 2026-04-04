@@ -116,6 +116,42 @@ export class AppointmentRepository
     return total;
   }
 
+  async findTodayAppointmentsForStaff(
+    department: string,
+    date: string, 
+    from?: string
+  ): Promise<AppointmentEntity[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .where('appointment.metadata->>\'department\' = :department', { department })
+      .andWhere('appointment.metadata->>\'date\' = :date', { date })
+      .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.EXAMINED, AppointmentStatus.CANCELLED] })
+      .leftJoinAndSelect('appointment.workingTime', 'workingTime')
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user')
+
+    if (from) {
+      queryBuilder.andWhere('appointment.metadata->>\'from\' >= :from', { from });
+      queryBuilder.orderBy('appointment.metadata->>\'from\'', 'ASC');
+
+      // Lấy record đầu tiên để xác định shiftId của ca sớm nhất
+      const firstAppointment = await queryBuilder.clone().getOne();
+
+      if (!firstAppointment) {
+        return [];
+      }
+
+      const targetShiftId = firstAppointment.workingTime?.shiftId;
+
+      // Chỉ lấy những appointment cùng shiftId
+      queryBuilder.andWhere('workingTime.shiftId = :shiftId', { shiftId: targetShiftId });
+    }
+
+    const entities = await queryBuilder.getMany();
+
+    return entities.map(entity => this._mapper.toDomain(entity));
+  }
+
   async countDistinctPatientsInPeriodExaminedAppointments(
     doctorId: string,
     startDate: string,

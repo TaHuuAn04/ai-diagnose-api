@@ -8,6 +8,7 @@ import { EmbeddedChatModule } from './embedded-chat/embedded-chat.module';
 import { PatientModule } from './patient/patient.module';
 import { ShiftModule } from './shift/shift.module';
 import { UserModule } from './user/user.module';
+import { StaffModule } from './staff/staff.module';
 export const modules = [
   UserModule,
   AuthModule,
@@ -18,5 +19,6 @@ export const modules = [
   DoctorModule,
   PatientModule,
   AppointmentModule,
+  StaffModule,
   DevModeModule.registerAsync()
 ];
