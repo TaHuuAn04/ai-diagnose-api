@@ -4,13 +4,14 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { INJECTION_TOKEN } from "@api/enums";
 import { StaffController } from "./staff.controller";
 import { StaffService } from "./infrastructures";
-import { GetActiveDoctorsQueryHandler, GetTodayAppointmentsQueryHandler } from "./use-cases";
+import { GetActiveDoctorsQueryHandler, GetScheduleQueryHandler, GetTodayAppointmentsQueryHandler } from "./use-cases";
 
 
 const Handlers = [
   // Add command handlers here in the future
   GetTodayAppointmentsQueryHandler,
-  GetActiveDoctorsQueryHandler
+  GetActiveDoctorsQueryHandler,
+  GetScheduleQueryHandler
 ];
 
 const Adapters = [

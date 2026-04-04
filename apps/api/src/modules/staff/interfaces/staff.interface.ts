@@ -1,4 +1,4 @@
-import { GetActiveDoctorsResponseDto, GetTodayAppointmentsRequestDto, GetTodayAppointmentsResponseDto } from "../dtos";
+import { GetActiveDoctorsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto, GetTodayAppointmentsRequestDto, GetTodayAppointmentsResponseDto } from "../dtos";
 
 export interface IStaffService {
   getTodayAppointments(
@@ -10,4 +10,9 @@ export interface IStaffService {
     staffId: string,
     date: string
   ): Promise<GetActiveDoctorsResponseDto[]>;
+
+  getScheduleInfo(
+    staffId: string,
+    request: GetScheduleRequestDto
+  ): Promise<GetScheduleResponseDto[]>;
 }
