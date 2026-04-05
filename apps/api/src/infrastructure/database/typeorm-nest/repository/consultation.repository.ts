@@ -104,7 +104,7 @@ export class ConsultationRepository
           .groupBy('c.patientId')
           .where('c.patientId IN (:...patientIds)', { patientIds }),
         'max_c',
-        'consultation.patientId = max_c.patientId AND consultation.createdAt = max_c.maxCreatedAt'
+        'consultation.patientId = "max_c"."patientId" AND consultation.createdAt = "max_c"."maxCreatedAt"'
       )
       .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
       .leftJoinAndSelect('diagnosisResult.diseases', 'diseases');

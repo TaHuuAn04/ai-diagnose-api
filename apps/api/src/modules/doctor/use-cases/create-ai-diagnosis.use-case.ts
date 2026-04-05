@@ -2,10 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
-import { lastValueFrom } from 'rxjs';
 
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { IDiagnoseModelRepository } from '@api/repository';
+import { lastValueFrom } from 'rxjs';
 
 import { INTERNAL_WORKER_API_URL } from '@app/core/environments';
 import { AiInternalServerError, Exception } from '@app/core/exception';

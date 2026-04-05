@@ -28,6 +28,19 @@ export class StartExaminationCommandHandler
     private readonly consultationRepository: IConsultationRepository,
   ) {}
 
+  private static formatLocalTimeWithOffset(date: Date): string {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const hh = pad(date.getHours());
+    const mm = pad(date.getMinutes());
+    const ss = pad(date.getSeconds());
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offsetMinutes);
+    const offsetHours = pad(Math.floor(absOffset / 60));
+    const offsetMins = pad(absOffset % 60);
+    return `${hh}:${mm}:${ss}${sign}${offsetHours}:${offsetMins}`;
+  }
+
   async execute(command: StartExaminationCommand): Promise<string> {
     try {
       const { doctorId, appointmentId, patientId } = command;
@@ -44,7 +57,14 @@ export class StartExaminationCommandHandler
         throw new BadRequestException('Appointment does not belong to the given patient.');
       }
 
-      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+      if (appointment.status === AppointmentStatus.EXAMINING) {
+        const existingConsultation = await this.consultationRepository.findOne({
+          where: { appointmentId }
+        });
+        if (existingConsultation) {
+          return existingConsultation.id;
+        }
+      } else if (appointment.status !== AppointmentStatus.SCHEDULED) {
         throw new BadRequestException(`Cannot start examination for appointment with status ${appointment.status}`);
       }
 
@@ -54,11 +74,13 @@ export class StartExaminationCommandHandler
       });
 
       // 2. Create Consultation
+      const timeWithTZ = StartExaminationCommandHandler.formatLocalTimeWithOffset(new Date());
+
       const newConsultation = await this.consultationRepository.create({
         appointmentId,
         patientId,
         doctorId,
-        startTime: new Date().toISOString()
+        startTime: timeWithTZ,
       });
 
       return newConsultation.id;

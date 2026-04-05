@@ -3,8 +3,8 @@ import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 
 import { INJECTION_TOKEN } from "@api/enums";
 
-import { IConsultationService } from "../interfaces";
 import { GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto } from "../dtos";
+import { IConsultationService } from "../interfaces";
 
 export class GetStatisticDiseaseQuery {
   constructor(

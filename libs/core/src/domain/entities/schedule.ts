@@ -3,7 +3,7 @@ import { BaseEntity } from './base';
 import { DoctorEntity } from './doctor';
 
 export class ScheduleEntity extends BaseEntity {
-  doctorId: string;
+  doctorId?: string | null;
 
   admissionStaffId: string;
 
