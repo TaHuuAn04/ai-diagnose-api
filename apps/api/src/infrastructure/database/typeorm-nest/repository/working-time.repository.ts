@@ -2,13 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 import { IWorkingTimeRepository } from "@api/core/repository/working-time.repository.interface";
-import { GetShiftsByDoctorIdRequestDto } from "apps/api/src/modules/shift/dtos/requests/get-available-shifts.request.dto";
+import { GetTodayAppointmentsRequestDto } from "apps/api/src/modules/staff/dtos";
 import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
 
 import { WorkingTimeEntity } from "@app/core/domain/entities";
-import { SortDirection } from "@app/core/domain/enums";
-import { PaginatedResult } from "@app/core/dtos";
+import { WorkingTimeStatus } from "@app/core/domain/enums";
 
 import { WorkingTime } from "../entities";
 
@@ -31,5 +30,26 @@ export class WorkingTimeRepository
         return plainToInstance(WorkingTime, domainEntity);
       }
     });
+  }
+
+  async findAvailableShifts(
+    department: string,
+    request: GetTodayAppointmentsRequestDto
+  ): Promise<WorkingTimeEntity[]> {
+    const { currentDate, from } = request;
+    const queryBuilder = this.repository
+      .createQueryBuilder('workingTime')
+      .andWhere('workingTime.date = :date', { date: currentDate })
+      .andWhere('workingTime.status = :status', { status: WorkingTimeStatus.AVAILABLE })
+      .leftJoinAndSelect('workingTime.doctor', 'doctor')
+      .andWhere('doctor.department = :department', { department })
+      .leftJoinAndSelect('doctor.user', 'user')
+      .leftJoinAndSelect('workingTime.shift', 'shift')
+      .andWhere('shift.from > :from', { from })
+      .orderBy('shift.from', 'ASC')
+    
+    const entities = await queryBuilder.getMany()
+
+    return entities.map(entity => this._mapper.toDomain(entity));
   }
 }

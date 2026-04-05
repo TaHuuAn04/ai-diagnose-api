@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -10,8 +10,20 @@ import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
 
-import { GetTodayAppointmentsResponseDto, GetTodayAppointmentsRequestDto, GetActiveDoctorsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto } from "./dtos";
-import { GetActiveDoctorsQuery, GetScheduleQuery, GetTodayAppointmentsQuery } from "./use-cases";
+import {
+  GetActiveDoctorsResponseDto,
+  GetListAppointmentsRequestDto,
+  GetListAppointmentsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto,
+  GetTodayAppointmentsRequestDto,
+  GetTodayAppointmentsResponseDto,
+  StaffDashboardStatisticsDto
+} from "./dtos";
+import {
+  GetActiveDoctorsQuery,
+  GetListAppointmentsQuery,
+  GetScheduleQuery, GetStaffInfoDashboardQuery,
+  GetTodayAppointmentsQuery
+} from "./use-cases";
 
 
 @ApiTags('Staffs')
@@ -72,6 +84,54 @@ export class StaffController {
 
     const result = await this.queryBus.execute<
       GetActiveDoctorsQuery, GetActiveDoctorsResponseDto[]
+    >(query);
+
+    return result;
+  }
+  
+  @Get('/appointments')
+  @ApiOperation({ summary: "Get all list of appointments" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: PageDto<GetListAppointmentsResponseDto>
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getListAppointments(
+    @Query() input: GetListAppointmentsRequestDto
+  ): Promise<PageDto<GetListAppointmentsResponseDto>> {
+    const query = new GetListAppointmentsQuery(
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      GetListAppointmentsQuery, PageDto<GetListAppointmentsResponseDto>
+    >(query);
+
+    return result;
+  }
+
+  @Get('/staff-info-dashboard')
+  @ApiOperation({ summary: "Get staff dashboard statistics" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: StaffDashboardStatisticsDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getStaffInfoDashboard(
+    @CurrentUser() user: UserEntity,
+    @Query() input: GetTodayAppointmentsRequestDto
+  ): Promise<StaffDashboardStatisticsDto> {
+    const query = new GetStaffInfoDashboardQuery(
+      user.id,
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      GetStaffInfoDashboardQuery, StaffDashboardStatisticsDto
     >(query);
 
     return result;

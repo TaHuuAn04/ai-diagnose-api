@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AppointmentCalendarRawResult, AppointmentRawResult, IAppointmentRepository } from 'apps/api/src/core/repository';
 import { GetListAppointmentDto } from 'apps/api/src/modules/appointment/dtos';
 import { GetAppointmentCalendarResponseDto, GetPersonalAppointmentsRequestDto } from 'apps/api/src/modules/doctor/dtos';
+import { GetListAppointmentsRequestDto } from 'apps/api/src/modules/staff/dtos';
 import { plainToInstance } from 'class-transformer';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 
@@ -71,6 +72,69 @@ export class AppointmentRepository
     }
     if (request.take) {
       queryBuilder.take(request.take);
+    }
+
+    const [entities, total] = await queryBuilder.getManyAndCount();
+
+    const appointments = entities.map(entity => this._mapper.toDomain(entity));
+
+    return plainToInstance(PaginatedResult<AppointmentEntity>, {
+      data: appointments,
+      total
+    });
+  }
+
+  async findListAppointmentsForStaff(
+    request: GetListAppointmentsRequestDto
+  ): Promise<PaginatedResult<AppointmentEntity>> {
+    const { fromDate, toDate, from, to, status, doctorId } = request;
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .andWhere('appointment.metadata->>\'date\' >= :fromDate', { fromDate })
+      .andWhere('appointment.metadata->>\'date\' <= :toDate', { toDate })
+
+    if (from) {
+      queryBuilder.andWhere('appointment.metadata->>\'from\' >= :from', { from })
+    }
+
+    if (to) {
+      queryBuilder.andWhere('appointment.metadata->>\'to\' <= :to', { to })
+    }
+
+    if (doctorId) {
+      queryBuilder.andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId })
+    }
+
+    if (status) {
+      queryBuilder.andWhere('appointment.status = :status', { status })
+    }
+
+    queryBuilder.leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user')
+      
+    if (request.keyword) {
+      queryBuilder.andWhere(
+        '(user.firstName ILIKE :keyword OR user.lastName ILIKE :keyword OR user.phoneNumber ILIKE :keyword )',
+        { keyword: `%${request.keyword}%` }
+      );
+    }
+
+    const sortOrder = request.sortDirection ?? SortDirection.DESC;
+    const sortField = request.sort;
+
+    if (sortField) {
+      queryBuilder.orderBy(`appointment.${sortField}`, sortOrder as 'ASC' | 'DESC');
+    } else {
+      queryBuilder.orderBy("(appointment.metadata->>'date')", sortOrder as 'ASC' | 'DESC')
+        .addOrderBy("(appointment.metadata->>'from')", 'ASC');
+    }
+
+    if (request.skip) {
+      queryBuilder.offset(request.skip);
+    }
+    if (request.take) {
+      queryBuilder.limit(request.take);
     }
 
     const [entities, total] = await queryBuilder.getManyAndCount();

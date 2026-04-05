@@ -1,9 +1,9 @@
 import { AppointmentEntity } from '@app/core/domain/entities';
-import { AppointmentStatus } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetListAppointmentDto } from '../../modules/appointment/dtos';
 import { GetAppointmentCalendarResponseDto, GetPersonalAppointmentsRequestDto } from '../../modules/doctor/dtos';
+import { GetListAppointmentsRequestDto } from '../../modules/staff/dtos';
 
 import { IGenericRepository } from './generic-repository.interface';
 
@@ -11,6 +11,10 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
   findListAppointments(
     userId: string,
     request: GetListAppointmentDto
+  ): Promise<PaginatedResult<AppointmentEntity>>;
+
+  findListAppointmentsForStaff(
+    request: GetListAppointmentsRequestDto
   ): Promise<PaginatedResult<AppointmentEntity>>;
 
   findUpcomingAppointment(
