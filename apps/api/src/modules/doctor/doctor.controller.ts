@@ -7,6 +7,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam , ApiRespon
 
 
 import { JwtAuthGuard } from "@api/guards";
+import { plainToInstance } from "class-transformer";
 
 import { RolesGuard } from "@app/core";
 import { CurrentUser, IsPublic, Roles } from "@app/core/decorators";
@@ -243,7 +244,7 @@ export class DoctorController {
       new StartExaminationCommand(user.id, request.appointmentId, request.patientId)
     );
 
-    return { consultationId };
+    return plainToInstance(StartExaminationResponseDto, { consultationId });
   }
 
   @Post('finish-examination')

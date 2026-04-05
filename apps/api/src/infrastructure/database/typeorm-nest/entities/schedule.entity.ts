@@ -7,6 +7,9 @@ import { Doctor } from './doctor.entity';
 
 @Entity()
 export class Schedule extends BaseEntity {
+  @Column({ type: 'uuid', nullable: true })
+  doctorId?: string | null;
+
   @Column('uuid')
   admissionStaffId: string;
 

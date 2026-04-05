@@ -15,11 +15,9 @@ import { Transactional } from 'typeorm-transactional';
 
 import { AppointmentMetadata } from '@app/core/domain/entities';
 import { AppointmentStatus, ImageReference, ImageType, WorkingTimeStatus } from '@app/core/domain/enums';
-import { PageDto, PageMetaDto, PageOptionsDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
-import { GetConsultingRoomDto } from '../../appointment/dtos';
 import { BookShiftRequestDto } from '../dtos/requests/book-shift.request.dto';
 import { GetShiftsByDoctorIdRequestDto } from '../dtos/requests/get-available-shifts.request.dto';
 import { GetListShiftResponseDto } from '../dtos/response';
@@ -88,7 +86,7 @@ export class ShiftService implements IShiftService {
         sort: [
           { sortBy: 'date', sortOrder: 'ASC' },
           { 
-            sortBy: 'shift' as any, 
+            sortBy: 'shift', 
             sortOrder: { from: 'ASC' } as any
           }
         ],
@@ -153,7 +151,7 @@ export class ShiftService implements IShiftService {
           shiftId: shiftId,
           date: date,
         },
-        relations: ['doctor','doctor.user']
+        relations: ['doctor','doctor.user', 'shift'],
       });
 
       if (!workingTime) {
@@ -169,10 +167,10 @@ export class ShiftService implements IShiftService {
           doctorId: doctorId,
           date: workingTime.date,
           from: {
-            gte: workingTime.shift?.from,
+            lte: workingTime.shift?.from,
           },
           to: {
-            lte: workingTime.shift?.to,
+            gte: workingTime.shift?.to,
           },
         },
       });
@@ -187,7 +185,7 @@ export class ShiftService implements IShiftService {
         date: workingTime.date,
         from: workingTime.shift?.from,
         to: workingTime.shift?.to,
-        room: roomNumber,
+        room: roomNumber.room,
       });
 
       const appointment = await this.appointmentRepository.create({

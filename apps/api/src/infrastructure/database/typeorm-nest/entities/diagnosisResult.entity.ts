@@ -1,5 +1,6 @@
-import { PrescriptionItem } from '@app/core/domain/entities/diagnosis-result';
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+
+import { PrescriptionItem } from '@app/core/domain/entities/diagnosis-result';
 
 import { BaseEntity } from '../base.entity';
 

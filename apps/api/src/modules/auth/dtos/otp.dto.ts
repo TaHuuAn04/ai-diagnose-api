@@ -1,8 +1,9 @@
-import { OtpType } from '@app/core/domain/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Exclude, Expose } from 'class-transformer';
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsNumberString, IsString, IsUUID } from 'class-validator';
+
+import { OtpType } from '@app/core/domain/enums';
 
 export class RequestOtpRequestDto {
   @IsNotEmpty()
