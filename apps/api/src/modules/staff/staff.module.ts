@@ -2,15 +2,23 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 
 import { INJECTION_TOKEN } from "@api/enums";
-import { StaffController } from "./staff.controller";
+
 import { StaffService } from "./infrastructures";
-import { GetActiveDoctorsQueryHandler, GetScheduleQueryHandler, GetTodayAppointmentsQueryHandler } from "./use-cases";
+import { StaffController } from "./staff.controller";
+import {
+  GetActiveDoctorsQueryHandler,
+  GetListAppointmentsQueryHandler,
+  GetScheduleQueryHandler,
+  GetStaffInfoDashboardQueryHandler, GetTodayAppointmentsQueryHandler
+} from "./use-cases";
 
 
 const Handlers = [
   // Add command handlers here in the future
   GetTodayAppointmentsQueryHandler,
   GetActiveDoctorsQueryHandler,
+  GetListAppointmentsQueryHandler,
+  GetStaffInfoDashboardQueryHandler,
   GetScheduleQueryHandler
 ];
 

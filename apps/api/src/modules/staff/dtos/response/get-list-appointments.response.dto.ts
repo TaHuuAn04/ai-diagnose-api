@@ -34,3 +34,42 @@ export class GetTodayAppointmentsResponseDto {
   @ApiProperty({ example: AppointmentStatus.SCHEDULED, enum: AppointmentStatus })
   status: AppointmentStatus;
 }
+
+@Exclude()
+export class GetListAppointmentsResponseDto {
+  @Expose()
+  appointmentId: string;
+
+  @Expose()
+  date: string;
+
+  @Expose()
+  from: string;
+
+  @Expose()
+  to: string;
+
+  @Expose()
+  patientName: string;
+
+  @Expose()
+  gender: UserGender;
+
+  @Expose()
+  phoneNumber: string;
+
+  @Expose()
+  doctorName: string;
+
+  @Expose()
+  department: string;
+
+  @Expose()
+  status: AppointmentStatus;
+
+  @Expose()
+  note: string;
+
+  @Expose()
+  description: string;
+}

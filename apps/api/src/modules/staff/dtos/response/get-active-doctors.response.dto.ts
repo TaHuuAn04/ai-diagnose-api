@@ -7,6 +7,10 @@ import { ActiveStatus } from '@app/core/domain/enums';
 @Exclude()
 export class GetActiveDoctorsResponseDto {
   @Expose()
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
+  doctorId: string;
+
+  @Expose()
   @ApiProperty({ example: 'John Doe' })
   doctorName: string;
 
