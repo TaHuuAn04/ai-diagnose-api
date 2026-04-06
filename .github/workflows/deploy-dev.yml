@@ -1,0 +1,36 @@
+name: Deploy to Dev Environment
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Google Cloud VM via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/anhuu/code-base/ai-diagnose-api
+            
+            git fetch origin
+            git reset --hard origin/dev
+            
+            echo "${{ secrets.ENV_DEV_FILE }}" > .env
+            
+            # Build sequentially to reduce network spikes during npm install.
+            docker compose build api
+            docker compose build worker
+            docker compose up -d redis api worker
+            
+            docker image prune -f

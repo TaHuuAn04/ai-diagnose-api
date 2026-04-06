@@ -1651,7 +1651,7 @@ VALUES
 -- ============================================================
 -- 10. DIAGNOSIS RESULTS
 -- ============================================================
-INSERT INTO diagnosis_results (id, advices, prescription, description, symstoms_text, feed_back_a_i, consultation_id, created_at, updated_at)
+INSERT INTO diagnosis_results (id, advices, prescription, description, symstoms_text, feed_back_ai, consultation_id, created_at, updated_at)
 VALUES
 ('b6915243-d625-47bf-ad6d-7b2661f0284e', 'Uống nhiều nước, bôi kem điều độ', '[{"name":"Kem dưỡng Cetaphil","dosage":"1 tuýp","duration":"2 tuần"}]', 'Viêm da cơ địa', 'Da khô bong vảy, ngứa nhẹ', 'AI Suggest: Atopic Dermatitis, Confidence 99%', 'ac319dc7-212b-488d-a4fe-b7b26d69cea2', NOW(), NOW()),
 ('af837c25-6a6a-4a20-9f1b-bb7edd6f55c0', 'Uống nhiều nước, bôi kem điều độ', '[{"name":"Kem dưỡng Cetaphil","dosage":"1 tuýp","duration":"2 tuần"}]', 'Viêm da cơ địa', 'Da khô bong vảy, ngứa nhẹ', 'AI Suggest: Atopic Dermatitis, Confidence 99%', '99031f9e-188f-402a-ab4f-243799cf72e2', NOW(), NOW()),

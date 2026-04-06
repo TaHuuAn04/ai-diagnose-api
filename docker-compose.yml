@@ -1,20 +1,52 @@
-version: '3.7'
-services:
-  postgres:
-    image: postgres:14
-    ports:
-      - '5434:5432'
-    environment:
-      POSTGRES_DB: ai-api
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+version: '3.8'
 
+services:
   redis:
-    image: redis
+    image: redis:7-alpine
+    restart: always
     ports:
-      - 6378:6379
+      - '6379:6379'
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
-      timeout: 30s
+      timeout: 5s
       retries: 3
+    networks:
+      - astcare-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP: api
+    restart: always
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - astcare-net
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP: worker
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - astcare-net
+
+networks:
+  astcare-net:
+    name: astcare-net
+    driver: bridge

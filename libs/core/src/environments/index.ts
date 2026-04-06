@@ -31,6 +31,16 @@ export const OTP_RESEND_TIME: number = process.env.OTP_RESEND_TIME
   ? parseInt(process.env.OTP_RESEND_TIME)
   : 300;
 
+// Database
+export const DB_HOST: string = process.env.API_DB_HOST ?? 'localhost';
+export const DB_PORT: number = process.env.API_DB_PORT
+  ? parseInt(process.env.API_DB_PORT)
+  : 5432;
+
+export const DB_USERNAME: string = process.env.API_DB_USERNAME ?? 'postgres';
+export const DB_PASSWORD: string = process.env.API_DB_PASSWORD ?? 'postgres';
+export const DB_NAME: string = process.env.API_DB_NAME ?? 'postgres';
+
 // novu
 export const NOVU_SERVER_URL: string = process.env.NOVU_SERVER_URL ?? '';
 export const NOVU_API_KEY: string = process.env.NOVU_API_KEY ?? '';

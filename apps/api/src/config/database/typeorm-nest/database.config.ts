@@ -3,17 +3,19 @@ import { join } from 'path';
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
+import { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USERNAME } from '@app/core/environments';
+
 import { CONFIG_KEY } from '../../config-key';
 
 import { NamingStrategy } from './naming.strategy';
 
 export default registerAs<TypeOrmModuleOptions>(CONFIG_KEY.DATABASE, () => ({
   type: 'postgres',
-  host: process.env.API_DB_HOST ?? 'localhost',
-  port: parseInt(process.env.API_DB_PORT ?? '5432', 10),
-  username: process.env.API_DB_USERNAME ?? 'postgres',
-  password: process.env.API_DB_PASSWORD ?? 'postgres',
-  database: process.env.API_DB_NAME ?? 'postgres',
+  host: DB_HOST,
+  port: DB_PORT,
+  username: DB_USERNAME,
+  password: DB_PASSWORD,
+  database: DB_NAME,
   entities: [
     join(
       __dirname,
