@@ -12,6 +12,8 @@ import { MainModule } from './main.module';
 async function bootstrap() {
   const app = await NestFactory.create(MainModule);
 
+  // app.setGlobalPrefix('api');
+
   app.use(cookieParser());
   app.enableVersioning();
 
@@ -37,6 +39,7 @@ async function bootstrap() {
     .setTitle('AI Chatbot API')
     .setDescription('AI Chatbot API description')
     .setVersion('1.0')
+    .addServer('/')
     .addServer('/api')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

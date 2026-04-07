@@ -12,7 +12,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { OtpType } from '@app/core/domain/enums';
 import {
-  LOGIN_OTP_EXPIRE_TIME,
   REGISTER_OTP_EXPIRE_TIME,
 } from '@app/core/environments';
 import {
@@ -92,7 +91,7 @@ export class AuthService implements IAuthService {
       };
 
       // send Register OTP use Novu via Worker
-      if (apiNodeEnv === 'production') {
+      if (apiNodeEnv === 'development' || apiNodeEnv === 'production') {
         await this.internalWorkerService.sendRegisterOtp(otp, input.email);
       }
 
@@ -176,12 +175,12 @@ export class AuthService implements IAuthService {
       }
 
       // create novu user
-      // await this.internalWorkerService.createNovuUser({
-      //   id: savedUser.id,
-      //   email,
-      //   firstName,
-      //   lastName,
-      // });
+      await this.internalWorkerService.createNovuUser({
+        id: savedUser.id,
+        email,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
+      });
       
       // create patient profile for user
       await this.patientService.createPatient(savedUser.id);
@@ -244,7 +243,7 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('OTP is expired');
     }
 
-    if (validOtp !== input.otp.toString()) {
+    if (validOtp !== input.otp) {
       throw new BadRequestException('Wrong OTP');
     }
 

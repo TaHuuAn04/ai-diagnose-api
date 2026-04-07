@@ -19,7 +19,7 @@ export class NovuService extends Novu {
     @InjectQueue(NOVU_QUEUE_NAME)
     private readonly novuQueue: Queue,
   ) {
-    super(config.novuApiKey || 'mock_key_for_ignore', { backendUrl: config.novuServerUrl || 'http://localhost:3000' });
+    super(config.novuApiKey || 'mock_key_for_ignore', { backendUrl: config.novuServerUrl || 'https://api.novu.co' });
   }
 
   async sendLoginOtpToSubscriber(dto: OtpDto): Promise<void> {
