@@ -10,6 +10,7 @@ import { SortDirection } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetConsultationHistoryDto } from '../../../../modules/consultation/dtos';
+import { GetDoctorConsultationHistoryRequestDto } from '../../../../modules/doctor/dtos';
 import { Consultation } from '../entities';
 
 import { GenericRepository } from './generic-repository';
@@ -87,6 +88,94 @@ export class ConsultationRepository
       data: entities.map(entity => this._mapper.toDomain(entity)),
       total,
     });
+  }
+
+  async findDoctorConsultationHistory(
+    doctorId: string,
+    request: GetDoctorConsultationHistoryRequestDto
+  ): Promise<PaginatedResult<ConsultationEntity>> {
+    const { skip, take, keyword, startDate, endDate, sortBy, sortDirection } = request;
+    const sortOrder = sortDirection ?? 'DESC';
+    const sortField = sortBy ?? 'createdAt';
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('consultation')
+      .where('consultation.doctorId = :doctorId', { doctorId })
+      .leftJoinAndSelect('consultation.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user')
+      .leftJoinAndSelect('consultation.aiResult', 'aiResult')
+      .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
+      .leftJoinAndSelect('diagnosisResult.diseases', 'resultDisease')
+      .leftJoinAndSelect('resultDisease.disease', 'diseaseData');
+
+    if (startDate) {
+      queryBuilder.andWhere('consultation.createdAt >= :startDate', { startDate });
+    }
+
+    if (endDate) {
+      queryBuilder.andWhere('consultation.createdAt <= :endDate', { endDate });
+    }
+
+    if (keyword) {
+      queryBuilder.andWhere(
+        `CONCAT(user.firstName, ' ', user.lastName) ILIKE :keyword`,
+        { keyword: `%${keyword}%` },
+      );
+    }
+
+    if (skip !== undefined) queryBuilder.skip(skip);
+    if (take !== undefined) queryBuilder.take(take);
+
+    queryBuilder.orderBy(`consultation.${sortField}`, sortOrder);
+
+    const [entities, total] = await queryBuilder.getManyAndCount();
+
+    return plainToInstance(PaginatedResult<ConsultationEntity>, {
+      data: entities.map(entity => this._mapper.toDomain(entity)),
+      total,
+    });
+  }
+
+  async findConsultationDetailById(consultationId: string, doctorId: string): Promise<ConsultationEntity | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('consultation')
+      .where('consultation.id = :consultationId', { consultationId })
+      .andWhere('consultation.doctorId = :doctorId', { doctorId })
+      .leftJoinAndSelect('consultation.appointment', 'appointment')
+      .leftJoinAndSelect('consultation.patient', 'patient')
+      .leftJoinAndSelect('patient.user', 'user')
+      .leftJoinAndSelect('consultation.aiResult', 'aiResult')
+      .leftJoinAndSelect('aiResult.diseases', 'aiDiseases')
+      .leftJoinAndSelect('aiDiseases.disease', 'aiDiseaseData')
+      .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
+      .leftJoinAndSelect('diagnosisResult.diseases', 'resultDisease')
+      .leftJoinAndSelect('resultDisease.disease', 'diseaseData');
+
+    const entity = await queryBuilder.getOne();
+    if (!entity) return null;
+    return this._mapper.toDomain(entity);
+  }
+
+  async findAllByPatientId(patientId: string, excludeConsultationId?: string): Promise<ConsultationEntity[]> {
+     const queryBuilder = this.repository
+       .createQueryBuilder('consultation')
+       .where('consultation.patientId = :patientId', { patientId })
+       .leftJoinAndSelect('consultation.doctor', 'doctor')
+       .leftJoinAndSelect('doctor.user', 'doctorUser')
+       .leftJoinAndSelect('consultation.aiResult', 'aiResult')
+       .leftJoinAndSelect('aiResult.diseases', 'aiDiseases')
+       .leftJoinAndSelect('aiDiseases.disease', 'aiDiseaseData')
+       .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
+       .leftJoinAndSelect('diagnosisResult.diseases', 'resultDisease')
+       .leftJoinAndSelect('resultDisease.disease', 'diseaseData')
+       .orderBy('consultation.createdAt', 'DESC');
+       
+     if (excludeConsultationId) {
+       queryBuilder.andWhere('consultation.id != :excludeConsultationId', { excludeConsultationId });
+     }
+     
+     const entities = await queryBuilder.getMany();
+     return entities.map(e => this._mapper.toDomain(e));
   }
 
   async findLatestConsultationsByPatientIds(

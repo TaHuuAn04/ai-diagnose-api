@@ -27,6 +27,14 @@ import {
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
+  GetConsultationDetailResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto,
+  DoctorConsultationHistoryItemDto,
+  SuggestedDiagnosisDto,
+  ConsultationDiagnosisResultDto,
+  PrescriptionItemDto,
+  ResultDiseaseDto,
 } from '../dtos';
 
 @Injectable()
@@ -390,6 +398,150 @@ export class DoctorService implements IDoctorService {
       });
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve information.');
+    }
+  }
+
+  async getConsultationHistory(
+    doctorId: string,
+    request: GetDoctorConsultationHistoryRequestDto
+  ): Promise<PageDto<GetDoctorConsultationHistoryResponseDto>> {
+    try {
+      const { take, page } = request;
+
+      const paginatedResult = await this.consultationRepository.findDoctorConsultationHistory(doctorId, request);
+
+      const items = paginatedResult.data.map(entity => {
+        const patientName = entity.patient?.user
+          ? `${entity.patient.user.firstName || ''} ${entity.patient.user.lastName || ''}`.trim()
+          : '';
+
+        const aiSuggestedDiagnosis = entity.aiResult?.suggestedDiagnosis?.map(sd => plainToInstance(SuggestedDiagnosisDto, {
+          diseaseName: sd.diseaseName,
+          accuracy: sd.accuracy
+        })) || [];
+
+        const prescription = entity.diagnosisResult?.prescription?.map(p => plainToInstance(PrescriptionItemDto, {
+          medicineName: p.name,
+          concentration: p.concentration,
+          quantity: p.quantity,
+          dosage: p.dosage,
+          durationDays: p.duration
+        })) || [];
+
+        const diagnosisResult = plainToInstance(ConsultationDiagnosisResultDto, entity.diagnosisResult ? {
+          advices: entity.diagnosisResult.advices,
+          description: entity.diagnosisResult.description,
+          symstomsText: entity.diagnosisResult.symstomsText,
+          feedBackAI: entity.diagnosisResult.feedBackAI,
+          prescription: prescription,
+          diseases: entity.diagnosisResult.diseases?.map(d => plainToInstance(ResultDiseaseDto, {
+            id: d.diseaseId,
+            diseaseName: d.name || ''
+          })) || []
+        } : null);
+
+        return plainToInstance(GetDoctorConsultationHistoryResponseDto, {
+          id: entity.id,
+          createdAt: entity.createdAt,
+          startTime: entity.startTime,
+          endTime: entity.endTime,
+          patientName,
+          aiSuggestedDiagnosis,
+          diagnosisResult
+        });
+      });
+
+      const pageMeta = new PageMetaDto({ page, take, itemCount: paginatedResult.total });
+      return new PageDto(items, pageMeta);
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error getting consultation history');
+    }
+  }
+
+  async getConsultationDetail(doctorId: string, consultationId: string): Promise<GetConsultationDetailResponseDto> {
+    try {
+      const consultation = await this.consultationRepository.findConsultationDetailById(consultationId, doctorId);
+      if (!consultation) {
+        throw new NotFoundException(`Consultation not found or not accessible`);
+      }
+
+      const pastConsultationsEntities = await this.consultationRepository.findAllByPatientId(consultation.patientId, consultationId);
+      
+      const pastConsultations = pastConsultationsEntities.map(entity => {
+        const patientName = entity.patient?.user
+          ? `${entity.patient.user.firstName || ''} ${entity.patient.user.lastName || ''}`.trim()
+          : '';
+          
+        return plainToInstance(DoctorConsultationHistoryItemDto, {
+          id: entity.id,
+          createdAt: entity.createdAt,
+          startTime: entity.startTime,
+          endTime: entity.endTime,
+          patientName,
+          aiSuggestedDiagnosis: entity.aiResult?.suggestedDiagnosis?.map(sd => ({
+            diseaseName: sd.diseaseName,
+            accuracy: sd.accuracy
+          })) || [],
+          diagnosisResult: entity.diagnosisResult ? {
+            advices: entity.diagnosisResult.advices,
+            description: entity.diagnosisResult.description,
+            symstomsText: entity.diagnosisResult.symstomsText,
+            feedBackAI: entity.diagnosisResult.feedBackAI,
+            prescription: entity.diagnosisResult.prescription,
+            diseases: entity.diagnosisResult.diseases?.map(d => ({
+              id: d.diseaseId,
+              diseaseName: d.name || ''
+            })) || []
+          } : null
+        });
+      });
+
+      const patientUser = consultation.patient?.user;
+      const patientName = patientUser 
+        ? `${patientUser.firstName || ''} ${patientUser.lastName || ''}`.trim()
+        : '';
+
+      const appointment = consultation.appointment;
+
+      return plainToInstance(GetConsultationDetailResponseDto, {
+        id: consultation.id,
+        appointment: {
+          id: consultation.appointmentId,
+          date: appointment?.metadata?.date,
+          from: appointment?.metadata?.from,
+          to: appointment?.metadata?.to,
+          description: appointment?.description,
+          room: appointment?.metadata?.room,
+          note: appointment?.note,
+          status: appointment?.status,
+        },
+        patient: {
+          id: consultation.patientId,
+          name: patientName,
+          dateOfBirth: patientUser?.dateOfBirth,
+          gender: patientUser?.gender,
+          phoneNumber: patientUser?.phoneNumber,
+        },
+        aiSuggestedDiagnosis: consultation.aiResult?.suggestedDiagnosis?.map(sd => ({
+          diseaseName: sd.diseaseName,
+          accuracy: sd.accuracy
+        })) || [],
+        aiProof: consultation.aiResult?.proof,
+        diagnosisResult: consultation.diagnosisResult ? {
+          advices: consultation.diagnosisResult.advices,
+          description: consultation.diagnosisResult.description,
+          symstomsText: consultation.diagnosisResult.symstomsText,
+          feedBackAI: consultation.diagnosisResult.feedBackAI,
+          prescription: consultation.diagnosisResult.prescription,
+          diseases: consultation.diagnosisResult.diseases?.map(d => ({
+            id: d.diseaseId,
+            diseaseName: d.name || ''
+          })) || []
+        } : null,
+        pastConsultations
+      });
+    } catch (error) {
+       ExceptionHandler.handleErrorException(error, 'Error getting consultation detail');
     }
   }
 }

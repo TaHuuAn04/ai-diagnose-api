@@ -37,6 +37,7 @@ async function bootstrap() {
     .setTitle('AI Chatbot API')
     .setDescription('AI Chatbot API description')
     .setVersion('1.0')
+    .addServer('/api')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'access-token',

@@ -3,11 +3,11 @@ import { ConsultationEntity } from './consultation';
 import { ResultDiseaseEntity } from './result-disease';
 
 export interface PrescriptionItem {
-  medicineName: string;
+  name: string;
   concentration: string;
   quantity: string;
   dosage: string;
-  durationDays: number;
+  duration: number;
 }
 
 export class DiagnosisResultEntity extends BaseEntity {

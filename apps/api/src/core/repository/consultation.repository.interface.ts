@@ -3,6 +3,7 @@ import { ConsultationEntity } from '@app/core/domain/entities';
 import { PaginatedResult } from '@app/core/dtos';
 
 import { GetConsultationHistoryDto } from '../../modules/consultation/dtos';
+import { GetDoctorConsultationHistoryRequestDto } from '../../modules/doctor/dtos';
 
 import { IGenericRepository } from './generic-repository.interface';
 
@@ -14,5 +15,20 @@ export interface IConsultationRepository extends IGenericRepository<Consultation
 
   findLatestConsultationsByPatientIds(
     patientIds: string[]
+  ): Promise<ConsultationEntity[]>;
+
+  findDoctorConsultationHistory(
+    doctorId: string,
+    request: GetDoctorConsultationHistoryRequestDto
+  ): Promise<PaginatedResult<ConsultationEntity>>;
+
+  findConsultationDetailById(
+    consultationId: string, 
+    doctorId: string
+  ): Promise<ConsultationEntity | null>;
+
+  findAllByPatientId(
+    patientId: string, 
+    excludeConsultationId?: string
   ): Promise<ConsultationEntity[]>;
 }

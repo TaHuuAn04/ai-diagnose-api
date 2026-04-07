@@ -31,7 +31,10 @@ import {
   GetPersonalAppointmentsResponseDto,
   HandleAiDiagnosisCallbackRequestDto,
   StartExaminationRequestDto,
-  StartExaminationResponseDto
+  StartExaminationResponseDto,
+  GetConsultationDetailResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto
 } from "./dtos";
 import {
   CreateAiDiagnosisCommand,
@@ -44,7 +47,9 @@ import {
   GetListDoctorQuery,
   GetPersonalAppointmentsQuery,
   HandleAiDiagnosisCallbackCommand,
-  StartExaminationCommand
+  StartExaminationCommand,
+  GetConsultationDetailQuery,
+  GetDoctorConsultationHistoryQuery
 } from "./use-cases";
 
 @ApiTags('Doctors')
@@ -272,5 +277,57 @@ export class DoctorController {
   ): Promise<void> {
     const command = new HandleAiDiagnosisCallbackCommand(request);
     await this.commandBus.execute(command);
+  }
+
+  @Get('consultation-history')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get doctor consultation history' })
+  @ApiResponse({
+    status: 200,
+    description: "Doctor consultation history retrieved successfully.",
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "Internal server error." })
+  async getConsultationHistory(
+    @CurrentUser() user: UserEntity,
+    @Query() request: GetDoctorConsultationHistoryRequestDto
+  ): Promise<PageDto<GetDoctorConsultationHistoryResponseDto>> {
+    const query = new GetDoctorConsultationHistoryQuery(
+      user.id,
+      request
+    );
+
+    return this.queryBus.execute<
+      GetDoctorConsultationHistoryQuery,
+      PageDto<GetDoctorConsultationHistoryResponseDto>
+    >(query);
+  }
+
+  @Get('consultations/:consultationId/detail')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Get consultation detail for doctor' })
+  @ApiResponse({
+    status: 200,
+    description: "Consultation detail retrieved successfully.",
+    type: GetConsultationDetailResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 404, description: "Consultation not found." })
+  @ApiResponse({ status: 500, description: "Internal server error." })
+  async getConsultationDetail(
+    @CurrentUser() user: UserEntity,
+    @Param('consultationId') consultationId: string
+  ): Promise<GetConsultationDetailResponseDto> {
+    const query = new GetConsultationDetailQuery(
+      user.id,
+      consultationId
+    );
+
+    return this.queryBus.execute<
+      GetConsultationDetailQuery,
+      GetConsultationDetailResponseDto
+    >(query);
   }
 }
