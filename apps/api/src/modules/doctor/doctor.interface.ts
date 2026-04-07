@@ -9,6 +9,9 @@ import {
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto,
+  GetConsultationDetailResponseDto,
 } from './dtos';
 
 export interface IDoctorService {
@@ -23,4 +26,8 @@ export interface IDoctorService {
   getAppointmentDates(doctorId: string, date: string): Promise<GetAppointmentCalendarResponseDto>;
 
   getDoctorDashboardStatistics(doctorId: string, input: GetDoctorDashboardRequestDto): Promise<DoctorDashboardStatisticsDto>;
+
+  getConsultationHistory(doctorId: string, request: GetDoctorConsultationHistoryRequestDto): Promise<PageDto<GetDoctorConsultationHistoryResponseDto>>;
+
+  getConsultationDetail(doctorId: string, consultationId: string): Promise<GetConsultationDetailResponseDto>;
 }

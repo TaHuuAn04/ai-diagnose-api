@@ -5,3 +5,5 @@ export * from './get-dashboard-statistics.dto';
 export * from './create-ai-diagnosis.response.dto';
 export * from './get-ai-diagnosis-result.response.dto';
 export * from './start-examination.response.dto';
+export * from './get-doctor-consultation-history.response.dto';
+export * from './get-consultation-detail.response.dto';

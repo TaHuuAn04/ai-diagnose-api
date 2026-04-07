@@ -6,3 +6,5 @@ export * from './create-ai-diagnosis.request.dto';
 export * from './handle-ai-diagnosis-callback.request.dto';
 export * from './start-examination.request.dto';
 export * from './finish-examination.request.dto';
+export * from './get-doctor-consultation-history.request.dto';
+

@@ -66,11 +66,11 @@ export class FinishExaminationCommandHandler
         description: payload.finalDiagnosis,
         symstomsText: payload.currentCondition || '',
         prescription: payload.medicines?.map(m => ({
-          medicineName: m.name,
+          name: m.name,
           concentration: '', // Optional or default since UI doesn't have it
           quantity: m.quantity?.toString() || '0', 
           dosage: m.usage || '',
-          durationDays: 0, // Optional or default
+          duration: 0, // Optional or default
         })) || []
       });
 
