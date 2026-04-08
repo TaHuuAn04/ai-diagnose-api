@@ -1,8 +1,10 @@
-import { Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
+import { Response } from 'express';
+import { FormDataRequest } from "nestjs-form-data";
 
 import { CurrentUser, Roles } from "@app/core/decorators";
 import { UserEntity } from "@app/core/domain/entities";
@@ -11,18 +13,27 @@ import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
 
 import {
+  CreateScheduleRequestDto,
+  ExportScheduleToCSVResponseDto,
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
-  GetListAppointmentsResponseDto, GetScheduleRequestDto, GetScheduleResponseDto,
+  GetListAppointmentsResponseDto,
+  GetScheduleRequestDto,
+  GetScheduleResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
+  ImportScheduleFromCSVRequestDto,
   StaffDashboardStatisticsDto
 } from "./dtos";
 import {
+  CreateScheduleCommand,
+  ExportScheduleToCSVQuery,
   GetActiveDoctorsQuery,
   GetListAppointmentsQuery,
-  GetScheduleQuery, GetStaffInfoDashboardQuery,
-  GetTodayAppointmentsQuery
+  GetScheduleQuery,
+  GetStaffInfoDashboardQuery,
+  GetTodayAppointmentsQuery,
+  ImportScheduleFromCSVCommand
 } from "./use-cases";
 
 
@@ -158,6 +169,88 @@ export class StaffController {
     const result = await this.queryBus.execute<
       GetScheduleQuery, GetScheduleResponseDto[]
     >(query);
+
+    return result;
+  }
+
+  @Get('/export-csv')
+  @ApiOperation({ summary: "Export schedule to CSV" })
+  @ApiResponse({
+    status: 200,
+    description: "Schedule exported successfully.",
+    type: ExportScheduleToCSVResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to export schedule." })
+  async exportSchedule(
+    @CurrentUser() user: UserEntity,
+    @Query() input: GetScheduleRequestDto,
+    @Res() res: Response
+  ): Promise<void> {
+    const query = new ExportScheduleToCSVQuery(
+      user.id,
+      input
+    );
+
+    const result = await this.queryBus.execute<
+      ExportScheduleToCSVQuery, ExportScheduleToCSVResponseDto 
+    >(query);
+
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="${result.fileName}"`,
+    });
+    res.send(result.buffer);
+  }
+
+  @Post('/schedule')
+  @ApiOperation({ summary: "Create manual schedule by date" })
+  @ApiResponse({
+    status: 200,
+    description: "Schedule created successfully.",
+    type: GetScheduleResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to create schedule." })
+  async createSchedule(
+    @CurrentUser() user: UserEntity,
+    @Body() input: CreateScheduleRequestDto
+  ): Promise<GetScheduleResponseDto> {
+    const command = new CreateScheduleCommand(
+      user.id,
+      input
+    );
+
+    const result = await this.commandBus.execute<
+      CreateScheduleCommand, GetScheduleResponseDto
+    >(command);
+
+    return result;
+  }
+
+  @Post('/import-csv')
+  @ApiOperation({ summary: "Import schedule from CSV file" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: GetScheduleResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to import schedule." })
+  @ApiConsumes('multipart/form-data')
+  @FormDataRequest()
+  async importSchedule(
+    @CurrentUser() user: UserEntity,
+    @Body() input: ImportScheduleFromCSVRequestDto
+  ): Promise<GetScheduleResponseDto[]> {
+    const command = new ImportScheduleFromCSVCommand(
+      user.id,
+      input
+    );
+
+    const result = await this.commandBus.execute<
+      ImportScheduleFromCSVCommand, GetScheduleResponseDto[]
+    >(command);
 
     return result;
   }
