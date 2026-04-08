@@ -2,16 +2,20 @@ import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 
 import { INJECTION_TOKEN } from "@api/enums";
+import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data";
 
 import { StaffService } from "./infrastructures";
 import { StaffController } from "./staff.controller";
 import {
+  CreateScheduleCommandHandler,
+  ExportScheduleToCSVQueryHandler,
   GetActiveDoctorsQueryHandler,
   GetListAppointmentsQueryHandler,
   GetScheduleQueryHandler,
-  GetStaffInfoDashboardQueryHandler, GetTodayAppointmentsQueryHandler
+  GetStaffInfoDashboardQueryHandler,
+  GetTodayAppointmentsQueryHandler,
+  ImportScheduleFromCSVCommandHandler
 } from "./use-cases";
-
 
 const Handlers = [
   // Add command handlers here in the future
@@ -19,7 +23,10 @@ const Handlers = [
   GetActiveDoctorsQueryHandler,
   GetListAppointmentsQueryHandler,
   GetStaffInfoDashboardQueryHandler,
-  GetScheduleQueryHandler
+  GetScheduleQueryHandler,
+  ImportScheduleFromCSVCommandHandler,
+  CreateScheduleCommandHandler,
+  ExportScheduleToCSVQueryHandler
 ];
 
 const Adapters = [
@@ -30,7 +37,11 @@ const Adapters = [
 ];
 
 @Module({  
-  imports: [CqrsModule],
+  imports: [CqrsModule,
+    NestjsFormDataModule.config({
+      storage: MemoryStoredFile,
+    }),
+  ],
   controllers: [StaffController],
   providers: [...Adapters, ...Handlers],
   exports: [...Adapters, ...Handlers],

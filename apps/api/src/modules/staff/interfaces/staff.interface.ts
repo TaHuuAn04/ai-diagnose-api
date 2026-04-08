@@ -1,11 +1,13 @@
 import { PageDto } from "@app/core/dtos";
 
 import {
+  CreateScheduleRequestDto,
+  ExportScheduleToCSVResponseDto,
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto, GetScheduleResponseDto, GetTodayAppointmentsRequestDto,
-  GetTodayAppointmentsResponseDto,
+  GetTodayAppointmentsResponseDto, ImportScheduleFromCSVRequestDto,
   StaffDashboardStatisticsDto
 } from "../dtos";
 
@@ -33,4 +35,19 @@ export interface IStaffService {
     staffId: string,
     request: GetScheduleRequestDto
   ): Promise<GetScheduleResponseDto[]>;
+
+  importScheduleFromCSV(
+    staffId: string,
+    request: ImportScheduleFromCSVRequestDto
+  ): Promise<GetScheduleResponseDto[]>;
+
+  createSchedule(
+    staffId: string,
+    request: CreateScheduleRequestDto
+  ): Promise<GetScheduleResponseDto>;
+
+  exportScheduleToCSV(
+    staffId: string,
+    request: GetScheduleRequestDto
+  ): Promise<ExportScheduleToCSVResponseDto>;
 }
