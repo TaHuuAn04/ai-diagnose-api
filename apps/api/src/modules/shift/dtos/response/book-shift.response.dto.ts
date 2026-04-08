@@ -23,6 +23,9 @@ export class BookShiftResponseDto {
   date: string;
 
   @Expose()
+  room: string;
+
+  @Expose()
   appointmentStatus: AppointmentStatus;
 
   @Expose()

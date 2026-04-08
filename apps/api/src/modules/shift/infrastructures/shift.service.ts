@@ -230,6 +230,7 @@ export class ShiftService implements IShiftService {
         patientId,
         shiftId,
         date: workingTime.date,
+        room: metadata.room,
         appointmentStatus: AppointmentStatus.SCHEDULED,
         workingTimeStatus: WorkingTimeStatus.BOOKED,
         description: description ?? '',
