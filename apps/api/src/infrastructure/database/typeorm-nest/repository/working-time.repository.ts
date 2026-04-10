@@ -6,7 +6,7 @@ import { GetTodayAppointmentsRequestDto } from "apps/api/src/modules/staff/dtos"
 import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
 
-import { WorkingTimeEntity } from "@app/core/domain/entities";
+import { ScheduleEntity , WorkingTimeEntity } from "@app/core/domain/entities";
 import { WorkingTimeStatus } from "@app/core/domain/enums";
 
 import { WorkingTime } from "../entities";
@@ -51,5 +51,36 @@ export class WorkingTimeRepository
     const entities = await queryBuilder.getMany()
 
     return entities.map(entity => this._mapper.toDomain(entity));
+  }
+
+  async deleteManyByObjects(
+    objects: WorkingTimeEntity[]
+  ): Promise<number> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('workingTime')
+      .delete()
+      .where(objects.map(obj => ({
+        doctorId: obj.doctorId,
+        date: obj.date,
+        shiftId: obj.shiftId
+      })))
+      
+    const result = await queryBuilder.execute();
+    return result.affected ?? 0;
+  }
+
+  async findWorkingTimesByScheduleInfo(
+    schedule: ScheduleEntity
+  ): Promise<WorkingTimeEntity[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('workingTime')
+      .where('workingTime.doctorId = :doctorId', { doctorId: schedule.doctorId })
+      .andWhere('workingTime.date = :date', { date: schedule.date })
+      .leftJoinAndSelect('workingTime.shift', 'shift')
+      .andWhere('shift.from >= :from', { from: schedule.from })
+      .andWhere('shift.to <= :to', { to: schedule.to })
+    
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this._mapper.toDomain(entity));;
   }
 }

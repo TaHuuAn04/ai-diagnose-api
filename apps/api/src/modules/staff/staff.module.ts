@@ -8,13 +8,15 @@ import { StaffService } from "./infrastructures";
 import { StaffController } from "./staff.controller";
 import {
   CreateScheduleCommandHandler,
+  DeleteScheduleCommandHandler,
   ExportScheduleToCSVQueryHandler,
   GetActiveDoctorsQueryHandler,
   GetListAppointmentsQueryHandler,
   GetScheduleQueryHandler,
   GetStaffInfoDashboardQueryHandler,
   GetTodayAppointmentsQueryHandler,
-  ImportScheduleFromCSVCommandHandler
+  ImportScheduleFromCSVCommandHandler,
+  UpdateScheduleCommandHandler
 } from "./use-cases";
 
 const Handlers = [
@@ -26,7 +28,9 @@ const Handlers = [
   GetScheduleQueryHandler,
   ImportScheduleFromCSVCommandHandler,
   CreateScheduleCommandHandler,
-  ExportScheduleToCSVQueryHandler
+  ExportScheduleToCSVQueryHandler,
+  DeleteScheduleCommandHandler,
+  UpdateScheduleCommandHandler
 ];
 
 const Adapters = [

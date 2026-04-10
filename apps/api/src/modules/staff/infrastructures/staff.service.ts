@@ -13,26 +13,30 @@ import {
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { format } from '@fast-csv/format';
 import { parse } from '@fast-csv/parse';
+import { UpdateOrDeleteResponseDto } from 'apps/api/src/common/dtos';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
+import { ScheduleEntity, WorkingTimeEntity } from '@app/core/domain/entities';
 import { ActiveStatus, AppointmentStatus , WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
-import { BadRequestException, ExceptionHandler, NotFoundException} from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException} from '@app/core/exception';
 
 import {
   CreateScheduleRequestDto,
+  DeleteScheduleRequestDto,
   ExportScheduleToCSVResponseDto,
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
   GetListAppointmentsResponseDto,
-  GetScheduleRequestDto,
+  GetScheduleRequestDto ,
   GetScheduleResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
   ImportScheduleFromCSVRequestDto,
   NearestEmptyShiftInfo,
-  StaffDashboardStatisticsDto
+  StaffDashboardStatisticsDto,
+  UpdateScheduleRequestDto
 } from '../dtos';
 import { IStaffService } from '../interfaces';
 
@@ -304,7 +308,7 @@ export class StaffService implements IStaffService {
 
       const scheduleDtos = schedules.map((schedule) => {
         if (!schedule.doctor?.user) {
-          throw new NotFoundException(`Doctor not found with id ${schedule.doctorId}`);
+          throw new NotFoundException(`Doctor not found in schedule with id ${schedule.id} or doctor infomation not found`);
         }
 
         return {
@@ -410,8 +414,15 @@ export class StaffService implements IStaffService {
       // Phase 2: Create schedules sequentially
       const scheduleDtos: GetScheduleResponseDto[] = [];
       for (const scheduleRequest of scheduleRequests) {
-        const scheduleDto = await this.createSchedule(staffId, scheduleRequest);
-        scheduleDtos.push(scheduleDto);
+        const scheduleDto = await this._createScheduleInternal(staffId, scheduleRequest);
+        scheduleDtos.push(plainToInstance(GetScheduleResponseDto, {
+          scheduleId: scheduleDto.id,
+          doctorId: scheduleDto.doctorId,
+          date: scheduleDto.date,
+          from: scheduleDto.from,
+          to: scheduleDto.to,
+          room: scheduleDto.room,
+        }));
       }
 
       return scheduleDtos;
@@ -420,61 +431,147 @@ export class StaffService implements IStaffService {
     }
   }
   
+  private async _validateScheduleTime(
+    doctorId: string,
+    date: string,
+    request: { from: string; to: string }
+  ): Promise<void> {
+    if (request.from >= request.to) {
+      throw new BadRequestException('Invalid time range');
+    }
+    const validTimePattern = /^\d{2}:(00|30):00/;
+    if (!validTimePattern.test(request.from) || !validTimePattern.test(request.to)) {
+      throw new BadRequestException('Time must be on the hour (XX:00:00) or half hour (XX:30:00)');
+    }
+
+    const existingSchedule = await this.scheduleRepository.findAll({
+      where: {
+        doctorId,
+        date,
+      },
+    });
+
+    existingSchedule.data.forEach((schedule) => {
+      if (schedule.from <= request.from && schedule.to >= request.to) {
+        throw new BadRequestException(`Schedule already exists, existing schedule: ${schedule.doctorId ?? 'unknown'}-${schedule.from}`);
+      } 
+      if (schedule.from > request.from && schedule.to < request.to) {
+        throw new BadRequestException('In a request period that has a schedule with an internal time period, please reselects the time period');
+      } else {
+        if (request.from < schedule.from) {
+          if (request.to > schedule.from ) {
+            request.to = schedule.from;
+          }
+        }
+        if (request.to > schedule.to) {
+          if (request.from < schedule.to) {
+            request.from = schedule.to;
+          }
+        }
+      }
+    });
+
+    if (request.from >= request.to) {
+      throw new BadRequestException('Invalid time range or the time range after adjust is invalid');
+    }
+  }
+
+  private async _createScheduleInternal(
+    staffId: string,
+    request: CreateScheduleRequestDto
+  ): Promise<ScheduleEntity> {
+    const { doctorId, date, room } = request;
+    await this._validateScheduleTime(doctorId, date, request);
+    
+    const { from, to } = request;
+    const schedule = await this.scheduleRepository.create({
+        admissionStaffId: staffId,
+        doctorId,
+        date,
+        from,
+        to,
+        room,
+    });
+
+    const shifts = await this.shiftRepository.findAll({
+      where: {
+        from: {
+          gte: from
+        },
+        to: {
+          lte: to
+        }
+      }
+    });
+
+    await this.workingTimeRepository.createMany(
+      shifts.data.map((shift) => ({
+        doctorId,
+        shiftId: shift.id,
+        date,
+        status: WorkingTimeStatus.AVAILABLE,
+      }))
+    );
+
+    return schedule;
+  }
+
+  private async _deleteScheduleInternal(
+    scheduleIds: string[],
+    startWeekDate: string,
+    endWeekDate: string,
+    currentDate: string
+  ): Promise<void> {
+    const schedule = await this.scheduleRepository.findAll({
+      where: {
+        id: {
+          in: scheduleIds
+        }
+      }
+    });
+
+    if (schedule.data.length === 0) {
+      throw new NotFoundException(`Schedule not found with list of id ${scheduleIds.join(', ')}`);
+    }
+    
+    const workingTimesData = (await Promise.all(schedule.data.map(async (schedule) => {
+      if (schedule.doctorId === null) {
+        throw new NotFoundException(`Schedule is not assigned to any doctor`);
+      }
+
+      if (schedule.date < currentDate) {
+        throw new BadRequestException(`Schedule date is in the past, the schedule cannot be adjust for schedule with id ${schedule.id}`);
+      }
+
+      if (schedule.date >= startWeekDate && schedule.date <= endWeekDate) {
+        throw new BadRequestException(`Schedule date is in the week, the schedule cannot be deleted for schedule with id ${schedule.id}`);
+      }
+
+      const workingTimes = await this.workingTimeRepository.findWorkingTimesByScheduleInfo(schedule);
+      if (workingTimes.some((wt) => wt.status === WorkingTimeStatus.BOOKED)) {
+        throw new BadRequestException(`Schedule has appointments, the schedule with id ${schedule.id} cannot be deleted`);
+      }
+
+      return workingTimes;
+    }))).flat();
+
+    if (workingTimesData.length > 0) {
+      await this.workingTimeRepository.deleteManyByObjects(workingTimesData);
+    }
+    await this.scheduleRepository.deleteMany({
+      id: {
+        in: scheduleIds
+      }
+    });
+  }
+
   @Transactional()
   async createSchedule(
     staffId: string,
     request: CreateScheduleRequestDto
   ): Promise<GetScheduleResponseDto> {
     try {
-      const { doctorId, date, room } = request;
-      // Validate time
-      if (request.from >= request.to) {
-        throw new BadRequestException('Invalid time range');
-      }
-      const validTimePattern = /^\d{2}:(00|30):00/;
-      if (!validTimePattern.test(request.from) || !validTimePattern.test(request.to)) {
-        throw new BadRequestException('Time must be on the hour (XX:00:00) or half hour (XX:30:00)');
-      }
-      // Check existing schedule
-      const existingSchedule = await this.scheduleRepository.findAll({
-        where: {
-          doctorId,
-          date,
-        },
-      });
-
-      existingSchedule.data.forEach((schedule) => {
-        if (schedule.from <= request.from && schedule.to >= request.to) {
-          throw new BadRequestException(`Schedule already exists, existing schedule: ${schedule.doctorId ?? 'unknown'}-${schedule.from}`);
-        } 
-        if (schedule.from > request.from && schedule.to < request.to) {
-          throw new BadRequestException('In a request period that has a schedule with an internal time period, please reselects the time period');
-        } else {
-          if (request.from < schedule.from) {
-            if (request.to > schedule.from ) {
-              request.to = schedule.from;
-            }
-          }
-          if (request.to > schedule.to) {
-            if (request.from < schedule.to) {
-              request.from = schedule.to;
-            }
-          }
-        }
-      });
-      const { from, to } = request;
-      if (from >= to) {
-        throw new BadRequestException('Invalid time range or the time range after adjust is invalid');
-      }
-      // Create schedule
-      const schedule = await this.scheduleRepository.create({
-          admissionStaffId: staffId,
-          doctorId,
-          date,
-          from,
-          to,
-          room,
-      })
+      const schedule = await this._createScheduleInternal(staffId, request);
       const scheduleDto = {
         scheduleId: schedule.id,
         doctorId: schedule.doctorId,
@@ -484,34 +581,64 @@ export class StaffService implements IStaffService {
         room: schedule.room,
       };
 
-      // Create working time data by schedule
-      // 1. Get list of shifts between from and to
-      const shifts = await this.shiftRepository.findAll({
-        where: {
-          from: {
-            gte: from
-          },
-          to: {
-            lte: to
-          }
-        }
-      })
-      //2. From shifts and information in schedule, create many WorkingTimes data
-      await this.workingTimeRepository.createMany(
-        shifts.data.map((shift) => ({
-          doctorId,
-          shiftId: shift.id,
-          date,
-          status: WorkingTimeStatus.AVAILABLE,
-        }))
-      )
-
       return plainToInstance(GetScheduleResponseDto, scheduleDto);
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error creating schedule');
     }
   }
-  
+
+  @Transactional()
+  async deleteSchedule(
+    request: DeleteScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const { scheduleIds, startWeekDate, endWeekDate, currentDate } = request;
+
+      await this._deleteScheduleInternal(scheduleIds, startWeekDate, endWeekDate, currentDate);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'List of schedules deleted successfully',
+        at: new Date().toISOString()
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to delete schedule.');
+    }
+  }
+
+  @Transactional()
+  async updateSchedule(
+    staffId: string,
+    scheduleId: string,
+    request: UpdateScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const { startWeekDate, endWeekDate, currentDate } = request;
+      if (request.date <= currentDate) {
+        throw new BadRequestException(`You cannot update schedule at date that is in the past`);
+      }
+      const updateSchedule = await this.scheduleRepository.findOne({
+        where: {
+          id: scheduleId
+        }
+      });
+      if (!updateSchedule) {
+        throw new NotFoundException(`Schedule not found with id ${scheduleId}`);
+      }
+
+      await this._deleteScheduleInternal([scheduleId], startWeekDate, endWeekDate, currentDate);
+      const schedule = await this._createScheduleInternal(staffId, request);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Schedule updated successfully',
+        at: schedule.createdAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to update schedule.');
+    }
+  }
+
   async exportScheduleToCSV(
     staffId: string,
     request: GetScheduleRequestDto

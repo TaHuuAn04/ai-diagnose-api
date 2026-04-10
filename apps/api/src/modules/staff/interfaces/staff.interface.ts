@@ -1,14 +1,18 @@
+import { UpdateOrDeleteResponseDto } from "apps/api/src/common/dtos";
+
 import { PageDto } from "@app/core/dtos";
 
 import {
   CreateScheduleRequestDto,
+  DeleteScheduleRequestDto,
   ExportScheduleToCSVResponseDto,
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto, GetScheduleResponseDto, GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto, ImportScheduleFromCSVRequestDto,
-  StaffDashboardStatisticsDto
+  StaffDashboardStatisticsDto,
+  UpdateScheduleRequestDto
 } from "../dtos";
 
 export interface IStaffService {
@@ -50,4 +54,14 @@ export interface IStaffService {
     staffId: string,
     request: GetScheduleRequestDto
   ): Promise<ExportScheduleToCSVResponseDto>;
+
+  deleteSchedule(
+    request: DeleteScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto>;
+
+  updateSchedule(
+    staffId: string,
+    scheduleId: string,
+    request: UpdateScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto>;
 }
