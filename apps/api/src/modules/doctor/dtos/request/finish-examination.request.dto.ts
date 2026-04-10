@@ -30,6 +30,11 @@ export class FinishExaminationRequestDto {
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
+  department: string;
+
+  @ApiProperty()
+  @IsString()
   @IsOptional()
   currentCondition?: string;
 

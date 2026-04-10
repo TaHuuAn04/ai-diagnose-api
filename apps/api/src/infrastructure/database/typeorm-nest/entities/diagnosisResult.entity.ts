@@ -17,6 +17,9 @@ export class DiagnosisResult extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   description?: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  department?: string | null;
     
   @Column({ type: 'varchar', length: 255 })
   symstomsText: string

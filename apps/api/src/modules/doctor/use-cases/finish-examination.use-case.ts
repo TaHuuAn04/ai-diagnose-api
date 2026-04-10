@@ -64,6 +64,7 @@ export class FinishExaminationCommandHandler
       await this.diagnosisResultRepository.create({
         consultationId: consultation.id,
         description: payload.finalDiagnosis,
+        department: payload.department,
         symstomsText: payload.currentCondition || '',
         prescription: payload.medicines?.map(m => ({
           name: m.name,

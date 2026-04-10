@@ -17,6 +17,8 @@ export class DiagnosisResultEntity extends BaseEntity {
 
   description?: string | null;
 
+  department?: string | null;
+
   feedBackAI?: string | null;
 
   symstomsText: string;
