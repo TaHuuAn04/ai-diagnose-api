@@ -4,14 +4,14 @@ import {
   DoctorDashboardStatisticsDto,
   GetAppointmentCalendarRequestDto,
   GetAppointmentCalendarResponseDto,
+  GetConsultationDetailResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto,
   GetDoctorDashboardRequestDto,
   GetDoctorResponseDto,
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
-  GetDoctorConsultationHistoryRequestDto,
-  GetDoctorConsultationHistoryResponseDto,
-  GetConsultationDetailResponseDto,
 } from './dtos';
 
 export interface IDoctorService {

@@ -21,6 +21,7 @@ import {
   UpdateDiagnoseModelCommandHandler,
   UpdateDoctorAccountCommandHandler,
 } from './use-cases';
+import { GetDoctorPerformanceStatisticsQueryHandler } from './use-cases/get-doctor-performance-statistics.use-case';
 
 const Handlers = [
   CreateDoctorAccountCommandHandler,
@@ -37,6 +38,7 @@ const Handlers = [
   UpdateChatbotModelCommandHandler,
   DeleteChatbotModelCommandHandler,
   GetListChatbotModelsQueryHandler,
+  GetDoctorPerformanceStatisticsQueryHandler,
 ];
 
 const Adapters = [

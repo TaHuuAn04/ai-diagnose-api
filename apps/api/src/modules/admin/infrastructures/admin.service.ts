@@ -4,6 +4,7 @@ import {
   IAdmissionStaffRepository,
   IChatbotRepository,
   IDiagnoseModelRepository,
+  IDiagnosisResultRepository,
   IDoctorRepository,
   IUserRepository,
   WhereCondition,
@@ -38,6 +39,12 @@ import {
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
 } from '../dtos';
+import { GetDoctorPerformanceStatisticsRequestDto } from '../dtos/request/get-doctor-performance-statistics.request.dto';
+import {
+  DepartmentDistributionItemResponseDto,
+  DoctorPerformanceStatisticsResponseDto,
+  TopDoctorStatisticsItemResponseDto,
+} from '../dtos/response/doctor-performance-statistics.response.dto';
 import { IAdminService } from '../interfaces';
 
 @Injectable()
@@ -56,6 +63,9 @@ export class AdminService implements IAdminService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.DIAGNOSE_MODEL_REPOSITORY)
     private readonly diagnoseModelRepository: IDiagnoseModelRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.DIAGNOSIS_RESULT_REPOSITORY)
+    private readonly diagnosisResultRepository: IDiagnosisResultRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.CHATBOT_REPOSITORY)
     private readonly chatbotRepository: IChatbotRepository,
@@ -488,5 +498,154 @@ export class AdminService implements IAdminService {
       }),
       pageMetaDto,
     );
+  }
+
+  async getDoctorPerformanceStatistics(
+    query: GetDoctorPerformanceStatisticsRequestDto,
+  ): Promise<DoctorPerformanceStatisticsResponseDto> {
+    try {
+      const now = new Date();
+      const month = query.month || now.getMonth() + 1;
+      const year = query.year || now.getFullYear();
+
+      const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+      const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+
+      const limit = 1000;
+      
+      const queryOptions = {
+        where: {
+          createdAt: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+        relations: [
+          'consultation',
+          'consultation.doctor',
+          'consultation.doctor.user',
+          'consultation.aiResult',
+        ],
+      };
+
+      // 1. First fetch to get page 1 and total metadata
+      const firstPage = await this.diagnosisResultRepository.findAll({
+        ...queryOptions,
+        pagination: { page: 1, limit },
+      });
+
+      // 2. Calculate remaining pages
+      const totalItems = firstPage.meta?.total ?? firstPage.data.length;
+      const totalPages = Math.ceil(totalItems / limit);
+
+      // 3. Concurrently fetch all remaining pages utilizing Promise.all
+      const pagePromises = Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) =>
+        this.diagnosisResultRepository.findAll({
+          ...queryOptions,
+          pagination: { page: index + 2, limit },
+        }),
+      );
+
+      const remainingPages = await Promise.all(pagePromises);
+
+      // Collect all flat data
+      const allData = [
+        ...firstPage.data,
+        ...remainingPages.flatMap((res) => res.data),
+      ];
+
+      const doctorStats = new Map<string, {
+        doctorId: string;
+        doctorName: string;
+        department: string;
+        totalExaminations: number;
+        uniquePatients: Set<string>;
+        aiUsageCount: number;
+      }>();
+
+      const departmentDistributionMap = new Map<string, number>();
+
+      // 4. Process mapped data synchronously in-memory
+      for (const diagnosisResult of allData) {
+        const consultation = diagnosisResult.consultation;
+        const doctor = consultation?.doctor;
+
+        if (!consultation || !doctor) {
+          continue;
+        }
+
+        const doctorId = consultation.doctorId || doctor.userId;
+        const patientId = consultation.patientId;
+        const doctorName = `${doctor.user?.lastName ?? ''} ${doctor.user?.firstName ?? ''}`.trim();
+        const resolvedDoctorName = doctorName || doctor.doctorCode || 'Unknown doctor';
+        const department = diagnosisResult.department && diagnosisResult.department.length > 0
+          ? diagnosisResult.department
+          : doctor.department || 'unknown';
+
+        const currentDoctorStat = doctorStats.get(doctorId) ?? {
+          doctorId,
+          doctorName: resolvedDoctorName,
+          department,
+          totalExaminations: 0,
+          uniquePatients: new Set<string>(),
+          aiUsageCount: 0,
+        };
+
+        currentDoctorStat.totalExaminations += 1;
+
+        if (patientId) {
+          currentDoctorStat.uniquePatients.add(patientId);
+        }
+
+        if (consultation.aiResult?.id) {
+          currentDoctorStat.aiUsageCount += 1;
+        }
+
+        doctorStats.set(doctorId, currentDoctorStat);
+
+        departmentDistributionMap.set(
+          department,
+          (departmentDistributionMap.get(department) ?? 0) + 1,
+        );
+      }
+
+      const totalExaminations = Array.from(departmentDistributionMap.values())
+        .reduce((sum, value) => sum + value, 0);
+
+      const topDoctors: TopDoctorStatisticsItemResponseDto[] = Array.from(doctorStats.values())
+        .map((stat) => ({
+          doctorId: stat.doctorId,
+          doctorName: stat.doctorName,
+          department: stat.department,
+          totalExaminations: stat.totalExaminations,
+          uniquePatients: stat.uniquePatients.size,
+          aiUsageRate: stat.totalExaminations > 0
+            ? Number(((stat.aiUsageCount / stat.totalExaminations) * 100).toFixed(1))
+            : 0,
+        }))
+        .sort((a, b) => b.totalExaminations - a.totalExaminations)
+        .slice(0, 5);
+
+      const departmentDistribution: DepartmentDistributionItemResponseDto[] = Array.from(departmentDistributionMap.entries())
+        .map(([department, count]) => ({
+          department,
+          totalExaminations: count,
+          percentage: totalExaminations > 0
+            ? Number(((count / totalExaminations) * 100).toFixed(1))
+            : 0,
+        }))
+        .sort((a, b) => b.totalExaminations - a.totalExaminations);
+
+      return {
+        month,
+        year,
+        totalExaminations,
+        topDoctors,
+        departmentDistribution,
+      };
+    } catch (error) {
+      this.logger.error('Failed to get doctor performance statistics', error);
+      throw error;
+    }
   }
 }

@@ -2,10 +2,10 @@ import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
-import { IAppointmentRepository, IConsultationRepository, IDiagnosisResultRepository } from 'apps/api/src/core/repository';
+import { IAppointmentRepository, IConsultationRepository, IDiagnosisResultRepository, IDiseaseRepository, IResultDiseaseRepository } from 'apps/api/src/core/repository';
 
 import { AppointmentStatus } from '@app/core/domain/enums';
-import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException } from '@app/core/exception';
 
 import { FinishExaminationRequestDto } from '../dtos/request/finish-examination.request.dto';
 
@@ -29,6 +29,10 @@ export class FinishExaminationCommandHandler
     private readonly consultationRepository: IConsultationRepository,
     @Inject(REPOSITORY_INJECTION_TOKEN.DIAGNOSIS_RESULT_REPOSITORY)
     private readonly diagnosisResultRepository: IDiagnosisResultRepository,
+    @Inject(REPOSITORY_INJECTION_TOKEN.DISEASE_REPOSITORY)
+    private readonly diseaseRepository: IDiseaseRepository,
+    @Inject(REPOSITORY_INJECTION_TOKEN.RESULT_DISEASE_REPOSITORY)
+    private readonly resultDiseaseRepository: IResultDiseaseRepository,
   ) {}
 
   async execute(command: FinishExaminationCommand): Promise<void> {
@@ -60,19 +64,42 @@ export class FinishExaminationCommandHandler
         status: AppointmentStatus.EXAMINED
       });
 
+      // Split multiple diseases by comma if doctor typed "Disease A, Disease B", 
+      // but usually it's one. We'll just take the whole string as one disease name for simplicity,
+      // or clean it up.
+      const diseaseName = payload.finalDiagnosis.trim();
+      let disease = await this.diseaseRepository.findOne({
+        where: { name: diseaseName }
+      });
+
+      disease ??= await this.diseaseRepository.findOne({
+        where: { name: 'others'}
+      })
+
+      if(!disease) {
+        throw new InternalServerErrorException('Disease not found');
+      }
+
+
       // Save diagnosis result
-      await this.diagnosisResultRepository.create({
+      const diagnosisResult = await this.diagnosisResultRepository.create({
         consultationId: consultation.id,
         description: payload.finalDiagnosis,
         department: payload.department,
-        symstomsText: payload.currentCondition || '',
+        symstomsText: payload.currentCondition ?? '',
         prescription: payload.medicines?.map(m => ({
           name: m.name,
-          concentration: '', // Optional or default since UI doesn't have it
-          quantity: m.quantity?.toString() || '0', 
-          dosage: m.usage || '',
-          duration: 0, // Optional or default
-        })) || []
+          concentration: '',
+          quantity: m.quantity.toString(),
+          dosage: m.usage,
+          duration: 0,
+        })) ?? []
+      });
+
+      await this.resultDiseaseRepository.create({
+        resultId: diagnosisResult.id,
+        diseaseId: disease.id,
+        name: disease.name
       });
 
     } catch (error) {

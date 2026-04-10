@@ -29,6 +29,8 @@ import {
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
 } from './dtos';
+import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
+import { DoctorPerformanceStatisticsResponseDto } from './dtos/response/doctor-performance-statistics.response.dto';
 import {
   CreateAdmissionStaffAccountCommand,
   CreateChatbotModelCommand,
@@ -45,13 +47,14 @@ import {
   UpdateDiagnoseModelCommand,
   UpdateDoctorAccountCommand,
 } from './use-cases';
+import { GetDoctorPerformanceStatisticsQuery } from './use-cases/get-doctor-performance-statistics.use-case';
 
 @ApiTags('Admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiBearerAuth('access-token')
 @Controller('admin')
-@ApiExtraModels(PageDto, DiagnoseModelResponseDto, ChatbotModelResponseDto)
+@ApiExtraModels(PageDto, DiagnoseModelResponseDto, ChatbotModelResponseDto, DoctorPerformanceStatisticsResponseDto)
 export class AdminController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -255,6 +258,16 @@ export class AdminController {
     @Query() query: GetListChatbotModelsRequestDto,
   ): Promise<PageDto<ChatbotModelResponseDto>> {
     const q = new GetListChatbotModelsQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('dashboard/doctor-performance')
+  @ApiOperation({ summary: 'Get doctor performance statistics by month/year' })
+  @ApiResponse({ status: 200, type: DoctorPerformanceStatisticsResponseDto })
+  async getDoctorPerformanceStatistics(
+    @Query() query: GetDoctorPerformanceStatisticsRequestDto,
+  ): Promise<DoctorPerformanceStatisticsResponseDto> {
+    const q = new GetDoctorPerformanceStatisticsQuery(query);
     return this.queryBus.execute(q);
   }
 }

@@ -20,6 +20,8 @@ import {
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
 } from '../dtos';
+import { GetDoctorPerformanceStatisticsRequestDto } from '../dtos/request/get-doctor-performance-statistics.request.dto';
+import { DoctorPerformanceStatisticsResponseDto } from '../dtos/response/doctor-performance-statistics.response.dto';
 
 export interface IAdminService {
   createDoctorAccount(
@@ -81,4 +83,8 @@ export interface IAdminService {
   getListChatbotModels(
     query: GetListChatbotModelsRequestDto,
   ): Promise<PageDto<ChatbotModelResponseDto>>;
+
+  getDoctorPerformanceStatistics(
+    query: GetDoctorPerformanceStatisticsRequestDto,
+  ): Promise<DoctorPerformanceStatisticsResponseDto>;
 }

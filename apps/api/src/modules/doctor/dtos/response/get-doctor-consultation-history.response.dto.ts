@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { Exclude, Expose } from 'class-transformer';
 
 export class SuggestedDiagnosisDto {
@@ -22,7 +23,7 @@ export class ResultDiseaseDto {
 export class PrescriptionItemDto {
   @Expose()
   @ApiProperty()
-  medicineName: string;
+  name: string;
 
   @Expose()
   @ApiProperty()
@@ -38,7 +39,7 @@ export class PrescriptionItemDto {
 
   @Expose()
   @ApiProperty()
-  durationDays: number;
+  duration: number;
 }
 
 export class ConsultationDiagnosisResultDto {

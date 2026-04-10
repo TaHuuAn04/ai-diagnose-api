@@ -415,7 +415,7 @@ export class DoctorService implements IDoctorService {
           ? `${entity.patient.user.firstName || ''} ${entity.patient.user.lastName || ''}`.trim()
           : '';
 
-        const aiSuggestedDiagnosis = entity.aiResult?.suggestedDiagnosis?.map(sd => plainToInstance(SuggestedDiagnosisDto, {
+        const aiSuggestedDiagnosis = entity.aiResult?.suggestedDiagnosis.map(sd => plainToInstance(SuggestedDiagnosisDto, {
           diseaseName: sd.diseaseName,
           accuracy: sd.accuracy
         })) || [];
@@ -482,17 +482,17 @@ export class DoctorService implements IDoctorService {
             diseaseName: sd.diseaseName,
             accuracy: sd.accuracy
           })) || [],
-          diagnosisResult: entity.diagnosisResult ? {
+          diagnosisResult: plainToInstance(ConsultationDiagnosisResultDto, entity.diagnosisResult ? {
             advices: entity.diagnosisResult.advices,
             description: entity.diagnosisResult.description,
             symstomsText: entity.diagnosisResult.symstomsText,
             feedBackAI: entity.diagnosisResult.feedBackAI,
-            prescription: entity.diagnosisResult.prescription,
-            diseases: entity.diagnosisResult.diseases?.map(d => ({
+            prescription: plainToInstance(PrescriptionItemDto, entity.diagnosisResult.prescription ?? []),
+            diseases: plainToInstance(ResultDiseaseDto, entity.diagnosisResult.diseases?.map(d => ({
               id: d.diseaseId,
               diseaseName: d.name || ''
-            })) || []
-          } : null
+            })) ?? [])
+          } : null)
         });
       });
 
