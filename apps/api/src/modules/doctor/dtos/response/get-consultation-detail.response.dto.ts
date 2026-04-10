@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { Exclude, Expose, Type } from 'class-transformer';
 
 import { AppointmentStatus, UserGender } from '@app/core/domain/enums';
+import { ImageInfoDto } from '@app/core/dtos';
 
 import { ConsultationDiagnosisResultDto, DoctorConsultationHistoryItemDto, SuggestedDiagnosisDto } from './get-doctor-consultation-history.response.dto';
 
@@ -22,6 +24,10 @@ export class ConsultationAppointmentInfoDto {
   @Expose()
   @ApiProperty({ example: '10:00', nullable: true })
   to?: string;
+
+  @Expose()
+  @ApiProperty({ example: [{ base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...', order: 1 }] })
+  images?: ImageInfoDto[] | [];
 
   @Expose()
   @ApiPropertyOptional({ example: 'Check-up description' })

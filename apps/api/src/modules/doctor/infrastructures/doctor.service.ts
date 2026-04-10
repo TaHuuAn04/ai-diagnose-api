@@ -19,22 +19,22 @@ import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/c
 import { IDoctorService } from '../doctor.interface';
 import {
   AppointmentCalendarItemDto,
+  ConsultationDiagnosisResultDto,
+  DoctorConsultationHistoryItemDto,
   DoctorDashboardStatisticsDto,
   GetAppointmentCalendarRequestDto,
   GetAppointmentCalendarResponseDto,
+  GetConsultationDetailResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto,
   GetDoctorDashboardRequestDto,
   GetDoctorResponseDto,
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
-  GetConsultationDetailResponseDto,
-  GetDoctorConsultationHistoryRequestDto,
-  GetDoctorConsultationHistoryResponseDto,
-  DoctorConsultationHistoryItemDto,
-  SuggestedDiagnosisDto,
-  ConsultationDiagnosisResultDto,
   PrescriptionItemDto,
   ResultDiseaseDto,
+  SuggestedDiagnosisDto,
 } from '../dtos';
 
 @Injectable()
@@ -503,6 +503,21 @@ export class DoctorService implements IDoctorService {
 
       const appointment = consultation.appointment;
 
+      let appointmentImages: ImageInfoDto[] = [];
+      if (appointment?.id) {
+        const appointmentImagesResult = await this.imageRepository.findAll({
+          where: {
+            referenceId: appointment.id,
+            referenceType: ImageReference.APPOINTMENT,
+          },
+          sort: { 
+            sortBy: 'order',
+            sortOrder: SortDirection.DESC
+          },
+        });
+        appointmentImages = appointmentImagesResult.data.map(img => plainToInstance(ImageInfoDto, img));
+      }
+
       return plainToInstance(GetConsultationDetailResponseDto, {
         id: consultation.id,
         appointment: {
@@ -511,6 +526,7 @@ export class DoctorService implements IDoctorService {
           from: appointment?.metadata?.from,
           to: appointment?.metadata?.to,
           description: appointment?.description,
+          images: appointmentImages,
           room: appointment?.metadata?.room,
           note: appointment?.note,
           status: appointment?.status,
