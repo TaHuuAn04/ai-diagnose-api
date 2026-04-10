@@ -11,8 +11,8 @@ import { RolesGuard } from "@app/core/guards";
 
 import { UpdateOrDeleteResponseDto } from "../../common/dtos";
 
-import { UpdateAppointmentDto } from "./dtos";
-import { CancelAppointmentCommand, UpdateAppointmentCommand } from "./use-cases";
+import { TakeNoteAppointmentDto, UpdateAppointmentDto } from "./dtos";
+import { CancelAppointmentCommand, TakeNoteAppointmentCommand, UpdateAppointmentCommand } from "./use-cases";
 
 @ApiTags('Appointments')
 @UseGuards(JwtAuthGuard)
@@ -48,7 +48,7 @@ export class AppointmentController {
   }
 
   @Patch('/:appointmentId/cancel')
-  @Roles(UserRole.PATIENT)
+  @Roles(UserRole.PATIENT, UserRole.STAFF)
   @ApiOperation({ summary: "Cancel an appointment" })
   @ApiParam({ name: 'appointmentId', description: "ID of the appointment to cancel", type: String })
   @ApiResponse({ status: 200, description: "Appointment cancelled successfully." })
@@ -61,6 +61,26 @@ export class AppointmentController {
 
     const result = await this.commandBus.execute<
       CancelAppointmentCommand, UpdateOrDeleteResponseDto
+      >(command);
+    
+    return result;
+  }
+
+  @Patch('/:appointmentId/note')
+  @Roles(UserRole.STAFF)
+  @ApiOperation({ summary: "Update note for staff with appointment" })
+  @ApiParam({ name: 'appointmentId', description: "ID of the appointment to update note", type: String })
+  @ApiResponse({ status: 200, description: "Note of appointment taken successfully." })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to take note of the appointment." })
+  async takeNoteAppointment(
+    @Param('appointmentId') appointmentId: string,
+    @Body() input: TakeNoteAppointmentDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new TakeNoteAppointmentCommand(appointmentId, input);
+
+    const result = await this.commandBus.execute<
+      TakeNoteAppointmentCommand, UpdateOrDeleteResponseDto
       >(command);
     
     return result;

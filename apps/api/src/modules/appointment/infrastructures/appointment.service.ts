@@ -11,7 +11,7 @@ import { BadRequestException, ExceptionHandler, InternalServerErrorException, No
 import { filesToBase64 } from '@app/utils';
 
 import { UpdateOrDeleteResponseDto } from '../../../common/dtos';
-import { GetAppointmentResponseDto, GetListAppointmentDto, UpdateAppointmentDto } from '../dtos';
+import { GetAppointmentResponseDto, GetListAppointmentDto, TakeNoteAppointmentDto, UpdateAppointmentDto } from '../dtos';
 import { IAppointmentService } from '../interfaces';
 
 @Injectable()
@@ -194,6 +194,32 @@ export class AppointmentService implements IAppointmentService {
       });
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error cancelling appointment');
+    }
+  }
+
+  async takeNoteAppointment(
+    appointmentId: string,
+    input: TakeNoteAppointmentDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const appointment = await this.appointmentRepository.findOne({
+        where: { id: appointmentId }
+      });
+
+      if (!appointment) {
+        throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      appointment.note = input.note ?? '';
+      const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Appointment note taken successfully',
+        at: updatedAppointment.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error taking note of appointment');
     }
   }
 }

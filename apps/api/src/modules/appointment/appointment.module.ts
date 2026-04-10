@@ -6,13 +6,14 @@ import { MemoryStoredFile, NestjsFormDataModule } from "nestjs-form-data";
 
 import { AppointmentController } from "./appointment.controller";
 import { AppointmentService } from "./infrastructures";
-import { CancelAppointmentCommandHandler, GetListAppointmentQueryHandler, GetUpcomingAppointmentQueryHandler, UpdateAppointmentCommandHandler } from "./use-cases";
+import { CancelAppointmentCommandHandler, GetListAppointmentQueryHandler, GetUpcomingAppointmentQueryHandler, TakeNoteAppointmentCommandHandler, UpdateAppointmentCommandHandler } from "./use-cases";
 
 const Handlers = [
   GetListAppointmentQueryHandler,
   CancelAppointmentCommandHandler,
   UpdateAppointmentCommandHandler,
   GetUpcomingAppointmentQueryHandler,
+  TakeNoteAppointmentCommandHandler,
 ];
 
 const Adapters = [

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -12,8 +12,11 @@ import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
 
+import { UpdateOrDeleteResponseDto } from "../../common/dtos";
+
 import {
   CreateScheduleRequestDto,
+  DeleteScheduleRequestDto,
   ExportScheduleToCSVResponseDto,
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
@@ -23,17 +26,20 @@ import {
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
   ImportScheduleFromCSVRequestDto,
-  StaffDashboardStatisticsDto
+  StaffDashboardStatisticsDto,
+  UpdateScheduleRequestDto
 } from "./dtos";
 import {
   CreateScheduleCommand,
+  DeleteScheduleCommand,
   ExportScheduleToCSVQuery,
   GetActiveDoctorsQuery,
   GetListAppointmentsQuery,
   GetScheduleQuery,
   GetStaffInfoDashboardQuery,
   GetTodayAppointmentsQuery,
-  ImportScheduleFromCSVCommand
+  ImportScheduleFromCSVCommand,
+  UpdateScheduleCommand
 } from "./use-cases";
 
 
@@ -250,6 +256,57 @@ export class StaffController {
 
     const result = await this.commandBus.execute<
       ImportScheduleFromCSVCommand, GetScheduleResponseDto[]
+    >(command);
+
+    return result;
+  }
+
+  @Put('/schedule/:scheduleId')
+  @ApiOperation({ summary: "Update schedule" })
+  @ApiParam({ name: 'scheduleId', description: "Schedule ID", type: String })
+  @ApiResponse({
+    status: 200,
+    description: "Update schedule successfully.",
+    type: UpdateOrDeleteResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to update schedule." })
+  async updateSchedule(
+    @CurrentUser() user: UserEntity,
+    @Param('scheduleId') scheduleId: string,
+    @Body() input: UpdateScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new UpdateScheduleCommand(
+      user.id,
+      scheduleId,
+      input
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateScheduleCommand, UpdateOrDeleteResponseDto
+    >(command);
+
+    return result;
+  }
+
+  @Delete('/schedule')
+  @ApiOperation({ summary: "Delete list of schedules by Id" })
+  @ApiResponse({
+    status: 200,
+    description: "Delete schedule successfully.",
+    type: UpdateOrDeleteResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to delete schedule." })
+  async deleteSchedule(
+    @Body() input: DeleteScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new DeleteScheduleCommand(
+      input
+    );
+
+    const result = await this.commandBus.execute<
+      DeleteScheduleCommand, UpdateOrDeleteResponseDto
     >(command);
 
     return result;
