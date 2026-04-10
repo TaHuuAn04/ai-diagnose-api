@@ -1,22 +1,49 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth, ApiExtraModels, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { JwtAuthGuard } from '@api/guards';
 
 import { RolesGuard } from '@app/core';
 import { Roles } from '@app/core/decorators';
 import { UserRole } from '@app/core/domain/enums';
+import { PageDto } from '@app/core/dtos';
 
 import {
+  ChatbotModelResponseDto,
   CreateAdmissionStaffAccountRequestDto,
   CreateAdmissionStaffAccountResponseDto,
+  CreateChatbotModelRequestDto,
+  CreateDiagnoseModelRequestDto,
   CreateDoctorAccountRequestDto,
   CreateDoctorAccountResponseDto,
+  DeleteAdmissionStaffAccountResponseDto,
+  DeleteDoctorAccountResponseDto,
+  DiagnoseModelResponseDto,
+  GetListChatbotModelsRequestDto,
+  GetListDiagnoseModelsRequestDto,
+  UpdateAdmissionStaffAccountRequestDto,
+  UpdateAdmissionStaffAccountResponseDto,
+  UpdateChatbotModelRequestDto,
+  UpdateDiagnoseModelRequestDto,
+  UpdateDoctorAccountRequestDto,
+  UpdateDoctorAccountResponseDto,
 } from './dtos';
 import {
   CreateAdmissionStaffAccountCommand,
+  CreateChatbotModelCommand,
+  CreateDiagnoseModelCommand,
   CreateDoctorAccountCommand,
+  DeleteAdmissionStaffAccountCommand,
+  DeleteChatbotModelCommand,
+  DeleteDiagnoseModelCommand,
+  DeleteDoctorAccountCommand,
+  GetListChatbotModelsQuery,
+  GetListDiagnoseModelsQuery,
+  UpdateAdmissionStaffAccountCommand,
+  UpdateChatbotModelCommand,
+  UpdateDiagnoseModelCommand,
+  UpdateDoctorAccountCommand,
 } from './use-cases';
 
 @ApiTags('Admin')
@@ -24,8 +51,12 @@ import {
 @Roles(UserRole.ADMIN)
 @ApiBearerAuth('access-token')
 @Controller('admin')
+@ApiExtraModels(PageDto, DiagnoseModelResponseDto, ChatbotModelResponseDto)
 export class AdminController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post('doctors')
   @ApiOperation({ summary: 'Create a doctor account (Admin only)' })
@@ -47,6 +78,48 @@ export class AdminController {
     >(command);
   }
 
+  @Put('doctors/:id')
+  @ApiOperation({ summary: 'Update a doctor account by User ID (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Doctor account updated successfully',
+    type: UpdateDoctorAccountResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 403, description: 'Forbidden resource' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async updateDoctorAccount(
+    @Param('id') id: string,
+    @Body() request: UpdateDoctorAccountRequestDto,
+  ): Promise<UpdateDoctorAccountResponseDto> {
+    const command = new UpdateDoctorAccountCommand(id, request);
+    
+    return this.commandBus.execute<
+      UpdateDoctorAccountCommand,
+      UpdateDoctorAccountResponseDto
+    >(command);
+  }
+
+  @Delete('doctors/:id')
+  @ApiOperation({ summary: 'Delete a doctor account by User ID (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Doctor account deleted successfully',
+    type: DeleteDoctorAccountResponseDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden resource' })
+  @ApiResponse({ status: 404, description: 'Doctor not found' })
+  async deleteDoctorAccount(
+    @Param('id') id: string,
+  ): Promise<DeleteDoctorAccountResponseDto> {
+    const command = new DeleteDoctorAccountCommand(id);
+    
+    return this.commandBus.execute<
+      DeleteDoctorAccountCommand,
+      DeleteDoctorAccountResponseDto
+    >(command);
+  }
+
   @Post('staffs')
   @ApiOperation({ summary: 'Create an admission staff account (Admin only)' })
   @ApiResponse({
@@ -65,5 +138,123 @@ export class AdminController {
       CreateAdmissionStaffAccountCommand,
       CreateAdmissionStaffAccountResponseDto
     >(command);
+  }
+
+  @Put('staffs/:id')
+  @ApiOperation({ summary: 'Update an admission staff account by User ID (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Admission staff account updated successfully',
+    type: UpdateAdmissionStaffAccountResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 403, description: 'Forbidden resource' })
+  @ApiResponse({ status: 404, description: 'Staff not found' })
+  async updateAdmissionStaffAccount(
+    @Param('id') id: string,
+    @Body() request: UpdateAdmissionStaffAccountRequestDto,
+  ): Promise<UpdateAdmissionStaffAccountResponseDto> {
+    const command = new UpdateAdmissionStaffAccountCommand(id, request);
+    
+    return this.commandBus.execute<
+      UpdateAdmissionStaffAccountCommand,
+      UpdateAdmissionStaffAccountResponseDto
+    >(command);
+  }
+
+  @Delete('staffs/:id')
+  @ApiOperation({ summary: 'Delete an admission staff account by User ID (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Admission staff account deleted successfully',
+    type: DeleteAdmissionStaffAccountResponseDto,
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden resource' })
+  @ApiResponse({ status: 404, description: 'Staff not found' })
+  async deleteAdmissionStaffAccount(
+    @Param('id') id: string,
+  ): Promise<DeleteAdmissionStaffAccountResponseDto> {
+    const command = new DeleteAdmissionStaffAccountCommand(id);
+    
+    return this.commandBus.execute<
+      DeleteAdmissionStaffAccountCommand,
+      DeleteAdmissionStaffAccountResponseDto
+    >(command);
+  }
+
+  @Post('ai-models')
+  @ApiOperation({ summary: 'Create a new AI Diagnose Model' })
+  @ApiResponse({ status: 201, type: DiagnoseModelResponseDto })
+  async createDiagnoseModel(
+    @Body() request: CreateDiagnoseModelRequestDto,
+  ): Promise<DiagnoseModelResponseDto> {
+    const command = new CreateDiagnoseModelCommand(request);
+    return this.commandBus.execute(command);
+  }
+
+  @Put('ai-models/:id')
+  @ApiOperation({ summary: 'Update an existing AI Diagnose Model' })
+  @ApiResponse({ status: 200, type: DiagnoseModelResponseDto })
+  async updateDiagnoseModel(
+    @Param('id') id: string,
+    @Body() request: UpdateDiagnoseModelRequestDto,
+  ): Promise<DiagnoseModelResponseDto> {
+    const command = new UpdateDiagnoseModelCommand(id, request);
+    return this.commandBus.execute(command);
+  }
+
+  @Delete('ai-models/:id')
+  @ApiOperation({ summary: 'Delete an AI Diagnose Model' })
+  @ApiResponse({ status: 200, description: 'Deleted correctly' })
+  async deleteDiagnoseModel(@Param('id') id: string): Promise<boolean> {
+    const command = new DeleteDiagnoseModelCommand(id);
+    return this.commandBus.execute(command);
+  }
+
+  @Get('ai-models')
+  @ApiOperation({ summary: 'Get list of AI Diagnose Models with pagination' })
+  async getListDiagnoseModels(
+    @Query() query: GetListDiagnoseModelsRequestDto,
+  ): Promise<PageDto<DiagnoseModelResponseDto>> {
+    const q = new GetListDiagnoseModelsQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Post('chatbots')
+  @ApiOperation({ summary: 'Create a new Chatbot Model' })
+  @ApiResponse({ status: 201, type: ChatbotModelResponseDto })
+  async createChatbotModel(
+    @Body() request: CreateChatbotModelRequestDto,
+  ): Promise<ChatbotModelResponseDto> {
+    const command = new CreateChatbotModelCommand(request);
+    return this.commandBus.execute(command);
+  }
+
+  @Put('chatbots/:id')
+  @ApiOperation({ summary: 'Update an existing Chatbot Model' })
+  @ApiResponse({ status: 200, type: ChatbotModelResponseDto })
+  async updateChatbotModel(
+    @Param('id') id: string,
+    @Body() request: UpdateChatbotModelRequestDto,
+  ): Promise<ChatbotModelResponseDto> {
+    const command = new UpdateChatbotModelCommand(id, request);
+    return this.commandBus.execute(command);
+  }
+
+  @Delete('chatbots/:id')
+  @ApiOperation({ summary: 'Delete a Chatbot Model' })
+  @ApiResponse({ status: 200, description: 'Deleted correctly' })
+  async deleteChatbotModel(@Param('id') id: string): Promise<boolean> {
+    const command = new DeleteChatbotModelCommand(id);
+    return this.commandBus.execute(command);
+  }
+
+  @Get('chatbots')
+  @ApiOperation({ summary: 'Get list of Chatbot Models with pagination' })
+  async getListChatbotModels(
+    @Query() query: GetListChatbotModelsRequestDto,
+  ): Promise<PageDto<ChatbotModelResponseDto>> {
+    const q = new GetListChatbotModelsQuery(query);
+    return this.queryBus.execute(q);
   }
 }

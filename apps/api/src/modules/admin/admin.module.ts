@@ -7,12 +7,36 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './infrastructures';
 import {
   CreateAdmissionStaffAccountCommandHandler,
+  CreateChatbotModelCommandHandler,
+  CreateDiagnoseModelCommandHandler,
   CreateDoctorAccountCommandHandler,
+  DeleteAdmissionStaffAccountCommandHandler,
+  DeleteChatbotModelCommandHandler,
+  DeleteDiagnoseModelCommandHandler,
+  DeleteDoctorAccountCommandHandler,
+  GetListChatbotModelsQueryHandler,
+  GetListDiagnoseModelsQueryHandler,
+  UpdateAdmissionStaffAccountCommandHandler,
+  UpdateChatbotModelCommandHandler,
+  UpdateDiagnoseModelCommandHandler,
+  UpdateDoctorAccountCommandHandler,
 } from './use-cases';
 
 const Handlers = [
   CreateDoctorAccountCommandHandler,
   CreateAdmissionStaffAccountCommandHandler,
+  UpdateDoctorAccountCommandHandler,
+  DeleteDoctorAccountCommandHandler,
+  UpdateAdmissionStaffAccountCommandHandler,
+  DeleteAdmissionStaffAccountCommandHandler,
+  CreateDiagnoseModelCommandHandler,
+  UpdateDiagnoseModelCommandHandler,
+  DeleteDiagnoseModelCommandHandler,
+  GetListDiagnoseModelsQueryHandler,
+  CreateChatbotModelCommandHandler,
+  UpdateChatbotModelCommandHandler,
+  DeleteChatbotModelCommandHandler,
+  GetListChatbotModelsQueryHandler,
 ];
 
 const Adapters = [
