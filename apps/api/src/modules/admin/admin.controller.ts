@@ -30,7 +30,9 @@ import {
   UpdateDoctorAccountResponseDto,
 } from './dtos';
 import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
+import { GetSystemOverviewRequestDto } from './dtos/request/get-system-overview.request.dto';
 import { DoctorPerformanceStatisticsResponseDto } from './dtos/response/doctor-performance-statistics.response.dto';
+import { SystemOverviewResponseDto } from './dtos/response/system-overview.response.dto';
 import {
   CreateAdmissionStaffAccountCommand,
   CreateChatbotModelCommand,
@@ -48,6 +50,7 @@ import {
   UpdateDoctorAccountCommand,
 } from './use-cases';
 import { GetDoctorPerformanceStatisticsQuery } from './use-cases/get-doctor-performance-statistics.use-case';
+import { GetSystemOverviewQuery } from './use-cases/get-system-overview.use-case';
 
 @ApiTags('Admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -268,6 +271,16 @@ export class AdminController {
     @Query() query: GetDoctorPerformanceStatisticsRequestDto,
   ): Promise<DoctorPerformanceStatisticsResponseDto> {
     const q = new GetDoctorPerformanceStatisticsQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('dashboard/overview')
+  @ApiOperation({ summary: 'Get dashboard system overview statistics by month/year' })
+  @ApiResponse({ status: 200, type: SystemOverviewResponseDto })
+  async getSystemOverview(
+    @Query() query: GetSystemOverviewRequestDto,
+  ): Promise<SystemOverviewResponseDto> {
+    const q = new GetSystemOverviewQuery(query);
     return this.queryBus.execute(q);
   }
 }

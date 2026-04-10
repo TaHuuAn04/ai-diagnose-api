@@ -13,3 +13,4 @@ export * from './update-chatbot-model.use-case';
 export * from './delete-chatbot-model.use-case';
 export * from './get-list-chatbot-models.use-case';
 export * from './get-doctor-performance-statistics.use-case';
+export * from './get-system-overview.use-case';

@@ -16,7 +16,7 @@ import { Transactional } from 'typeorm-transactional';
 import { ChatbotEntity, DiagnoseModelEntity } from '@app/core/domain/entities';
 import { UserRole } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
-import { BadRequestException, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { hashPassword } from '../../auth/utils';
 import {
@@ -29,9 +29,15 @@ import {
   CreateDoctorAccountResponseDto,
   DeleteAdmissionStaffAccountResponseDto,
   DeleteDoctorAccountResponseDto,
+  DepartmentDistributionItemResponseDto,
   DiagnoseModelResponseDto,
+  DoctorPerformanceStatisticsResponseDto,
+  GetDoctorPerformanceStatisticsRequestDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
+  GetSystemOverviewRequestDto,
+  SystemOverviewResponseDto,
+  TopDoctorStatisticsItemResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
   UpdateAdmissionStaffAccountResponseDto,
   UpdateChatbotModelRequestDto,
@@ -39,12 +45,6 @@ import {
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
 } from '../dtos';
-import { GetDoctorPerformanceStatisticsRequestDto } from '../dtos/request/get-doctor-performance-statistics.request.dto';
-import {
-  DepartmentDistributionItemResponseDto,
-  DoctorPerformanceStatisticsResponseDto,
-  TopDoctorStatisticsItemResponseDto,
-} from '../dtos/response/doctor-performance-statistics.response.dto';
 import { IAdminService } from '../interfaces';
 
 @Injectable()
@@ -511,13 +511,10 @@ export class AdminService implements IAdminService {
       const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
       const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
 
-      const limit = 1000;
-      
-      const queryOptions = {
+      const result = await this.diagnosisResultRepository.findAll({
         where: {
           createdAt: {
-            gte: startDate,
-            lt: endDate,
+            between: [startDate, endDate],
           },
         },
         relations: [
@@ -526,33 +523,8 @@ export class AdminService implements IAdminService {
           'consultation.doctor.user',
           'consultation.aiResult',
         ],
-      };
-
-      // 1. First fetch to get page 1 and total metadata
-      const firstPage = await this.diagnosisResultRepository.findAll({
-        ...queryOptions,
-        pagination: { page: 1, limit },
       });
-
-      // 2. Calculate remaining pages
-      const totalItems = firstPage.meta?.total ?? firstPage.data.length;
-      const totalPages = Math.ceil(totalItems / limit);
-
-      // 3. Concurrently fetch all remaining pages utilizing Promise.all
-      const pagePromises = Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) =>
-        this.diagnosisResultRepository.findAll({
-          ...queryOptions,
-          pagination: { page: index + 2, limit },
-        }),
-      );
-
-      const remainingPages = await Promise.all(pagePromises);
-
-      // Collect all flat data
-      const allData = [
-        ...firstPage.data,
-        ...remainingPages.flatMap((res) => res.data),
-      ];
+      const allData = result.data;
 
       const doctorStats = new Map<string, {
         doctorId: string;
@@ -636,16 +608,99 @@ export class AdminService implements IAdminService {
         }))
         .sort((a, b) => b.totalExaminations - a.totalExaminations);
 
-      return {
+      return plainToInstance(DoctorPerformanceStatisticsResponseDto, {
         month,
         year,
         totalExaminations,
         topDoctors,
         departmentDistribution,
-      };
+      });
     } catch (error) {
       this.logger.error('Failed to get doctor performance statistics', error);
       throw error;
+    }
+  }
+
+  async getSystemOverview(
+    query: GetSystemOverviewRequestDto,
+  ): Promise<SystemOverviewResponseDto> {
+    try {
+      const month = query.month;
+      const year = query.year;
+
+      const currentStartDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+      const currentEndDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      const prevStartDate = new Date(Date.UTC(prevYear, prevMonth - 1, 1, 0, 0, 0));
+      const prevEndDate = new Date(Date.UTC(prevYear, prevMonth, 1, 0, 0, 0));
+
+      const queryOptions = {
+        relations: ['consultation', 'consultation.aiResult'],
+      };
+
+      // Aggregate all database calls asynchronously
+      const [currResult, prevResult, currPatientsCount, prevPatientsCount] = await Promise.all([
+        this.diagnosisResultRepository.findAll({
+          ...queryOptions,
+          where: { 
+            createdAt: { between: [currentStartDate, currentEndDate] },
+          },
+        }),
+        this.diagnosisResultRepository.findAll({
+          ...queryOptions,
+          where: { createdAt: { between: [prevStartDate, prevEndDate] } },
+        }),
+        this.userRepository.countWithOptions({ role: UserRole.PATIENT, createdAt: { gte: currentStartDate, lt: currentEndDate } }),
+        this.userRepository.countWithOptions({ role: UserRole.PATIENT, createdAt: { gte: prevStartDate, lt: prevEndDate } }),
+      ]);
+
+      const currData = currResult.data;
+      const prevData = prevResult.data;
+
+      const calculateMetrics = (data: typeof currData) => {
+        let aiUsage = 0;
+        const doctors = new Set<string>();
+
+        for (const item of data) {
+          const consultation = item.consultation;
+          if (!consultation?.doctorId) continue;
+
+          doctors.add(consultation.doctorId);
+
+          if (consultation.aiResult?.id) {
+            aiUsage += 1;
+          }
+        }
+
+        return {
+          totalExaminations: data.length,
+          totalAiUsage: aiUsage,
+          activeDoctors: doctors.size,
+        };
+      };
+
+      const currMetrics = calculateMetrics(currData);
+      const prevMetrics = calculateMetrics(prevData);
+
+      const calculateGrowth = (current: number, previous: number) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return Number((((current - previous) / previous) * 100).toFixed(1));
+      };
+
+      return plainToInstance(SystemOverviewResponseDto, {
+        totalAiUsage: currMetrics.totalAiUsage,
+        aiUsageGrowth: calculateGrowth(currMetrics.totalAiUsage, prevMetrics.totalAiUsage),
+        totalExaminations: currMetrics.totalExaminations,
+        examinationGrowth: calculateGrowth(currMetrics.totalExaminations, prevMetrics.totalExaminations),
+        newPatients: currPatientsCount,
+        patientGrowth: calculateGrowth(currPatientsCount, prevPatientsCount),
+        activeDoctors: currMetrics.activeDoctors,
+        doctorGrowth: calculateGrowth(currMetrics.activeDoctors, prevMetrics.activeDoctors),
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error);
     }
   }
 }

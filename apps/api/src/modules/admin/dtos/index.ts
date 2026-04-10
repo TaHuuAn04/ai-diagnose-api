@@ -18,3 +18,5 @@ export * from './request/get-list-chatbot-models.request.dto';
 export * from './response/chatbot-model.response.dto';
 export * from './request/get-doctor-performance-statistics.request.dto';
 export * from './response/doctor-performance-statistics.response.dto';
+export * from './request/get-system-overview.request.dto';
+export * from './response/system-overview.response.dto';
