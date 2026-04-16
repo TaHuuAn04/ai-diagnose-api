@@ -5,7 +5,7 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { IAppointmentRepository, IConsultationRepository } from 'apps/api/src/core/repository';
 
 import { AppointmentStatus } from '@app/core/domain/enums';
-import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, ForbiddenException, NotFoundException } from '@app/core/exception';
 
 export class StartExaminationCommand implements ICommand {
   constructor(
@@ -55,6 +55,10 @@ export class StartExaminationCommandHandler
 
       if (appointment.patientId !== patientId) {
         throw new BadRequestException('Appointment does not belong to the given patient.');
+      }
+
+      if (appointment.metadata?.doctorId !== doctorId) {
+        throw new ForbiddenException('You are not assigned to examine this appointment.');
       }
 
       if (appointment.status === AppointmentStatus.EXAMINING) {

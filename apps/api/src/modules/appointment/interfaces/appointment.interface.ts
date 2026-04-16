@@ -1,3 +1,4 @@
+import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos/page.dto";
 
 import { UpdateOrDeleteResponseDto } from "../../../common/dtos";
@@ -11,14 +12,20 @@ export interface IAppointmentService {
 
   getUpcomingAppointment(userId: string): Promise<GetAppointmentResponseDto | null>;
 
-  cancelAppointment(appointmentId: string): Promise<UpdateOrDeleteResponseDto>; 
+  cancelAppointment(
+    userId: string,
+    role: UserRole,
+    appointmentId: string
+  ): Promise<UpdateOrDeleteResponseDto>; 
 
   updateAppointment(
+    userId: string,
     appointmentId: string,
     input: UpdateAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto>;
 
   takeNoteAppointment(
+    userId: string,
     appointmentId: string,
     input: TakeNoteAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto>;

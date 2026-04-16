@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { IAppointmentRepository, IImageRepository, IScheduleRepository, IWorkingTimeRepository } from '@api/core/repository';
+import { IAdmissionStaffRepository, IAppointmentRepository, IImageRepository, IScheduleRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { AppointmentStatus, ImageReference, ImageType, SortDirection, WorkingTimeStatus } from '@app/core/domain/enums';
+import { AppointmentStatus, ImageReference, ImageType, SortDirection, UserRole, WorkingTimeStatus } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
-import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, ForbiddenException, InternalServerErrorException, NotFoundException } from '@app/core/exception';
 import { filesToBase64 } from '@app/utils';
 
 import { UpdateOrDeleteResponseDto } from '../../../common/dtos';
@@ -28,6 +28,9 @@ export class AppointmentService implements IAppointmentService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.WORKING_TIME_REPOSITORY)
     private readonly workingTimeRepository: IWorkingTimeRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.ADMISSION_STAFF_REPOSITORY)
+    private readonly admissionStaffRepository: IAdmissionStaffRepository,
   ) {}
 
   async getListAppointment(
@@ -111,6 +114,7 @@ export class AppointmentService implements IAppointmentService {
 
   @Transactional()
   async updateAppointment(
+    userId: string,
     appointmentId: string,
     input: UpdateAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto> {
@@ -118,11 +122,20 @@ export class AppointmentService implements IAppointmentService {
       const { images, description } = input;
 
       const appointment = await this.appointmentRepository.findOne({
-        where: { id: appointmentId }
+        where: { id: appointmentId },
+        relations: ['patient']
       });
 
       if (!appointment) {
         throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      if (appointment.patient?.userId !== userId) {
+        throw new ForbiddenException(`You do not have permission to update this appointment`);
+      }
+
+      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+        throw new BadRequestException(`Cannot update appointment with status ${appointment.status}`);
       }
 
       appointment.description = description ?? appointment.description;
@@ -156,16 +169,35 @@ export class AppointmentService implements IAppointmentService {
     }
   }
 
+  @Transactional()
   async cancelAppointment(
+    userId: string,
+    role: UserRole,
     appointmentId: string
   ): Promise<UpdateOrDeleteResponseDto> {
     try {
       const appointment = await this.appointmentRepository.findOne({
-        where: { id: appointmentId }
+        where: { id: appointmentId },
+        relations: ['patient']
       });
 
       if (!appointment) {
         throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      if (role === UserRole.PATIENT && appointment.patient?.userId !== userId) {
+        throw new ForbiddenException(`You do not have permission to cancel this appointment`);
+      } else if (role === UserRole.STAFF) {
+        const staff = await this.admissionStaffRepository.findOne({
+          where: { userId: userId },
+        });
+        if (!staff || appointment.metadata?.department !== staff.department) {
+          throw new ForbiddenException(`You do not have permission to cancel appointment from other department`);
+        }
+      }
+
+      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+        throw new BadRequestException('Only appointments with status SCHEDULED can be cancelled');
       }
 
       const workingTime = await this.workingTimeRepository.updateMany(
@@ -180,11 +212,7 @@ export class AppointmentService implements IAppointmentService {
         throw new BadRequestException('Failed to cancel appointment');
       }
       
-      if (appointment.status === AppointmentStatus.SCHEDULED) {
-        appointment.status = AppointmentStatus.CANCELLED;
-      } else {
-        throw new BadRequestException('Only appointments with status SCHEDULED can be cancelled');
-      }
+      appointment.status = AppointmentStatus.CANCELLED;
       const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
 
       return plainToInstance(UpdateOrDeleteResponseDto, {
@@ -197,7 +225,9 @@ export class AppointmentService implements IAppointmentService {
     }
   }
 
+  @Transactional()
   async takeNoteAppointment(
+    userId: string,
     appointmentId: string,
     input: TakeNoteAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto> {
@@ -208,6 +238,13 @@ export class AppointmentService implements IAppointmentService {
 
       if (!appointment) {
         throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      const staff = await this.admissionStaffRepository.findOne({
+        where: { userId: userId },
+      });
+      if (!staff || appointment.metadata?.department !== staff.department) {
+        throw new ForbiddenException(`You do not have permission to take note for appointment from other department`);
       }
 
       appointment.note = input.note ?? '';

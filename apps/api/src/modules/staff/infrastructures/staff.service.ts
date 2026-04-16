@@ -517,21 +517,37 @@ export class StaffService implements IStaffService {
   }
 
   private async _deleteScheduleInternal(
+    staffId: string,
     scheduleIds: string[],
     startWeekDate: string,
     endWeekDate: string,
     currentDate: string
   ): Promise<void> {
+    const staff = await this.admissionStaffRepository.findOne({
+      where: { userId: staffId },
+    });
+    if (!staff) {
+      throw new NotFoundException(`Staff not found with id ${staffId}`);
+    }
+
     const schedule = await this.scheduleRepository.findAll({
       where: {
         id: {
           in: scheduleIds
         }
-      }
+      },
+      relations: ['doctor']
     });
 
     if (schedule.data.length === 0) {
       throw new NotFoundException(`Schedule not found with list of id ${scheduleIds.join(', ')}`);
+    }
+
+    // Verify ownership: all schedules must belong to doctors in the staff's department
+    for (const s of schedule.data) {
+      if (s.doctor?.department !== staff.department) {
+        throw new BadRequestException(`Cannot delete schedule from other department`);
+      }
     }
     
     const workingTimesData = (await Promise.all(schedule.data.map(async (schedule) => {
@@ -589,12 +605,13 @@ export class StaffService implements IStaffService {
 
   @Transactional()
   async deleteSchedule(
+    staffId: string,
     request: DeleteScheduleRequestDto
   ): Promise<UpdateOrDeleteResponseDto> {
     try {
       const { scheduleIds, startWeekDate, endWeekDate, currentDate } = request;
 
-      await this._deleteScheduleInternal(scheduleIds, startWeekDate, endWeekDate, currentDate);
+      await this._deleteScheduleInternal(staffId, scheduleIds, startWeekDate, endWeekDate, currentDate);
 
       return plainToInstance(UpdateOrDeleteResponseDto, {
         isSuccess: true,
@@ -626,7 +643,7 @@ export class StaffService implements IStaffService {
         throw new NotFoundException(`Schedule not found with id ${scheduleId}`);
       }
 
-      await this._deleteScheduleInternal([scheduleId], startWeekDate, endWeekDate, currentDate);
+      await this._deleteScheduleInternal(staffId, [scheduleId], startWeekDate, endWeekDate, currentDate);
       const schedule = await this._createScheduleInternal(staffId, request);
 
       return plainToInstance(UpdateOrDeleteResponseDto, {

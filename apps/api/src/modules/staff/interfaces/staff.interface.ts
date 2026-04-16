@@ -56,6 +56,7 @@ export interface IStaffService {
   ): Promise<ExportScheduleToCSVResponseDto>;
 
   deleteSchedule(
+    staffId: string,
     request: DeleteScheduleRequestDto
   ): Promise<UpdateOrDeleteResponseDto>;
 

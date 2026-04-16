@@ -5,7 +5,8 @@ import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTag
 import { JwtAuthGuard } from "@api/guards";
 import { FormDataRequest } from "nestjs-form-data";
 
-import { Roles } from "@app/core/decorators";
+import { CurrentUser, Roles } from "@app/core/decorators";
+import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { RolesGuard } from "@app/core/guards";
 
@@ -35,10 +36,11 @@ export class AppointmentController {
   @ApiConsumes('multipart/form-data')
   @FormDataRequest()
   async updateAppointment(
+    @CurrentUser() user: UserEntity,
     @Param('appointmentId') appointmentId: string,
     @Body() input: UpdateAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto> {
-    const command = new UpdateAppointmentCommand(appointmentId, input);
+    const command = new UpdateAppointmentCommand(user.id, appointmentId, input);
 
     const result = await this.commandBus.execute<
       UpdateAppointmentCommand, UpdateOrDeleteResponseDto
@@ -55,9 +57,10 @@ export class AppointmentController {
   @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
   @ApiResponse({ status: 500, description: "An error occurred during processing; failed to cancel the appointment." })
   async cancelAppointment(
+    @CurrentUser() user: UserEntity,
     @Param('appointmentId') appointmentId: string,
   ): Promise<UpdateOrDeleteResponseDto> {
-    const command = new CancelAppointmentCommand(appointmentId);
+    const command = new CancelAppointmentCommand(user.id, user.role, appointmentId);
 
     const result = await this.commandBus.execute<
       CancelAppointmentCommand, UpdateOrDeleteResponseDto
@@ -74,10 +77,11 @@ export class AppointmentController {
   @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
   @ApiResponse({ status: 500, description: "An error occurred during processing; failed to take note of the appointment." })
   async takeNoteAppointment(
+    @CurrentUser() user: UserEntity,
     @Param('appointmentId') appointmentId: string,
     @Body() input: TakeNoteAppointmentDto
   ): Promise<UpdateOrDeleteResponseDto> {
-    const command = new TakeNoteAppointmentCommand(appointmentId, input);
+    const command = new TakeNoteAppointmentCommand(user.id, appointmentId, input);
 
     const result = await this.commandBus.execute<
       TakeNoteAppointmentCommand, UpdateOrDeleteResponseDto
@@ -86,3 +90,4 @@ export class AppointmentController {
     return result;
   }
 }
+

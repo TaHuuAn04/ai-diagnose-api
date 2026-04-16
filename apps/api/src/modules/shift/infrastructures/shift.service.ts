@@ -200,6 +200,7 @@ export class ShiftService implements IShiftService {
           doctorId: doctorId,
           shiftId: shiftId,
           date: date,
+          status: WorkingTimeStatus.AVAILABLE,
         },
         {
           appointmentId: appointment.id,
@@ -208,7 +209,7 @@ export class ShiftService implements IShiftService {
       );
 
       if (!updatedWorkingTimes) {
-        throw new BadRequestException('Failed to book shift');
+        throw new BadRequestException('Failed to book shift or shift is already booked');
       }
 
       const imageBase64s = filesToBase64(images)

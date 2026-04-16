@@ -10,6 +10,7 @@ import { IStaffService } from '../interfaces'
 
 export class DeleteScheduleCommand implements ICommand {
   constructor(
+    public readonly staffId: string,
     public readonly request: DeleteScheduleRequestDto
   ) { }
 }
@@ -25,6 +26,7 @@ export class DeleteScheduleCommandHandler
 
   async execute(command: DeleteScheduleCommand): Promise<UpdateOrDeleteResponseDto> {
     const result = await this.staffService.deleteSchedule(
+      command.staffId,
       command.request
     );
 

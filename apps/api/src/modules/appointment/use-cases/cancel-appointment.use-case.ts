@@ -3,11 +3,15 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 
 import { INJECTION_TOKEN } from "@api/enums";
 
+import { UserRole } from "@app/core/domain/enums";
+
 import { UpdateOrDeleteResponseDto } from "../../../common/dtos";
 import { IAppointmentService } from "../interfaces";
 
 export class CancelAppointmentCommand {
   constructor(
+    public readonly userId: string,
+    public readonly role: UserRole,
     public readonly appointmentId: string,
   ) {}
 }
@@ -22,7 +26,11 @@ export class CancelAppointmentCommandHandler
   ) {}
 
   async execute(command: CancelAppointmentCommand): Promise<UpdateOrDeleteResponseDto> {
-    const result = await this.appointmentService.cancelAppointment(command.appointmentId);
+    const result = await this.appointmentService.cancelAppointment(
+      command.userId,
+      command.role,
+      command.appointmentId
+    );
 
     return result;
   }

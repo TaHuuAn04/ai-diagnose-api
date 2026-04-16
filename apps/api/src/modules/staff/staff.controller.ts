@@ -299,9 +299,11 @@ export class StaffController {
   @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
   @ApiResponse({ status: 500, description: "An error occurred during processing; failed to delete schedule." })
   async deleteSchedule(
+    @CurrentUser() user: UserEntity,
     @Body() input: DeleteScheduleRequestDto
   ): Promise<UpdateOrDeleteResponseDto> {
     const command = new DeleteScheduleCommand(
+      user.id,
       input
     );
 

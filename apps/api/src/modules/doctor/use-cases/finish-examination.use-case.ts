@@ -1,8 +1,10 @@
 import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
+
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { IAppointmentRepository, IConsultationRepository, IDiagnosisResultRepository, IDiseaseRepository, IResultDiseaseRepository } from 'apps/api/src/core/repository';
+import { Transactional } from 'typeorm-transactional';
 
 import { AppointmentStatus } from '@app/core/domain/enums';
 import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException } from '@app/core/exception';
@@ -35,6 +37,7 @@ export class FinishExaminationCommandHandler
     private readonly resultDiseaseRepository: IResultDiseaseRepository,
   ) {}
 
+  @Transactional()
   async execute(command: FinishExaminationCommand): Promise<void> {
     try {
       const { doctorId, payload } = command;

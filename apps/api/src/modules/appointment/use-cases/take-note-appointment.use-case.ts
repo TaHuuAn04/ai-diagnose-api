@@ -9,6 +9,7 @@ import { IAppointmentService } from "../interfaces";
 
 export class TakeNoteAppointmentCommand {
   constructor(
+    public readonly userId: string,
     public readonly appointmentId: string,
     public readonly input: TakeNoteAppointmentDto,
   ) {}
@@ -25,6 +26,7 @@ export class TakeNoteAppointmentCommandHandler
 
   async execute(command: TakeNoteAppointmentCommand): Promise<UpdateOrDeleteResponseDto> {
     const result = await this.appointmentService.takeNoteAppointment(
+      command.userId,
       command.appointmentId,
       command.input
     );

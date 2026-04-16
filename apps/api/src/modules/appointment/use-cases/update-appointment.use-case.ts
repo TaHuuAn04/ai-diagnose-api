@@ -9,6 +9,7 @@ import { IAppointmentService } from "../interfaces";
 
 export class UpdateAppointmentCommand {
   constructor(
+    public readonly userId: string,
     public readonly appointmentId: string,
     public readonly input: UpdateAppointmentDto,
   ) {}
@@ -25,6 +26,7 @@ export class UpdateAppointmentCommandHandler
 
   async execute(command: UpdateAppointmentCommand): Promise<UpdateOrDeleteResponseDto> {
     const result = await this.appointmentService.updateAppointment(
+      command.userId,
       command.appointmentId,
       command.input
     );
