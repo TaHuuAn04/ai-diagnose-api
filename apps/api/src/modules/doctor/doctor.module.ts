@@ -12,13 +12,14 @@ import {
   GetAiDiagnosisResultQueryHandler,
   GetAppointmentCalendarQueryHandler,
   GetAppointmentDatesQueryHandler,
-  GetDoctorDashboardStatisticsQueryHandler,
- GetDoctorInfoQueryHandler, GetListDoctorQueryHandler,
+  GetConsultationDetailQueryHandler,
+ GetDoctorConsultationHistoryQueryHandler, GetDoctorDashboardStatisticsQueryHandler,
+ GetDoctorInfoQueryHandler,
+ GetListDoctorQueryHandler,
  GetPersonalAppointmentsQueryHandler,
  HandleAiDiagnosisCallbackCommandHandler,
  StartExaminationCommandHandler,
- GetConsultationDetailQueryHandler,
- GetDoctorConsultationHistoryQueryHandler
+ UpdateDoctorInfoCommandHandler
 } from "./use-cases";
 
 const Handlers = [
@@ -35,7 +36,8 @@ const Handlers = [
   StartExaminationCommandHandler,
   FinishExaminationCommandHandler,
   GetConsultationDetailQueryHandler,
-  GetDoctorConsultationHistoryQueryHandler
+  GetDoctorConsultationHistoryQueryHandler,
+  UpdateDoctorInfoCommandHandler
 ];
 
 const Adapters = [

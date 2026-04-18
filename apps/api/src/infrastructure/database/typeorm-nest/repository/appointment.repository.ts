@@ -164,6 +164,22 @@ export class AppointmentRepository
     return entity ? this._mapper.toDomain(entity) : null;
   }
 
+  async countTotalAppointmentsInMonthForStaff(
+    department: string,
+    startDate: string,
+    endDate: string
+  ): Promise<number> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('appointment')
+      .andWhere('appointment.metadata->>\'department\' = :department', { department })
+      .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
+      .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
+      .andWhere('appointment.status != :status', { status: AppointmentStatus.CANCELLED })
+    
+    const total = await queryBuilder.getCount();
+    return total;
+  }
+
   async countPeriodExaminedAppointments(
     doctorId: string,
     startDate: string,

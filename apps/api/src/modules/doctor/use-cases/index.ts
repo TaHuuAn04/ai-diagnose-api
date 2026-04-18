@@ -12,3 +12,4 @@ export * from './start-examination.use-case';
 export * from './finish-examination.use-case';
 export * from './get-doctor-consultation-history.use-case';
 export * from './get-consultation-detail.use-case';
+export * from './update-doctor-info.use-case';

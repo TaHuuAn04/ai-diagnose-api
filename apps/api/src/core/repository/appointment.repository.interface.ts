@@ -8,6 +8,24 @@ import { GetListAppointmentsRequestDto } from '../../modules/staff/dtos';
 import { IGenericRepository } from './generic-repository.interface';
 
 export interface IAppointmentRepository extends IGenericRepository<AppointmentEntity> {
+  countTotalAppointmentsInMonthForStaff(
+    department: string,
+    startDate: string,
+    endDate: string
+  ): Promise<number>;
+
+  countPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number>;
+
+  countDistinctPatientsInPeriodExaminedAppointments(
+    doctorId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<number>;
+
   findListAppointments(
     userId: string,
     request: GetListAppointmentDto
@@ -26,18 +44,6 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
     date: string, 
     from?: string
   ): Promise<AppointmentEntity[]>;
-
-  countPeriodExaminedAppointments(
-    doctorId: string,
-    startDate: string,
-    endDate: string,
-  ): Promise<number>;
-
-  countDistinctPatientsInPeriodExaminedAppointments(
-    doctorId: string,
-    startDate: string,
-    endDate: string,
-  ): Promise<number>;
 
   findAppointmentsForCalendarByMonth(
     doctorId: string,

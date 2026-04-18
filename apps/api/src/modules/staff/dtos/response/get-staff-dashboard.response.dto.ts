@@ -20,6 +20,14 @@ export class StaffDashboardStatisticsDto {
   @ApiProperty({ description: 'Today appointments count' })
   todayAppointmentsCount: number
 
+  @Expose()
+  @ApiProperty({ description: 'This month appointments count' })
+  thisMonthAppointmentsCount: number
+
+  @Expose()
+  @ApiProperty({ description: 'Last month appointments count' })
+  lastMonthAppointmentsCount: number
+
   @ApiProperty({ type: [NearestEmptyShiftInfo] })
   @Expose()
   @Type(() => NearestEmptyShiftInfo)

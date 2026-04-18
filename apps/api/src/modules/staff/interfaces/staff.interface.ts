@@ -9,10 +9,11 @@ import {
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
   GetListAppointmentsResponseDto,
-  GetScheduleRequestDto, GetScheduleResponseDto, GetTodayAppointmentsRequestDto,
+  GetScheduleRequestDto, GetScheduleResponseDto, GetStaffInfoResponseDto, GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto, ImportScheduleFromCSVRequestDto,
   StaffDashboardStatisticsDto,
-  UpdateScheduleRequestDto
+  UpdateScheduleRequestDto,
+  UpdateStaffInfoRequestDto
 } from "../dtos";
 
 export interface IStaffService {
@@ -64,5 +65,14 @@ export interface IStaffService {
     staffId: string,
     scheduleId: string,
     request: UpdateScheduleRequestDto
+  ): Promise<UpdateOrDeleteResponseDto>;
+
+  getStaffInfo(
+    staffId: string
+  ): Promise<GetStaffInfoResponseDto>;
+
+  updateStaffInfo(
+    staffId: string,
+    request: UpdateStaffInfoRequestDto
   ): Promise<UpdateOrDeleteResponseDto>;
 }

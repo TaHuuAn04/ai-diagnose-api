@@ -1,5 +1,7 @@
 import { PageDto } from '@app/core/dtos';
 
+import { UpdateOrDeleteResponseDto } from '../../common/dtos';
+
 import {
   DoctorDashboardStatisticsDto,
   GetAppointmentCalendarRequestDto,
@@ -12,6 +14,7 @@ import {
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
   GetPersonalAppointmentsResponseDto,
+  UpdateDoctorInfoRequestDto,
 } from './dtos';
 
 export interface IDoctorService {
@@ -30,4 +33,6 @@ export interface IDoctorService {
   getConsultationHistory(doctorId: string, request: GetDoctorConsultationHistoryRequestDto): Promise<PageDto<GetDoctorConsultationHistoryResponseDto>>;
 
   getConsultationDetail(doctorId: string, consultationId: string): Promise<GetConsultationDetailResponseDto>;
+
+  updateDoctorInfo(doctorId: string, request: UpdateDoctorInfoRequestDto): Promise<UpdateOrDeleteResponseDto>;
 }

@@ -59,33 +59,6 @@ export class PatientService implements IPatientService {
     }
   }
 
-  //TODO: Implement getMedicalRecords method
-  // async getMedicalRecords(
-  //   userId: string,
-  //   pageOptionsDto: PageOptionsDto
-  // ): Promise<PageDto<MedicalRecordsDto>> {
-  //   try {
-  //     const { take, page } = pageOptionsDto;
-      
-  //     // Find all medical records for the patient
-      
-
-  //     const pageMeta = new PageMetaDto({
-  //       take,
-  //       page,
-  //       itemCount: result.meta?.total ?? 0,
-  //     });
-
-  //     const shiftDtos = result.data.map(shift => 
-  //       plainToInstance(GetListShiftResponseDto, shift)
-  //     );
-
-  //     return new PageDto<GetListShiftResponseDto>(shiftDtos, pageMeta);
-  //   } catch (error) {
-  //     ExceptionHandler.handleErrorException(error, 'Error getting medical records');
-  //   }
-  // }
-
   @Transactional()
   async createPatient(userId: string): Promise<CreatePatientResponseDto> {
     try {
