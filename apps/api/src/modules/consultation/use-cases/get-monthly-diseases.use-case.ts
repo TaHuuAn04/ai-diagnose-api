@@ -8,6 +8,7 @@ import { IConsultationService } from "../interfaces";
 
 export class GetStatisticDiseaseQuery {
   constructor(
+    public readonly userId: string,
     public readonly request: GetMonthlyDiseasesRequestDto
   ) {}
 }
@@ -23,6 +24,7 @@ export class GetStatisticDiseaseQueryHandler
 
   async execute(query: GetStatisticDiseaseQuery): Promise<GetMonthlyDiseasesResponseDto[]> {
     const result = await this.consultationService.getStatisticDisease(
+      query.userId,
       query.request
     );
 

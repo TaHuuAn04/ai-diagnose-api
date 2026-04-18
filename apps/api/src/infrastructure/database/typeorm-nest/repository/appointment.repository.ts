@@ -391,4 +391,21 @@ export class AppointmentRepository
       total,
     });
   }
+
+  async updatePastAppointmentToCancelled(
+    currentDate: string,
+    currentTime: string
+  ): Promise<void> {
+    const queryBuilder = this.repository
+      .createQueryBuilder()
+      .update(Appointment)
+      .set({ status: AppointmentStatus.CANCELLED })
+      .where('status = :status', { status: AppointmentStatus.SCHEDULED })
+      .andWhere(
+        "(metadata->>'date' < :currentDate OR (metadata->>'date' = :currentDate AND metadata->>'to' < :currentTime))",
+        { currentDate, currentTime }
+    )
+      
+    await queryBuilder.execute();
+  }
 }

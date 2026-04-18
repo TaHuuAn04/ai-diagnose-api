@@ -17,10 +17,10 @@ import { UpdateOrDeleteResponseDto } from 'apps/api/src/common/dtos';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { ScheduleEntity, WorkingTimeEntity } from '@app/core/domain/entities';
+import { ScheduleEntity } from '@app/core/domain/entities';
 import { ActiveStatus, AppointmentStatus , WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
-import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException} from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException} from '@app/core/exception';
 
 import {
   CreateScheduleRequestDto,
@@ -77,6 +77,11 @@ export class StaffService implements IStaffService {
       if (!staff) {
         throw new NotFoundException(`Staff not found with id ${staffId}`);
       }
+
+      await this.appointmentRepository.updatePastAppointmentToCancelled(
+        currentDate,
+        from
+      );
 
       const appointments = await this.appointmentRepository.findTodayAppointmentsForStaff(
         staff.department,
@@ -352,7 +357,7 @@ export class StaffService implements IStaffService {
       // Phase 1: Validate all rows
       const requiredHeaders = ['date', 'from', 'to', 'room', 'doctorCode'];
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-      const timeRegex = /^\d{2}:\d{2}:\d{2}\+07$/;
+      const timeRegex = /^\d{2}:\d{2}$/;
 
       // Validate headers
       if (rows.length > 0) {
@@ -382,10 +387,10 @@ export class StaffService implements IStaffService {
 
         // Time format
         if (!timeRegex.test(row.from)) {
-          throw new BadRequestException(`Invalid 'from' time format (HH:mm:ss+07 required) - ${rowInfo}`);
+          throw new BadRequestException(`Invalid 'from' time format (HH:mm required) - ${rowInfo}`);
         }
         if (!timeRegex.test(row.to)) {
-          throw new BadRequestException(`Invalid 'to' time format (HH:mm:ss+07 required) - ${rowInfo}`);
+          throw new BadRequestException(`Invalid 'to' time format (HH:mm required) - ${rowInfo}`);
         }
       });
 
@@ -404,8 +409,8 @@ export class StaffService implements IStaffService {
           return plainToInstance(CreateScheduleRequestDto, {
             doctorId: doctor.userId,
             date: row.date,
-            from: row.from,
-            to: row.to,
+            from: row.from + ':00+07',
+            to: row.to + ':00+07',
             room: row.room,
           });
         })
@@ -675,8 +680,8 @@ export class StaffService implements IStaffService {
 
       const csvRows = schedules.map((schedule) => ({
         date: schedule.date,
-        from: schedule.from,
-        to: schedule.to,
+        from: schedule.from.slice(0, 5),
+        to: schedule.to.slice(0, 5),
         room: schedule.room,
         doctorCode: schedule.doctor?.doctorCode ?? '',
       }));
