@@ -6,10 +6,13 @@ import {
   IConsultationRepository,
   IDoctorRepository,
   IImageRepository,
+  IUserRepository,
   IWorkingTimeRepository
 } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
+import { UpdateOrDeleteResponseDto } from 'apps/api/src/common/dtos';
 import { plainToInstance } from 'class-transformer';
+import { Transactional } from 'typeorm-transactional';
 
 import { ConsultationEntity, ImageEntity } from '@app/core/domain/entities';
 import { AppointmentStatus, ImageReference, ShowAppointmentCalendarType, SortDirection } from '@app/core/domain/enums';
@@ -35,6 +38,7 @@ import {
   PrescriptionItemDto,
   ResultDiseaseDto,
   SuggestedDiagnosisDto,
+  UpdateDoctorInfoRequestDto,
 } from '../dtos';
 
 @Injectable()
@@ -53,7 +57,10 @@ export class DoctorService implements IDoctorService {
     private readonly imageRepository: IImageRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.APPOINTMENT_REPOSITORY)
-    private readonly appointmentRepository: IAppointmentRepository
+    private readonly appointmentRepository: IAppointmentRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
   ) { }
 
   async getListDoctors(
@@ -558,6 +565,45 @@ export class DoctorService implements IDoctorService {
       });
     } catch (error) {
        ExceptionHandler.handleErrorException(error, 'Error getting consultation detail');
+    }
+  }
+
+  @Transactional()
+  async updateDoctorInfo(
+    doctorId: string, 
+    request: UpdateDoctorInfoRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const { firstName, lastName, phoneNumber, experience, description } = request;
+
+      const doctor = await this.doctorRepository.findOne({
+        where: {
+          userId: doctorId
+        },
+        relations: ['user']
+      })
+      if (!doctor || doctor.user === null) {
+        throw new NotFoundException(`Doctor not found`);
+      }
+
+      const updatedDoctor = await this.doctorRepository.update(doctor.userId, {
+        userId: doctorId,
+        experience: experience,
+        description: description
+      })
+      await this.userRepository.update(doctor.userId, {
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber
+      })
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Doctor info updated successfully',
+        at: updatedDoctor.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error updating doctor info');
     }
   }
 }

@@ -8,6 +8,7 @@ import {
   IDoctorRepository,
   IScheduleRepository,
   IShiftRepository,
+  IUserRepository,
   IWorkingTimeRepository
 } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
@@ -17,10 +18,10 @@ import { UpdateOrDeleteResponseDto } from 'apps/api/src/common/dtos';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { ScheduleEntity, WorkingTimeEntity } from '@app/core/domain/entities';
+import { ScheduleEntity } from '@app/core/domain/entities';
 import { ActiveStatus, AppointmentStatus , WorkingTimeStatus } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
-import { BadRequestException, ExceptionHandler, InternalServerErrorException, NotFoundException} from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException} from '@app/core/exception';
 
 import {
   CreateScheduleRequestDto,
@@ -31,12 +32,14 @@ import {
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto ,
   GetScheduleResponseDto,
+  GetStaffInfoResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
   ImportScheduleFromCSVRequestDto,
   NearestEmptyShiftInfo,
   StaffDashboardStatisticsDto,
-  UpdateScheduleRequestDto
+  UpdateScheduleRequestDto,
+  UpdateStaffInfoRequestDto
 } from '../dtos';
 import { IStaffService } from '../interfaces';
 
@@ -61,6 +64,9 @@ export class StaffService implements IStaffService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.SHIFT_REPOSITORY)
     private readonly shiftRepository: IShiftRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async getTodayAppointments(
@@ -229,7 +235,21 @@ export class StaffService implements IStaffService {
       if (!staff) {
         throw new NotFoundException(`Staff not found with id ${staffId}`);
       }
-      const { currentDate } = request;
+      const { currentDate, startLastMonthDate, startMonthDate, endLastMonthDate, endMonthDate } = request;
+
+      // Get this month appointments count
+      const thisMonthAppointmentsCount = await this.appointmentRepository.countTotalAppointmentsInMonthForStaff(
+        staff.department,
+        startMonthDate,
+        endMonthDate
+      )
+
+      // Get last month appointments count
+      const lastMonthAppointmentsCount = await this.appointmentRepository.countTotalAppointmentsInMonthForStaff(
+        staff.department,
+        startLastMonthDate,
+        endLastMonthDate
+      )
 
       // Get today appointments count
       const todayAppointmentsCount = await this.appointmentRepository.count({
@@ -282,6 +302,8 @@ export class StaffService implements IStaffService {
 
       return plainToInstance(StaffDashboardStatisticsDto, {
         todayAppointmentsCount,
+        thisMonthAppointmentsCount,
+        lastMonthAppointmentsCount,
         shifts: nearestEmptyShiftsDto
       })
     } catch (error) {
@@ -698,6 +720,68 @@ export class StaffService implements IStaffService {
       return plainToInstance(ExportScheduleToCSVResponseDto, { buffer, fileName });
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error exporting schedule to CSV');
+    }
+  }
+
+  async getStaffInfo(
+    staffId: string
+  ): Promise<GetStaffInfoResponseDto> {
+    try {
+      const staff = await this.admissionStaffRepository.findOne({
+        where: { userId: staffId },
+        relations: ['user'],
+      });
+      if (!staff?.user) {
+        throw new NotFoundException(`Staff not found with id ${staffId}`);
+      }
+
+      return plainToInstance(GetStaffInfoResponseDto, {
+        name: staff.user.lastName + " " + staff.user.firstName,
+        gender: staff.user.gender,
+        phoneNumber: staff.user.phoneNumber,
+        email: staff.user.email,
+        department: staff.department,
+        avatarUrl: staff.user.avatarUrl,
+        dateOfBirth: staff.user.dateOfBirth,
+        description: staff.description,
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error getting staff info');
+    }
+  }
+
+  async updateStaffInfo(
+    staffId: string,
+    request: UpdateStaffInfoRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const { firstName, lastName, phoneNumber, description } = request;
+
+      const staff = await this.admissionStaffRepository.findOne({
+        where: { userId: staffId },
+        relations: ['user'],
+      });
+      if (!staff?.user) {
+        throw new NotFoundException(`Staff not found with id ${staffId}`);
+      }
+      
+      const updatedStaff = await this.admissionStaffRepository.update(staffId, {
+        userId: staffId,
+        description: description
+      });
+      await this.userRepository.update(staffId, {
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber
+      });
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Staff info updated successfully',
+        at: updatedStaff.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error updating staff info');
     }
   }
 }

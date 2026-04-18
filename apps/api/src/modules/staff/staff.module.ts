@@ -14,9 +14,11 @@ import {
   GetListAppointmentsQueryHandler,
   GetScheduleQueryHandler,
   GetStaffInfoDashboardQueryHandler,
+  GetStaffInfoQueryHandler,
   GetTodayAppointmentsQueryHandler,
   ImportScheduleFromCSVCommandHandler,
-  UpdateScheduleCommandHandler
+  UpdateScheduleCommandHandler,
+  UpdateStaffInfoCommandHandler
 } from "./use-cases";
 
 const Handlers = [
@@ -30,7 +32,9 @@ const Handlers = [
   CreateScheduleCommandHandler,
   ExportScheduleToCSVQueryHandler,
   DeleteScheduleCommandHandler,
-  UpdateScheduleCommandHandler
+  UpdateScheduleCommandHandler,
+  GetStaffInfoQueryHandler,
+  UpdateStaffInfoCommandHandler
 ];
 
 const Adapters = [

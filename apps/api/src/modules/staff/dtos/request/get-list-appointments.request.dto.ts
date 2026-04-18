@@ -7,6 +7,43 @@ import { PageOptionsDto } from '@app/core/dtos';
 
 export class GetTodayAppointmentsRequestDto {
   @ApiProperty({
+    description: 'Filter by start month date',
+    example: '2026-03-01',
+    default: new Date().toISOString().split('T')[0], // Default to current date
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  startMonthDate: string;
+
+  @ApiProperty({
+    description: 'Filter by end month date',
+    example: '2026-03-01',
+    default: new Date().toISOString().split('T')[0], // Default to current date
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  endMonthDate: string;
+
+
+  @ApiProperty({
+    description: 'Filter by start last month date',
+    example: '2026-03-01',
+    default: new Date().toISOString().split('T')[0], // Default to current date
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  startLastMonthDate: string;
+
+  @ApiProperty({
+    description: 'Filter by end last month date',
+    example: '2026-03-01',
+    default: new Date().toISOString().split('T')[0], // Default to current date
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  endLastMonthDate: string;
+
+  @ApiProperty({
     description: 'Filter by current date',
     example: '2026-03-01',
     default: new Date().toISOString().split('T')[0], // Default to current date

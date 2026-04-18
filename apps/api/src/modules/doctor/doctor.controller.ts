@@ -1,10 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query , UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query , UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { CommandBus , QueryBus} from "@nestjs/cqrs";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam , ApiResponse, ApiTags} from "@nestjs/swagger";
-
-
-
 
 import { JwtAuthGuard } from "@api/guards";
 import { plainToInstance } from "class-transformer";
@@ -15,6 +12,8 @@ import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 
+import { UpdateOrDeleteResponseDto } from "../../common/dtos";
+
 import {
   CreateAiDiagnosisRequestDto,
   CreateAiDiagnosisResponseDto,
@@ -23,8 +22,10 @@ import {
   GetAiDiagnosisResultResponseDto,
   GetAppointmentCalendarRequestDto,
   GetAppointmentCalendarResponseDto,
+  GetConsultationDetailResponseDto,
+  GetDoctorConsultationHistoryRequestDto,
+  GetDoctorConsultationHistoryResponseDto,
   GetDoctorDashboardRequestDto,
-
   GetDoctorResponseDto,
   GetListDoctorRequestDto,
   GetPersonalAppointmentsRequestDto,
@@ -32,9 +33,7 @@ import {
   HandleAiDiagnosisCallbackRequestDto,
   StartExaminationRequestDto,
   StartExaminationResponseDto,
-  GetConsultationDetailResponseDto,
-  GetDoctorConsultationHistoryRequestDto,
-  GetDoctorConsultationHistoryResponseDto
+  UpdateDoctorInfoRequestDto
 } from "./dtos";
 import {
   CreateAiDiagnosisCommand,
@@ -42,14 +41,15 @@ import {
   GetAiDiagnosisResultQuery,
   GetAppointmentCalendarQuery,
   GetAppointmentDatesQuery,
+  GetConsultationDetailQuery,
+  GetDoctorConsultationHistoryQuery,
   GetDoctorDashboardStatisticsQuery,
   GetDoctorInfoQuery,
   GetListDoctorQuery,
   GetPersonalAppointmentsQuery,
   HandleAiDiagnosisCallbackCommand,
   StartExaminationCommand,
-  GetConsultationDetailQuery,
-  GetDoctorConsultationHistoryQuery
+  UpdateDoctorInfoCommand
 } from "./use-cases";
 
 @ApiTags('Doctors')
@@ -96,6 +96,29 @@ export class DoctorController {
       GetDoctorInfoQuery,
       GetDoctorResponseDto
     >(query);
+
+    return result;
+  }
+
+  @Patch('info')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.DOCTOR)
+  @ApiOperation({ summary: 'Update doctor information' })
+  @ApiResponse({ status: 200, description: 'Doctor information updated successfully.' })
+  @ApiResponse({ status: 404, description: 'Doctor not found.' })
+  @ApiResponse({ status: 500, description: 'Internal server error.' })
+  async updateDoctorInfo(
+    @CurrentUser() user: UserEntity,
+    @Body() request: UpdateDoctorInfoRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new UpdateDoctorInfoCommand(
+      user.id,
+      request
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateDoctorInfoCommand, UpdateOrDeleteResponseDto
+    >(command);
 
     return result;
   }

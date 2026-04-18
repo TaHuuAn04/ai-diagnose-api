@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
@@ -23,11 +23,13 @@ import {
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto,
   GetScheduleResponseDto,
+  GetStaffInfoResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
   ImportScheduleFromCSVRequestDto,
   StaffDashboardStatisticsDto,
-  UpdateScheduleRequestDto
+  UpdateScheduleRequestDto,
+  UpdateStaffInfoRequestDto
 } from "./dtos";
 import {
   CreateScheduleCommand,
@@ -37,9 +39,11 @@ import {
   GetListAppointmentsQuery,
   GetScheduleQuery,
   GetStaffInfoDashboardQuery,
+  GetStaffInfoQuery,
   GetTodayAppointmentsQuery,
   ImportScheduleFromCSVCommand,
-  UpdateScheduleCommand
+  UpdateScheduleCommand,
+  UpdateStaffInfoCommand
 } from "./use-cases";
 
 
@@ -53,7 +57,55 @@ export class StaffController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
-  ) {}
+  ) { }
+  
+  @Get('/info')
+  @ApiOperation({ summary: "Get staff profile" })
+  @ApiResponse({
+    status: 200,
+    description: "Information retrieved successfully.",
+    type: GetStaffInfoResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
+  async getStaffProfile(
+    @CurrentUser() user: UserEntity,
+  ): Promise<GetStaffInfoResponseDto> {
+    const query = new GetStaffInfoQuery(
+      user.id
+    );
+
+    const result = await this.queryBus.execute<
+      GetStaffInfoQuery, GetStaffInfoResponseDto
+    >(query);
+
+    return result;
+  }
+
+  @Patch('/info')
+  @ApiOperation({ summary: "Update staff profile" })
+  @ApiResponse({
+    status: 200,
+    description: "Information updated successfully.",
+    type: UpdateOrDeleteResponseDto
+  })
+  @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
+  @ApiResponse({ status: 500, description: "An error occurred during processing; failed to update information." })
+  async updateStaffProfile(
+    @CurrentUser() user: UserEntity,
+    @Body() input: UpdateStaffInfoRequestDto
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new UpdateStaffInfoCommand(
+      user.id,
+      input
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateStaffInfoCommand, UpdateOrDeleteResponseDto
+    >(command);
+
+    return result;
+  }
 
   @Get('/today-appointments')
   @ApiOperation({ summary: "Get list of today appointments" })
