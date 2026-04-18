@@ -9,6 +9,7 @@ export interface IConsultationService {
   ): Promise<PageDto<GetConsultationResponseDto>>;
 
   getStatisticDisease(
+    userId: string,
     request: GetMonthlyDiseasesRequestDto
   ): Promise<GetMonthlyDiseasesResponseDto[]>;
 }

@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import {
   IConsultationRepository,
+  IDoctorRepository,
   IImageRepository,
 } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
@@ -10,7 +11,6 @@ import { plainToInstance } from 'class-transformer';
 import { ImageReference, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
-import { getEndMonth, getStartMonth } from '@app/utils';
 
 import { GetConsultationHistoryDto, GetConsultationResponseDto, GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto } from '../dtos';
 import { IConsultationService } from '../interfaces';
@@ -24,6 +24,9 @@ export class ConsultationService implements IConsultationService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.IMAGE_REPOSITORY)
     private readonly imageRepository: IImageRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.DOCTOR_REPOSITORY)
+    private readonly doctorRepository: IDoctorRepository,
   ) { }
 
   async getConsultationHistory(
@@ -84,28 +87,29 @@ export class ConsultationService implements IConsultationService {
   }
 
   async getStatisticDisease(
+    userId: string,
     request: GetMonthlyDiseasesRequestDto
   ): Promise<GetMonthlyDiseasesResponseDto[]> {
     try {
       if (request.startMonthDate > request.endMonthDate) {
         throw new BadRequestException('Invalid month');
       }
-      const startDate = getStartMonth(request.startMonthDate);
-      const endDate = getEndMonth(request.endMonthDate);
 
-      const consultations = await this.consultationRepository.findAll({
+      const doctor = await this.doctorRepository.findOne({
         where: {
-          createdAt: {
-            between: [startDate, endDate],
-          },
-          appointmentId: {
-            isNotNull: true,
-          }
+          userId: userId,
         },
-        relations: ['diagnosisResult', 'diagnosisResult.diseases']
-      })
+      });
+      if (!doctor) {
+        throw new NotFoundException('Doctor not found');
+      }
 
-      const diseaseCounts = consultations.data.reduce((acc, consultation) => {
+      const consultations = await this.consultationRepository.findConsultationWithDepartmentRelated(
+        doctor.department,
+        request
+      );
+
+      const diseaseCounts = consultations.reduce<Record<string, number>>((acc, consultation) => {
         const diseases = consultation.diagnosisResult?.diseases;
         if (diseases) {
           diseases.forEach((disease: { name: string }) => {
@@ -113,7 +117,7 @@ export class ConsultationService implements IConsultationService {
           });
         }
         return acc;
-      }, {} as GetMonthlyDiseasesResponseDto);
+      }, {});
 
       // Sort diseases by count and select 4 most common diseases, the rest diseases not including 4 most common will be plus together and have new name "Other"
       const allSortedDiseases = Object.entries(diseaseCounts).sort((a, b) => b[1] - a[1]);
@@ -123,10 +127,14 @@ export class ConsultationService implements IConsultationService {
         sortedDiseases.push(['Other', otherCount]);
       }
 
-      return plainToInstance(GetMonthlyDiseasesResponseDto, sortedDiseases.map(([name, count]) => ({
-        diseaseName: name,
-        count,
-      })));
+      const results = sortedDiseases.map(([name, count]) => {
+        return plainToInstance(GetMonthlyDiseasesResponseDto, {
+          diseaseName: name,
+          count,
+        })
+      });
+
+      return results;
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'An error occurred during processing; failed to retrieve statistic disease.');
     }

@@ -4,7 +4,8 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@ne
 
 import { JwtAuthGuard } from "@api/guards";
 
-import { Roles } from "@app/core/decorators";
+import { CurrentUser, Roles } from "@app/core/decorators";
+import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos";
 import { RolesGuard } from "@app/core/guards";
@@ -58,9 +59,10 @@ export class ConsultationController {
   @ApiResponse({ status: 403, description: "User does not have permission to access the API." })
   @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve statistic disease." })
   async getStatisticDisease(
+    @CurrentUser() user: UserEntity,
     @Query() request: GetMonthlyDiseasesRequestDto
   ): Promise<GetMonthlyDiseasesResponseDto[]> {
-    const query = new GetStatisticDiseaseQuery(request);
+    const query = new GetStatisticDiseaseQuery(user.id, request);
 
     const result = await this.queryBus.execute<
       GetStatisticDiseaseQuery, GetMonthlyDiseasesResponseDto[]

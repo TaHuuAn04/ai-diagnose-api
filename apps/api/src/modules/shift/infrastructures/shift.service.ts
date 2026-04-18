@@ -72,15 +72,20 @@ export class ShiftService implements IShiftService {
       if (input.startDate && input.endDate && input.startDate > input.endDate) {
         throw new BadRequestException('Start date must be before end date');
       }
+      
+      const now = new Date(Date.now() + 7 * 60 * 60 * 1000); 
+      const currentDate = now.toISOString().split('T')[0];
+      const currentTime = now.toISOString().split('T')[1].substring(0, 5); 
 
+      await this.workingTimeRepository.updatePastWorkingTimesToUnavailable(currentDate, currentTime);
 
       const { data: workingTimeRecords } = await this.workingTimeRepository.findAll({
         where: {
           doctorId: doctorId,
           date: {
-            gte: input.startDate,
-            lte: input.endDate,
+            between: [input.startDate, input.endDate],
           },
+          status: input.status
         },
         relations: ['shift'],
         sort: [
@@ -94,7 +99,7 @@ export class ShiftService implements IShiftService {
 
       const groupedData = workingTimeRecords.reduce<Record<string, AvailableShiftResponseDto>>((acc, current) => {
         const dateKey = current.date;
-        if (!acc[dateKey]) {
+        if (!(dateKey in acc)) {
           acc[dateKey] = {
             doctorId: current.doctorId,
             date: dateKey,

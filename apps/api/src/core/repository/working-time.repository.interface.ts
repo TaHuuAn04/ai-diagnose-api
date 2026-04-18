@@ -18,4 +18,9 @@ export interface IWorkingTimeRepository extends IGenericRepository<WorkingTimeEn
     department: string,
     request: GetTodayAppointmentsRequestDto
   ): Promise<WorkingTimeEntity[]>;
+
+  updatePastWorkingTimesToUnavailable(
+    currentDate: string,
+    currentTime: string
+  ): Promise<void>;
 }

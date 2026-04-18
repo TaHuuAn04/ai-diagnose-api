@@ -56,6 +56,11 @@ export interface IAppointmentRepository extends IGenericRepository<AppointmentEn
     doctorId: string,
     input: GetPersonalAppointmentsRequestDto
   ): Promise<PaginatedResult<AppointmentEntity>>;
+
+  updatePastAppointmentToCancelled(
+    currentDate: string,
+    currentTime: string
+  ): Promise<void>;
 }
 
 export interface AppointmentRawResult {

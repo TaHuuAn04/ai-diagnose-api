@@ -1,27 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsDateString, IsEnum, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { WorkingTimeStatus } from '@app/core/domain/enums';
-import { PageOptionsDto } from '@app/core/dtos';
 export class GetShiftsByDoctorIdRequestDto {
   @ApiProperty({ 
-    description: 'Start date filter (optional)',
+    description: 'Start date filter',
     example: '2025-12-11',
-    required: false
+    required: true
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsDateString()
-  startDate?: string;
+  startDate: string;
 
   @ApiProperty({ 
-    description: 'End date filter (optional)',
+    description: 'End date filter',
     example: '2025-12-31',
-    required: false
+    required: true
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsDateString()
-  endDate?: string;
+  endDate: string;
 
   @ApiProperty({
     description: 'Shift status filter (optional)',

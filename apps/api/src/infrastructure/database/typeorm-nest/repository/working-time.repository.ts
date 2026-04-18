@@ -83,4 +83,25 @@ export class WorkingTimeRepository
     const entities = await queryBuilder.getMany();
     return entities.map(entity => this._mapper.toDomain(entity));;
   }
+
+  async updatePastWorkingTimesToUnavailable(
+    currentDate: string,
+    currentTime: string
+  ): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update(WorkingTime)
+      .set({ status: WorkingTimeStatus.UNAVAILABLE })
+      .where(`("doctor_id", "shift_id", "date") IN (
+        SELECT wt."doctor_id", wt."shift_id", wt."date"
+        FROM working_times wt
+        LEFT JOIN shifts s ON s.id = wt.shift_id
+        WHERE wt.status = :status
+        AND (
+          wt.date < :currentDate
+          OR (wt.date = :currentDate AND s."from" < :currentTime)
+        )
+      )`, { status: WorkingTimeStatus.AVAILABLE, currentDate, currentTime })
+      .execute();
+  }
 }

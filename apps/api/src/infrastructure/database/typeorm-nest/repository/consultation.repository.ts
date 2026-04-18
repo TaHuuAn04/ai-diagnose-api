@@ -8,8 +8,9 @@ import { Repository } from 'typeorm';
 import { ConsultationEntity } from '@app/core/domain/entities';
 import { SortDirection } from '@app/core/domain/enums';
 import { PaginatedResult } from '@app/core/dtos';
+import { getEndMonth, getStartMonth } from '@app/utils';
 
-import { GetConsultationHistoryDto } from '../../../../modules/consultation/dtos';
+import { GetConsultationHistoryDto, GetMonthlyDiseasesRequestDto } from '../../../../modules/consultation/dtos';
 import { GetDoctorConsultationHistoryRequestDto } from '../../../../modules/doctor/dtos';
 import { Consultation } from '../entities';
 
@@ -195,6 +196,29 @@ export class ConsultationRepository
         'max_c',
         'consultation.patientId = "max_c"."patientId" AND consultation.createdAt = "max_c"."maxCreatedAt"'
       )
+      .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
+      .leftJoinAndSelect('diagnosisResult.diseases', 'diseases');
+
+    const entities = await queryBuilder.getMany();
+    return entities.map(entity => this._mapper.toDomain(entity));
+  }
+
+  async findConsultationWithDepartmentRelated(
+    department: string,
+    request: GetMonthlyDiseasesRequestDto
+  ): Promise<ConsultationEntity[]> {
+    const { startMonthDate, endMonthDate } = request;
+    
+    const startDate = getStartMonth(startMonthDate);
+    const endDate = getEndMonth(endMonthDate);
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('consultation')
+      .where('consultation.createdAt >= :startDate', { startDate })
+      .andWhere('consultation.createdAt <= :endDate', { endDate })
+      .andWhere('consultation.appointmentId IS NOT NULL')
+      .leftJoinAndSelect('consultation.doctor', 'doctor')
+      .andWhere('doctor.department = :department', { department })
       .leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
       .leftJoinAndSelect('diagnosisResult.diseases', 'diseases');
 
