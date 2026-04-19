@@ -12,7 +12,7 @@ export type WhereCondition<T = Record<string, unknown>> = {
 
   // Field conditions with better typing
 } & {
-  [K in keyof T]?: FieldOperators<T[K]> | T[K] | WhereCondition<T>
+  [K in keyof T]?: FieldOperators<T[K]> | T[K] | (NonNullable<T[K]> extends object ? WhereCondition<NonNullable<T[K]>> : never)
 }
 
 export interface FieldOperators<T> {

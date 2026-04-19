@@ -3,4 +3,6 @@ import { AdmissionStaffEntity } from '@app/core/domain/entities';
 
 import { IGenericRepository } from './generic-repository.interface';
 
-export interface IAdmissionStaffRepository extends IGenericRepository<AdmissionStaffEntity> {}
+export interface IAdmissionStaffRepository extends IGenericRepository<AdmissionStaffEntity> {
+  getStaffDepartmentDistribution(): Promise<{ department: string; count: number }[]>;
+}

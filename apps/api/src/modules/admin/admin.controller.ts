@@ -22,12 +22,17 @@ import {
   DiagnoseModelResponseDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
+  GetListPatientRequestDto,
+  GetListStaffRequestDto,
+  GetPatientResponseDto,
+  GetStaffResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
   UpdateAdmissionStaffAccountResponseDto,
   UpdateChatbotModelRequestDto,
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UserStatisticsResponseDto,
 } from './dtos';
 import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
 import { GetSystemOverviewRequestDto } from './dtos/request/get-system-overview.request.dto';
@@ -44,6 +49,9 @@ import {
   DeleteDoctorAccountCommand,
   GetListChatbotModelsQuery,
   GetListDiagnoseModelsQuery,
+  GetListPatientQuery,
+  GetListStaffQuery,
+  GetUserStatisticsQuery,
   UpdateAdmissionStaffAccountCommand,
   UpdateChatbotModelCommand,
   UpdateDiagnoseModelCommand,
@@ -63,6 +71,18 @@ export class AdminController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+
+  @Get('users/statistics')
+  @ApiOperation({ summary: 'Get user statistics (role and department distribution)' })
+  @ApiResponse({
+    status: 200,
+    description: 'User statistics retrieved successfully',
+    type: UserStatisticsResponseDto,
+  })
+  async getUserStatistics(): Promise<UserStatisticsResponseDto> {
+    const q = new GetUserStatisticsQuery();
+    return this.queryBus.execute(q);
+  }
 
   @Post('doctors')
   @ApiOperation({ summary: 'Create a doctor account (Admin only)' })
@@ -186,6 +206,34 @@ export class AdminController {
       DeleteAdmissionStaffAccountCommand,
       DeleteAdmissionStaffAccountResponseDto
     >(command);
+  }
+
+  @Get('staffs')
+  @ApiOperation({ summary: 'Get list of admission staff accounts (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of staff accounts retrieved successfully',
+    type: PageDto<GetStaffResponseDto>,
+  })
+  async getListStaffs(
+    @Query() query: GetListStaffRequestDto,
+  ): Promise<PageDto<GetStaffResponseDto>> {
+    const q = new GetListStaffQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('patients')
+  @ApiOperation({ summary: 'Get list of patient accounts (Admin only)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of patient accounts retrieved successfully',
+    type: PageDto<GetPatientResponseDto>,
+  })
+  async getListPatients(
+    @Query() query: GetListPatientRequestDto,
+  ): Promise<PageDto<GetPatientResponseDto>> {
+    const q = new GetListPatientQuery(query);
+    return this.queryBus.execute(q);
   }
 
   @Post('ai-models')

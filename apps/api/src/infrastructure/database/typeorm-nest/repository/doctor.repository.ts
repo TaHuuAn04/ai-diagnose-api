@@ -96,4 +96,18 @@ export class DoctorRepository
 
     return plainToInstance(DoctorEntity, result);
   }
+
+  async getDoctorDepartmentDistribution(): Promise<{ department: string; count: number }[]> {
+    const result = await this.repository
+      .createQueryBuilder('doctor')
+      .select('doctor.department', 'department')
+      .addSelect('COUNT(doctor.userId)', 'count')
+      .groupBy('doctor.department')
+      .getRawMany();
+
+    return result.map(item => ({
+      department: item.department || 'Unknown',
+      count: parseInt(item.count, 10)
+    }));
+  }
 }

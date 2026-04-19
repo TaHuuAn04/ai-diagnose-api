@@ -15,6 +15,10 @@ import {
   GetDoctorPerformanceStatisticsRequestDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
+  GetListPatientRequestDto,
+  GetListStaffRequestDto,
+  GetPatientResponseDto,
+  GetStaffResponseDto,
   GetSystemOverviewRequestDto,
   SystemOverviewResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
@@ -23,6 +27,7 @@ import {
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UserStatisticsResponseDto,
 } from '../dtos';
 
 
@@ -31,6 +36,16 @@ export interface IAdminService {
     payload: CreateDoctorAccountRequestDto,
   ): Promise<CreateDoctorAccountResponseDto>;
   
+  getUserStatistics(): Promise<UserStatisticsResponseDto>;
+
+  getListStaffs(
+    query: GetListStaffRequestDto,
+  ): Promise<PageDto<GetStaffResponseDto>>;
+
+  getListPatients(
+    query: GetListPatientRequestDto,
+  ): Promise<PageDto<GetPatientResponseDto>>;
+
   updateDoctorAccount(
     id: string,
     payload: UpdateDoctorAccountRequestDto,

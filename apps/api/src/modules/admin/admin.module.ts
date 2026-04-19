@@ -16,6 +16,9 @@ import {
   DeleteDoctorAccountCommandHandler,
   GetListChatbotModelsQueryHandler,
   GetListDiagnoseModelsQueryHandler,
+  GetListPatientQueryHandler,
+  GetListStaffQueryHandler,
+  GetUserStatisticsQueryHandler,
   UpdateAdmissionStaffAccountCommandHandler,
   UpdateChatbotModelCommandHandler,
   UpdateDiagnoseModelCommandHandler,
@@ -31,6 +34,8 @@ const Handlers = [
   DeleteDoctorAccountCommandHandler,
   UpdateAdmissionStaffAccountCommandHandler,
   DeleteAdmissionStaffAccountCommandHandler,
+  GetListStaffQueryHandler,
+  GetListPatientQueryHandler,
   CreateDiagnoseModelCommandHandler,
   UpdateDiagnoseModelCommandHandler,
   DeleteDiagnoseModelCommandHandler,
@@ -41,6 +46,7 @@ const Handlers = [
   GetListChatbotModelsQueryHandler,
   GetDoctorPerformanceStatisticsQueryHandler,
   GetSystemOverviewQueryHandler,
+  GetUserStatisticsQueryHandler,
 ];
 
 const Adapters = [

@@ -4,6 +4,8 @@ export * from './update-doctor-account.use-case';
 export * from './delete-doctor-account.use-case';
 export * from './update-admission-staff-account.use-case';
 export * from './delete-admission-staff-account.use-case';
+export * from './get-list-staff.use-case';
+export * from './get-list-patient.use-case';
 export * from './create-diagnose-model.use-case';
 export * from './update-diagnose-model.use-case';
 export * from './delete-diagnose-model.use-case';
@@ -14,3 +16,5 @@ export * from './delete-chatbot-model.use-case';
 export * from './get-list-chatbot-models.use-case';
 export * from './get-doctor-performance-statistics.use-case';
 export * from './get-system-overview.use-case';
+export * from './get-user-statistics.use-case';
+

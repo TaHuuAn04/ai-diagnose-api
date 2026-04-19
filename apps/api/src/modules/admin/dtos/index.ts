@@ -20,3 +20,8 @@ export * from './request/get-doctor-performance-statistics.request.dto';
 export * from './response/doctor-performance-statistics.response.dto';
 export * from './request/get-system-overview.request.dto';
 export * from './response/system-overview.response.dto';
+export * from './request/get-list-staff.request.dto';
+export * from './response/get-staff.response.dto';
+export * from './request/get-list-patient.request.dto';
+export * from './response/get-patient.response.dto';
+export * from './response/user-statistics.response.dto';

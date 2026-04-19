@@ -3,4 +3,6 @@ import { UserEntity } from '@app/core/domain/entities';
 
 import { IGenericRepository } from './generic-repository.interface';
 
-export interface IUserRepository extends IGenericRepository<UserEntity> {}
+export interface IUserRepository extends IGenericRepository<UserEntity> {
+  getRoleDistribution(): Promise<{ role: string; count: number }[]>;
+}

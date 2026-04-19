@@ -6,6 +6,7 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from '@app/core/domain/entities';
+import { UserRole } from '@app/core/domain/enums';
 
 import { User } from '../entities';
 
@@ -28,5 +29,21 @@ export class UserRepository
         return plainToInstance(User, domainEntity);
       }
     });
+  }
+
+  async getRoleDistribution(): Promise<{ role: string; count: number }[]> {
+    const roles = Object.values(UserRole);
+    const result = await this.repository
+      .createQueryBuilder('user')
+      .select('user.role', 'role')
+      .addSelect('COUNT(user.id)', 'count')
+      .where('user.role IN (:...roles)', { roles })
+      .groupBy('user.role')
+      .getRawMany();
+
+    return result.map(item => ({
+      role: item.role,
+      count: parseInt(item.count, 10)
+    }));
   }
 }

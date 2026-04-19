@@ -15,4 +15,6 @@ export interface IDoctorRepository extends IGenericRepository<DoctorEntity> {
     department: string,
     date: string
   ): Promise<DoctorEntity[]>;
+
+  getDoctorDepartmentDistribution(): Promise<{ department: string; count: number }[]>;
 }

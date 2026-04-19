@@ -29,4 +29,18 @@ export class AdmissionStaffRepository
       }
     });
   }
+
+  async getStaffDepartmentDistribution(): Promise<{ department: string; count: number }[]> {
+    const result = await this.repository
+      .createQueryBuilder('staff')
+      .select('staff.department', 'department')
+      .addSelect('COUNT(staff.userId)', 'count')
+      .groupBy('staff.department')
+      .getRawMany();
+
+    return result.map(item => ({
+      department: item.department || 'Unknown',
+      count: parseInt(item.count, 10)
+    }));
+  }
 }

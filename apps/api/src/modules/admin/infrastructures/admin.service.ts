@@ -6,6 +6,7 @@ import {
   IDiagnoseModelRepository,
   IDiagnosisResultRepository,
   IDoctorRepository,
+  IPatientRepository,
   IUserRepository,
   WhereCondition,
 } from '@api/core/repository';
@@ -13,7 +14,7 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { ChatbotEntity, DiagnoseModelEntity } from '@app/core/domain/entities';
+import { AdmissionStaffEntity, ChatbotEntity, DiagnoseModelEntity, UserEntity } from '@app/core/domain/entities';
 import { UserRole } from '@app/core/domain/enums';
 import { PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
@@ -35,6 +36,10 @@ import {
   GetDoctorPerformanceStatisticsRequestDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
+  GetListPatientRequestDto,
+  GetListStaffRequestDto,
+  GetPatientResponseDto,
+  GetStaffResponseDto,
   GetSystemOverviewRequestDto,
   SystemOverviewResponseDto,
   TopDoctorStatisticsItemResponseDto,
@@ -44,6 +49,7 @@ import {
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UserStatisticsResponseDto,
 } from '../dtos';
 import { IAdminService } from '../interfaces';
 
@@ -60,6 +66,9 @@ export class AdminService implements IAdminService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.ADMISSION_STAFF_REPOSITORY)
     private readonly admissionStaffRepository: IAdmissionStaffRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.PATIENT_REPOSITORY)
+    private readonly patientRepository: IPatientRepository,
 
     @Inject(REPOSITORY_INJECTION_TOKEN.DIAGNOSE_MODEL_REPOSITORY)
     private readonly diagnoseModelRepository: IDiagnoseModelRepository,
@@ -124,6 +133,116 @@ export class AdminService implements IAdminService {
       this.logger.error('Failed to create Doctor Account', error);
       throw error;
     }
+  }
+
+  async getUserStatistics(): Promise<UserStatisticsResponseDto> {
+    const [roleDistribution, doctorDepartmentDistribution, staffDepartmentDistribution] = await Promise.all([
+      this.userRepository.getRoleDistribution(),
+      this.doctorRepository.getDoctorDepartmentDistribution(),
+      this.admissionStaffRepository.getStaffDepartmentDistribution()
+    ]);
+
+    return plainToInstance(UserStatisticsResponseDto, {
+      roleDistribution,
+      doctorDepartmentDistribution,
+      staffDepartmentDistribution
+    });
+  }
+
+  async getListPatients(
+    query: GetListPatientRequestDto,
+  ): Promise<PageDto<GetPatientResponseDto>> {
+    const { page, take, search } = query;
+
+    const where: WhereCondition<any> = {};
+
+    if (search) {
+      where.or = [
+        { citizenCode: { contains: search } },
+        {
+          user: {
+            or: [
+              { firstName: { contains: search } },
+              { lastName: { contains: search } },
+              { email: { contains: search } },
+              { phoneNumber: { contains: search } },
+            ],
+          },
+        },
+      ];
+    }
+
+    const result = await this.patientRepository.findAll({
+      where,
+      relations: ['user'],
+      pagination: {
+        page,
+        limit: take,
+      },
+    });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: result.meta?.total ?? 0,
+      page,
+      take,
+    });
+
+    return new PageDto(
+      plainToInstance(GetPatientResponseDto, result.data, {
+        excludeExtraneousValues: true,
+      }),
+      pageMetaDto,
+    );
+  }
+
+  async getListStaffs(
+    query: GetListStaffRequestDto,
+  ): Promise<PageDto<GetStaffResponseDto>> {
+    const { page, take, search, department } = query;
+
+    const where: WhereCondition<AdmissionStaffEntity> = {};
+
+    if (department) {
+      where.department = department;
+    }
+
+    if (search) {
+      where.or = [
+        { staffCode: { contains: search } },
+        {
+          user: {
+            or: [
+              { firstName: { contains: search } },
+              { lastName: { contains: search } },
+              { email: { contains: search } },
+              { phoneNumber: { contains: search } },
+            ],
+          },
+        },
+      ];
+    }
+
+    const result = await this.admissionStaffRepository.findAll({
+      where,
+      relations: ['user'],
+      pagination: {
+        page,
+        limit: take,
+      },
+    });
+
+    const pageMetaDto = new PageMetaDto({
+      itemCount: result.meta?.total ?? 0,
+      page,
+      take,
+    });
+
+    return new PageDto(
+      plainToInstance(GetStaffResponseDto, result.data, {
+        excludeExtraneousValues: true,
+      }),
+      pageMetaDto,
+    );
   }
 
   @Transactional()
@@ -197,11 +316,17 @@ export class AdminService implements IAdminService {
       department,
       experience,
       description,
+      password,
       ...userPayload
     } = payload;
 
-    if (Object.keys(userPayload).length > 0) {
-      await this.userRepository.update(id, userPayload);
+    const updateUserPayload: Partial<UpdateDoctorAccountRequestDto> = { ...userPayload };
+    if (password) {
+      updateUserPayload.password = await hashPassword(password);
+    }
+
+    if (Object.keys(updateUserPayload).length > 0) {
+      await this.userRepository.update(id, updateUserPayload);
     }
 
     if (department || experience !== undefined || description !== undefined) {
@@ -251,11 +376,17 @@ export class AdminService implements IAdminService {
     const {
       department,
       description,
+      password,
       ...userPayload
     } = payload;
 
-    if (Object.keys(userPayload).length > 0) {
-      await this.userRepository.update(id, userPayload);
+    const updateUserPayload: Partial<UpdateDoctorAccountRequestDto> = { ...userPayload };
+    if (password) {
+      updateUserPayload.password = await hashPassword(password);
+    }
+
+    if (Object.keys(updateUserPayload).length > 0) {
+      await this.userRepository.update(id, updateUserPayload);
     }
 
     if (department || description !== undefined) {
