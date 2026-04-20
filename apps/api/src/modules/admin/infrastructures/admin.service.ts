@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   IAdmissionStaffRepository,
   IChatbotRepository,
+  IChatHistoryRepository,
   IDiagnoseModelRepository,
   IDiagnosisResultRepository,
   IDoctorRepository,
@@ -32,8 +33,10 @@ import {
   DeleteDoctorAccountResponseDto,
   DepartmentDistributionItemResponseDto,
   DiagnoseModelResponseDto,
+  DoctorPatientItemResponseDto,
   DoctorPerformanceStatisticsResponseDto,
   GetDoctorPerformanceStatisticsRequestDto,
+  GetDoctorPatientsRequestDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
   GetListPatientRequestDto,
@@ -41,7 +44,9 @@ import {
   GetPatientResponseDto,
   GetStaffResponseDto,
   GetSystemOverviewRequestDto,
+  PatientConsultationItemResponseDto,
   SystemOverviewResponseDto,
+  TopDiseaseItemResponseDto,
   TopDoctorStatisticsItemResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
   UpdateAdmissionStaffAccountResponseDto,
@@ -78,6 +83,9 @@ export class AdminService implements IAdminService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.CHATBOT_REPOSITORY)
     private readonly chatbotRepository: IChatbotRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.CHAT_HISTORY_REPOSITORY)
+    private readonly chatHistoryRepository: IChatHistoryRepository,
   ) {}
 
   @Transactional()
@@ -727,7 +735,7 @@ export class AdminService implements IAdminService {
             : 0,
         }))
         .sort((a, b) => b.totalExaminations - a.totalExaminations)
-        .slice(0, 5);
+        .slice(0, query.limit || 5);
 
       const departmentDistribution: DepartmentDistributionItemResponseDto[] = Array.from(departmentDistributionMap.entries())
         .map(([department, count]) => ({
@@ -772,7 +780,7 @@ export class AdminService implements IAdminService {
       };
 
       // Aggregate all database calls asynchronously
-      const [currResult, prevResult, currPatientsCount, prevPatientsCount] = await Promise.all([
+      const [currResult, prevResult, currPatientsCount, prevPatientsCount, currChatHistoryCount, prevChatHistoryCount] = await Promise.all([
         this.diagnosisResultRepository.findAll({
           ...queryOptions,
           where: { 
@@ -785,6 +793,8 @@ export class AdminService implements IAdminService {
         }),
         this.userRepository.countWithOptions({ role: UserRole.PATIENT, createdAt: { gte: currentStartDate, lt: currentEndDate } }),
         this.userRepository.countWithOptions({ role: UserRole.PATIENT, createdAt: { gte: prevStartDate, lt: prevEndDate } }),
+        this.chatHistoryRepository.countWithOptions({ createdAt: { gte: currentStartDate, lt: currentEndDate } }),
+        this.chatHistoryRepository.countWithOptions({ createdAt: { gte: prevStartDate, lt: prevEndDate } }),
       ]);
 
       const currData = currResult.data;
@@ -792,13 +802,10 @@ export class AdminService implements IAdminService {
 
       const calculateMetrics = (data: typeof currData) => {
         let aiUsage = 0;
-        const doctors = new Set<string>();
 
         for (const item of data) {
           const consultation = item.consultation;
           if (!consultation?.doctorId) continue;
-
-          doctors.add(consultation.doctorId);
 
           if (consultation.aiResult?.id) {
             aiUsage += 1;
@@ -808,7 +815,6 @@ export class AdminService implements IAdminService {
         return {
           totalExaminations: data.length,
           totalAiUsage: aiUsage,
-          activeDoctors: doctors.size,
         };
       };
 
@@ -827,11 +833,137 @@ export class AdminService implements IAdminService {
         examinationGrowth: calculateGrowth(currMetrics.totalExaminations, prevMetrics.totalExaminations),
         newPatients: currPatientsCount,
         patientGrowth: calculateGrowth(currPatientsCount, prevPatientsCount),
-        activeDoctors: currMetrics.activeDoctors,
-        doctorGrowth: calculateGrowth(currMetrics.activeDoctors, prevMetrics.activeDoctors),
+        chatbotUsage: currChatHistoryCount,
+        chatbotUsageGrowth: calculateGrowth(currChatHistoryCount, prevChatHistoryCount),
       });
     } catch (error) {
       ExceptionHandler.handleErrorException(error);
+    }
+  }
+
+  async getTopDiseasesStatistics(
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<TopDiseaseItemResponseDto[]> {
+    try {
+      const startDate = new Date(Date.UTC(query.year, query.month - 1, 1, 0, 0, 0));
+      const endDate = new Date(Date.UTC(query.year, query.month, 1, 0, 0, 0));
+
+      const result = await this.diagnosisResultRepository.findAll({
+        where: {
+          createdAt: { between: [startDate, endDate] },
+        },
+        relations: ['diseases', 'diseases.disease'],
+      });
+
+      const diseaseMap = new Map<string, number>();
+
+      for (const item of result.data) {
+        if (!item.diseases) continue;
+        for (const rd of item.diseases) {
+          const name = rd.disease?.name || rd.name || 'Unknown';
+          diseaseMap.set(name, (diseaseMap.get(name) || 0) + 1);
+        }
+      }
+
+      return Array.from(diseaseMap.entries())
+        .map(([diseaseName, count]) => ({ diseaseName, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+        .map(d => plainToInstance(TopDiseaseItemResponseDto, d, { excludeExtraneousValues: true }));
+    } catch (error) {
+      this.logger.error('Failed to get top diseases', error);
+      throw error;
+    }
+  }
+
+  async getDoctorPatients(
+    doctorId: string,
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<DoctorPatientItemResponseDto[]> {
+    try {
+      const month = query.month;
+      const year = query.year;
+
+      const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+      const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+
+      const result = await this.diagnosisResultRepository.findAll({
+        where: {
+          createdAt: { between: [startDate, endDate] },
+        },
+        relations: ['consultation', 'consultation.patient', 'consultation.patient.user'],
+      });
+
+      const patientMap = new Map<string, any>();
+
+      for (const item of result.data) {
+        const consultation = item.consultation;
+        if (!consultation || consultation.doctorId !== doctorId) continue;
+
+        const patient = consultation.patient;
+        if (!patient) continue;
+
+        const patientId = patient.userId;
+        const currentData = patientMap.get(patientId) || {
+          patientId,
+          patientName: `${patient.user?.lastName ?? ''} ${patient.user?.firstName ?? ''}`.trim() || 'Unknown',
+          citizenCode: patient.citizenCode,
+          phoneNumber: patient.user?.phoneNumber || '',
+          totalExaminations: 0,
+        };
+
+        currentData.totalExaminations += 1;
+        patientMap.set(patientId, currentData);
+      }
+
+      return Array.from(patientMap.values())
+        .sort((a, b) => b.totalExaminations - a.totalExaminations)
+        .map(p => plainToInstance(DoctorPatientItemResponseDto, p, { excludeExtraneousValues: true }));
+    } catch (error) {
+      this.logger.error('Failed to get doctor patients', error);
+      throw error;
+    }
+  }
+
+  async getPatientConsultationsByDoctor(
+    doctorId: string,
+    patientId: string,
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<PatientConsultationItemResponseDto[]> {
+    try {
+      const month = query.month;
+      const year = query.year;
+
+      const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+      const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+
+      const result = await this.diagnosisResultRepository.findAll({
+        where: {
+          createdAt: { between: [startDate, endDate] },
+        },
+        relations: ['consultation', 'consultation.aiResult'],
+      });
+
+      const consultations: any[] = [];
+
+      for (const item of result.data) {
+        const consultation = item.consultation;
+        if (!consultation || consultation.doctorId !== doctorId || consultation.patientId !== patientId) continue;
+
+        consultations.push({
+          consultationId: consultation.id,
+          date: item.createdAt,
+          diagnosis: item.advices || 'Không có kết luận',
+          hasAiUsage: !!consultation.aiResult?.id,
+        });
+      }
+
+      return consultations
+        .sort((a, b) => b.date.getTime() - a.date.getTime())
+        .map(c => plainToInstance(PatientConsultationItemResponseDto, c, { excludeExtraneousValues: true }));
+    } catch (error) {
+      this.logger.error('Failed to get patient consultations', error);
+      throw error;
     }
   }
 }

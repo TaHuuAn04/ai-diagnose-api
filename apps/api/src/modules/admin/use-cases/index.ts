@@ -17,4 +17,7 @@ export * from './get-list-chatbot-models.use-case';
 export * from './get-doctor-performance-statistics.use-case';
 export * from './get-system-overview.use-case';
 export * from './get-user-statistics.use-case';
+export * from './get-doctor-patients.use-case';
+export * from './get-patient-consultations.use-case';
+export * from './get-top-diseases.use-case';
 

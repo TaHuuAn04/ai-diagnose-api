@@ -26,6 +26,9 @@ import {
   GetListStaffRequestDto,
   GetPatientResponseDto,
   GetStaffResponseDto,
+  GetSystemOverviewRequestDto,
+  SystemOverviewResponseDto,
+  TopDiseaseItemResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
   UpdateAdmissionStaffAccountResponseDto,
   UpdateChatbotModelRequestDto,
@@ -33,11 +36,12 @@ import {
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
   UserStatisticsResponseDto,
+  DoctorPatientItemResponseDto,
+  GetDoctorPatientsRequestDto,
+  PatientConsultationItemResponseDto,
 } from './dtos';
-import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
-import { GetSystemOverviewRequestDto } from './dtos/request/get-system-overview.request.dto';
 import { DoctorPerformanceStatisticsResponseDto } from './dtos/response/doctor-performance-statistics.response.dto';
-import { SystemOverviewResponseDto } from './dtos/response/system-overview.response.dto';
+import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
 import {
   CreateAdmissionStaffAccountCommand,
   CreateChatbotModelCommand,
@@ -52,6 +56,9 @@ import {
   GetListPatientQuery,
   GetListStaffQuery,
   GetUserStatisticsQuery,
+  GetDoctorPatientsQuery,
+  GetPatientConsultationsQuery,
+  GetTopDiseasesQuery,
   UpdateAdmissionStaffAccountCommand,
   UpdateChatbotModelCommand,
   UpdateDiagnoseModelCommand,
@@ -329,6 +336,39 @@ export class AdminController {
     @Query() query: GetSystemOverviewRequestDto,
   ): Promise<SystemOverviewResponseDto> {
     const q = new GetSystemOverviewQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('dashboard/top-diseases')
+  @ApiOperation({ summary: 'Get top 10 diseases statistics by month/year' })
+  @ApiResponse({ status: 200, type: [TopDiseaseItemResponseDto] })
+  async getTopDiseases(
+    @Query() query: GetDoctorPatientsRequestDto,
+  ): Promise<TopDiseaseItemResponseDto[]> {
+    const q = new GetTopDiseasesQuery(query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('dashboard/doctors/:doctorId/patients')
+  @ApiOperation({ summary: 'Get list of patients examined by a doctor in a specific month' })
+  @ApiResponse({ status: 200, type: [DoctorPatientItemResponseDto] })
+  async getDoctorPatients(
+    @Param('doctorId') doctorId: string,
+    @Query() query: GetDoctorPatientsRequestDto,
+  ): Promise<DoctorPatientItemResponseDto[]> {
+    const q = new GetDoctorPatientsQuery(doctorId, query);
+    return this.queryBus.execute(q);
+  }
+
+  @Get('dashboard/doctors/:doctorId/patients/:patientId/consultations')
+  @ApiOperation({ summary: 'Get list of consultations for a specific patient by a doctor' })
+  @ApiResponse({ status: 200, type: [PatientConsultationItemResponseDto] })
+  async getPatientConsultationsByDoctor(
+    @Param('doctorId') doctorId: string,
+    @Param('patientId') patientId: string,
+    @Query() query: GetDoctorPatientsRequestDto,
+  ): Promise<PatientConsultationItemResponseDto[]> {
+    const q = new GetPatientConsultationsQuery(doctorId, patientId, query);
     return this.queryBus.execute(q);
   }
 }

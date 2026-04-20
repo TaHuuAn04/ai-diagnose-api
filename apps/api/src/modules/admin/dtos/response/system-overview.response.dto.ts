@@ -27,11 +27,11 @@ export class SystemOverviewResponseDto {
   @Expose()
   patientGrowth: number;
 
-  @ApiProperty({ description: 'Number of unique doctors who performed examinations' })
+  @ApiProperty({ description: 'Number of chatbot sessions used by patients' })
   @Expose()
-  activeDoctors: number;
+  chatbotUsage: number;
 
-  @ApiProperty({ description: 'Growth percentage of active doctors' })
+  @ApiProperty({ description: 'Growth percentage of chatbot usage' })
   @Expose()
-  doctorGrowth: number;
+  chatbotUsageGrowth: number;
 }

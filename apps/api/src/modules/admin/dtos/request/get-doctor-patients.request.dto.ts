@@ -1,9 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, Max, Min } from 'class-validator';
 
-export class GetDoctorPerformanceStatisticsRequestDto {
+export class GetDoctorPatientsRequestDto {
   @ApiPropertyOptional({ description: 'Month number (1-12)', example: 4 })
   @IsNotEmpty()
   @Type(() => Number)
@@ -19,12 +18,4 @@ export class GetDoctorPerformanceStatisticsRequestDto {
   @Min(2000)
   @Max(2100)
   year: number;
-
-  @ApiPropertyOptional({ description: 'Limit number of top doctors to return (default: 5)', example: 10 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  limit?: number;
 }

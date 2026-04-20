@@ -10,9 +10,12 @@ import {
   CreateDoctorAccountResponseDto,
   DeleteAdmissionStaffAccountResponseDto,
   DeleteDoctorAccountResponseDto,
+  DoctorPatientItemResponseDto,
+  PatientConsultationItemResponseDto,
   DiagnoseModelResponseDto,
   DoctorPerformanceStatisticsResponseDto,
   GetDoctorPerformanceStatisticsRequestDto,
+  GetDoctorPatientsRequestDto,
   GetListChatbotModelsRequestDto,
   GetListDiagnoseModelsRequestDto,
   GetListPatientRequestDto,
@@ -21,6 +24,7 @@ import {
   GetStaffResponseDto,
   GetSystemOverviewRequestDto,
   SystemOverviewResponseDto,
+  TopDiseaseItemResponseDto,
   UpdateAdmissionStaffAccountRequestDto,
   UpdateAdmissionStaffAccountResponseDto,
   UpdateChatbotModelRequestDto,
@@ -109,4 +113,19 @@ export interface IAdminService {
   getSystemOverview(
     query: GetSystemOverviewRequestDto,
   ): Promise<SystemOverviewResponseDto>;
+
+  getTopDiseasesStatistics(
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<TopDiseaseItemResponseDto[]>;
+
+  getDoctorPatients(
+    doctorId: string,
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<DoctorPatientItemResponseDto[]>;
+
+  getPatientConsultationsByDoctor(
+    doctorId: string,
+    patientId: string,
+    query: GetDoctorPatientsRequestDto,
+  ): Promise<PatientConsultationItemResponseDto[]>;
 }

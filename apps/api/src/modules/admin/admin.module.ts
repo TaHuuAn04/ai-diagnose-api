@@ -18,6 +18,9 @@ import {
   GetListDiagnoseModelsQueryHandler,
   GetListPatientQueryHandler,
   GetListStaffQueryHandler,
+  GetDoctorPatientsQueryHandler,
+  GetPatientConsultationsQueryHandler,
+  GetTopDiseasesQueryHandler,
   GetUserStatisticsQueryHandler,
   UpdateAdmissionStaffAccountCommandHandler,
   UpdateChatbotModelCommandHandler,
@@ -47,6 +50,9 @@ const Handlers = [
   GetDoctorPerformanceStatisticsQueryHandler,
   GetSystemOverviewQueryHandler,
   GetUserStatisticsQueryHandler,
+  GetDoctorPatientsQueryHandler,
+  GetPatientConsultationsQueryHandler,
+  GetTopDiseasesQueryHandler,
 ];
 
 const Adapters = [
