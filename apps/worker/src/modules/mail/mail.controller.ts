@@ -2,9 +2,10 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
 
-import { LoginOtpDto, NovuUserDto, RegisterOtpDto } from './dtos';
+import { LoginOtpDto, NovuUserDto, RegisterOtpDto, ForgotPasswordOtpDto } from './dtos';
 import {
   CreateNovuUserCommand,
+  SendForgotPasswordOtpCommand,
   SendLoginOtpCommand,
   SendRegisterOtpCommand,
 } from './use-cases';
@@ -23,6 +24,12 @@ export class MailController {
   @Post('send-register-otp')
   async sendRegisterOtpMail(@Body() input: RegisterOtpDto): Promise<void> {
     const command = new SendRegisterOtpCommand(input);
+    await this.commandBus.execute(command);
+  }
+
+  @Post('send-forgot-password-otp')
+  async sendForgotPasswordOtpMail(@Body() input: ForgotPasswordOtpDto): Promise<void> {
+    const command = new SendForgotPasswordOtpCommand(input);
     await this.commandBus.execute(command);
   }
 

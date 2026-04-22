@@ -12,6 +12,7 @@ import { OtpServiceBase } from './otp.abstract';
 
 const REGISTER_OTP = 'register_otp';
 const LOGIN_OTP = 'login_otp';
+const FORGOT_PASSWORD_OTP = 'forgot_password_otp';
 
 export class OtpService extends OtpServiceBase implements IOtpService {
   constructor(@InjectRedis() redis: Redis) {
@@ -22,6 +23,11 @@ export class OtpService extends OtpServiceBase implements IOtpService {
   }
   async getLoginResendExpireTime(email: string): Promise<number | null> {
     return await this.getResendExpireTime(LOGIN_OTP, email);
+  }
+  async getForgotPasswordResendExpireTime(
+    email: string,
+  ): Promise<number | null> {
+    return await this.getResendExpireTime(FORGOT_PASSWORD_OTP, email);
   }
 
   async saveRegisterOtp(
@@ -60,5 +66,33 @@ export class OtpService extends OtpServiceBase implements IOtpService {
 
   async deleteLoginOtp(email: string, session: string): Promise<boolean> {
     return this.deleteOtp(LOGIN_OTP, email, session);
+  }
+
+  async saveForgotPasswordOtp(
+    email: string,
+    session: string,
+    otp: string,
+  ): Promise<boolean> {
+    return this.saveOtp(
+      FORGOT_PASSWORD_OTP,
+      email,
+      session,
+      otp,
+      REGISTER_OTP_EXPIRE_TIME,
+    );
+  }
+
+  async getForgotPasswordOtp(
+    email: string,
+    session: string,
+  ): Promise<string | null> {
+    return this.getOtp(FORGOT_PASSWORD_OTP, email, session);
+  }
+
+  async deleteForgotPasswordOtp(
+    email: string,
+    session: string,
+  ): Promise<boolean> {
+    return this.deleteOtp(FORGOT_PASSWORD_OTP, email, session);
   }
 }

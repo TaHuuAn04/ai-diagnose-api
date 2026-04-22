@@ -21,10 +21,12 @@ import {
 
 import { IPatientService } from '../../patient/interfaces';
 import {
+  ForgotPasswordRequestDto,
   LoginResponseDto,
   RegisterRequestDto,
   RequestLoginDto,
   RequestLoginResponseDto,
+  ResetPasswordRequestDto,
   VerifyOtpRequestDto,
   VerifyOtpResponseDto,
 } from '../dtos';
@@ -57,25 +59,7 @@ export class AuthService implements IAuthService {
   async requestOTP(input: RequestLoginDto): Promise<RequestLoginResponseDto> {
     try {
       const user = await this.userRepository.findOneBy({ email: input.email });
-      // TODO: Add logic for request OTP for forgot password later
       if (user?.isOnBoardingCompleted) {
-        // generate and save login OTP
-        // const { otp, sessionId } = await this.generateAndSaveLoginOTP(
-        //   user.email,
-        // );
-
-        // send Login OTP use Novu via Worker
-        // if (apiNodeEnv === 'production') {
-        //   await this.internalWorkerService.sendLoginOtp(otp, user);
-        // }
-
-        // const response: RequestLoginResponseDto = {
-        //   sessionId,
-        //   expireTime: LOGIN_OTP_EXPIRE_TIME,
-        //   func: AuthFunc.LOGIN,
-        // };
-
-        // return plainToInstance(RequestLoginResponseDto, response);
         throw new BadRequestException('Email is already registered');
       }
 
@@ -92,12 +76,88 @@ export class AuthService implements IAuthService {
 
       // send Register OTP use Novu via Worker
       if (apiNodeEnv === 'development' || apiNodeEnv === 'production') {
-        await this.internalWorkerService.sendRegisterOtp(otp, input.email);
+        const expiresInMinutes = REGISTER_OTP_EXPIRE_TIME / 60;
+        
+        const fallbackFirstName = input.email.split('@')[0];
+        const firstName = input.firstName || fallbackFirstName;
+        const lastName = input.lastName || 'User';
+
+        await this.internalWorkerService.sendRegisterOtp(
+          otp, 
+          input.email,
+          firstName,
+          lastName,
+          expiresInMinutes
+        );
       }
 
       return plainToInstance(RequestLoginResponseDto, response);
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error requesting OTP');
+    }
+  }
+async forgotPassword(input: ForgotPasswordRequestDto): Promise<RequestLoginResponseDto> {
+  try {
+    const { email, resetUrl } = input;
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const { token } = await this.generateAndSaveForgotPasswordToken(email);
+
+    const response: RequestLoginResponseDto = {
+      sessionId: token,
+      expireTime: REGISTER_OTP_EXPIRE_TIME,
+      func: AuthFunc.FORGOT_PASSWORD,
+    };
+
+    if (apiNodeEnv === 'development' || apiNodeEnv === 'production') {
+      const expiresInMinutes = REGISTER_OTP_EXPIRE_TIME / 60;
+
+      const finalResetUrl = `${resetUrl}?token=${token}&email=${email}`;
+
+      await this.internalWorkerService.sendForgotPasswordOtp(
+        email,
+        finalResetUrl,
+        user.firstName || 'User',
+        user.lastName || '',
+        expiresInMinutes,
+      );
+    }
+
+    return plainToInstance(RequestLoginResponseDto, response);
+  } catch (error) {
+    ExceptionHandler.handleErrorException(error, 'Error in forgot password');
+  }
+}
+
+  @Transactional()
+  async resetPassword(input: ResetPasswordRequestDto): Promise<boolean> {
+    try {
+      const { email, token, newPassword } = input;
+      const user = await this.userRepository.findOneBy({ email });
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      const validToken = await this.otpService.getForgotPasswordOtp(
+        email,
+        token,
+      );
+
+      if (!validToken || validToken !== token) {
+        throw new BadRequestException('Invalid or expired password reset link');
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      await this.userRepository.update(user.id, { password: hashedPassword });
+
+      await this.otpService.deleteForgotPasswordOtp(email, token);
+
+      return true;
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error resetting password');
     }
   }
 
@@ -286,6 +346,25 @@ export class AuthService implements IAuthService {
 
     await this.otpService.saveRegisterOtp(email, sessionId, otp);
     return { otp, sessionId };
+  }
+
+  private async generateAndSaveForgotPasswordToken(
+    email: string,
+  ): Promise<{ token: string }> {
+    const expireTime = await this.otpService.getForgotPasswordResendExpireTime(
+      email,
+    );
+
+    if (expireTime) {
+      throw new BadRequestException(
+        `Waiting ${expireTime.toString()} seconds to send link again`,
+      );
+    }
+
+    const token = uuidv4();
+
+    await this.otpService.saveForgotPasswordOtp(email, token, token);
+    return { token };
   }
 
   async getUserTokenDevMode(email: string): Promise<LoginResponseDto> {

@@ -18,4 +18,16 @@ export interface IOtpService {
   getLoginResendExpireTime(email: string): Promise<number | null>;
 
   getRegisterResendExpireTime(email: string): Promise<number | null>;
+
+  saveForgotPasswordOtp(
+    email: string,
+    session: string,
+    otp: string,
+  ): Promise<boolean>;
+
+  getForgotPasswordOtp(email: string, session: string): Promise<string | null>;
+
+  deleteForgotPasswordOtp(email: string, session: string): Promise<boolean>;
+
+  getForgotPasswordResendExpireTime(email: string): Promise<number | null>;
 }

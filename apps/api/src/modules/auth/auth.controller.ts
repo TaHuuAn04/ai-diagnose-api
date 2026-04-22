@@ -13,11 +13,18 @@ import {
   RegisterResponseDto,
   RequestLoginDto,
   RequestOtpResponseDto,
+  ForgotPasswordRequestDto,
+  ResetPasswordRequestDto,
   VerifyOtpRequestDto,
   VerifyOtpResponseDto,
 } from './dtos';
 import { TempAuthService } from './infrastructures/temp-auth.service';
-import { RequestOtpCommand, VerifyOtpCommand } from './use-cases';
+import {
+  ForgotPasswordCommand,
+  RequestOtpCommand,
+  ResetPasswordCommand,
+  VerifyOtpCommand,
+} from './use-cases';
 import { RegisterCommand } from './use-cases/register.use-case';
 
 @ApiTags('Auth')
@@ -52,6 +59,24 @@ export class AuthController {
     @Body() input: VerifyOtpRequestDto,
   ): Promise<VerifyOtpResponseDto> {
     const command = new VerifyOtpCommand(input);
+    return await this.commandBus.execute(command);
+  }
+
+  @Post('forgot-password')
+  @IsPublic()
+  async forgotPassword(
+    @Body() input: ForgotPasswordRequestDto,
+  ): Promise<RequestOtpResponseDto> {
+    const command = new ForgotPasswordCommand(input);
+    return await this.commandBus.execute(command);
+  }
+
+  @Post('reset-password')
+  @IsPublic()
+  async resetPassword(
+    @Body() input: ResetPasswordRequestDto,
+  ): Promise<boolean> {
+    const command = new ResetPasswordCommand(input);
     return await this.commandBus.execute(command);
   }
 

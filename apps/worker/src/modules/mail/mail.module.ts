@@ -9,6 +9,7 @@ import { MailController } from './mail.controller';
 import { MailService } from './mail.service';
 import { SendSupportEscalationTicketCommandHandler } from './use-cases';
 import { CreateNovuUserCommandHandler } from './use-cases/create-novu-user.use-case';
+import { SendForgotPasswordOtpCommandHandler } from './use-cases/send-forgot-password-otp.use-case';
 import { SendLoginOtpCommandHandler } from './use-cases/send-login-otp.use-case';
 import { SendRegisterOtpCommandHandler } from './use-cases/send-register-otp.use-case';
 
@@ -22,6 +23,7 @@ const Adapters = [
 const Handlers = [
   SendLoginOtpCommandHandler,
   SendRegisterOtpCommandHandler,
+  SendForgotPasswordOtpCommandHandler,
   CreateNovuUserCommandHandler,
   SendSupportEscalationTicketCommandHandler,
 ];

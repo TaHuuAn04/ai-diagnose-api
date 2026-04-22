@@ -10,6 +10,7 @@ import {
   NOVU_QUEUE_JOBS,
   NOVU_QUEUE_NAME,
   OTPJobData,
+  ForgotPasswordJobData,
 } from './queues';
 
 @Processor(NOVU_QUEUE_NAME)
@@ -31,6 +32,9 @@ export class NovuProcessor extends WorkerHost {
           break;
         case NOVU_QUEUE_JOBS.SEND_REGISTER_OTP:
           await this.sendRegisterOtpMail(job as Job<OTPJobData>);
+          break;
+        case NOVU_QUEUE_JOBS.SEND_FORGOT_PASSWORD_OTP:
+          await this.sendForgotPasswordOtpMail(job as Job<ForgotPasswordJobData>);
           break;
 
         default:
@@ -63,16 +67,20 @@ export class NovuProcessor extends WorkerHost {
   }
 
   async sendRegisterOtpMail(job: Job<OTPJobData>): Promise<void> {
-    const { email, userId, otp, userName } = job.data;
+    const { email, userId, otp, userName, firstName, lastName, companyName, expiresInMinutes } = job.data;
     try {
       await this.novuService.trigger(NOVU_QUEUE_JOBS.SEND_REGISTER_OTP, {
         to: {
           subscriberId: userId,
           email,
+          firstName,
+          lastName,
         },
         payload: {
-          userName,
-          otp,
+          userName: userName,
+          otp: otp,
+          companyName: companyName,
+          expiresInMinutes: String(expiresInMinutes)
         },
       });
 
@@ -80,6 +88,30 @@ export class NovuProcessor extends WorkerHost {
       // ! this is a temporary solution
       await new Promise((resolve) => setTimeout(resolve, 500));
 
+      await this.novuService.subscribers.delete(userId);
+    } catch (error) {
+      this.handelError(error);
+    }
+  }
+
+  async sendForgotPasswordOtpMail(job: Job<ForgotPasswordJobData>): Promise<void> {
+    const { email, userId, resetUrl, appName, expiresInMinutes, firstName, lastName } = job.data;
+    try {
+      await this.novuService.trigger(NOVU_QUEUE_JOBS.SEND_FORGOT_PASSWORD_OTP, {
+        to: {
+          subscriberId: userId,
+          email,
+          firstName,
+          lastName,
+        },
+        payload: {
+          resetUrl,
+          appName,
+          expiresInMinutes,
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
       await this.novuService.subscribers.delete(userId);
     } catch (error) {
       this.handelError(error);

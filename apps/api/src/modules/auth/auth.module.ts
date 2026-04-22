@@ -16,8 +16,10 @@ import { TempAuthService } from './infrastructures/temp-auth.service';
 import { UserService } from './infrastructures/user.service';
 import { JwtStrategy } from './strategies';
 import {
+  ForgotPasswordCommandHandler,
   RegisterCommandHandler,
   RequestOtpCommandHandler,
+  ResetPasswordCommandHandler,
   VerifyOtpCommandHandler,
 } from './use-cases';
 
@@ -40,6 +42,8 @@ const Handlers = [
   RegisterCommandHandler,
   RequestOtpCommandHandler,
   VerifyOtpCommandHandler,
+  ForgotPasswordCommandHandler,
+  ResetPasswordCommandHandler,
 ];
 
 @Module({

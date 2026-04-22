@@ -16,15 +16,48 @@ import {
 export class InternalWorkerService {
   constructor(private readonly httpService: HttpService) {}
 
-  async sendRegisterOtp(otp: string, email: string): Promise<void> {
+  async sendRegisterOtp(
+    otp: string,
+    email: string,
+    firstName: string,
+    lastName: string,
+    expiresInMinutes: number,
+  ): Promise<void> {
     try {
       const url = `${INTERNAL_WORKER_API_URL}/mail/send-register-otp`;
       await axios.post(url, {
         otp,
         email,
+        firstName,
+        lastName,
+        expiresInMinutes,
       });
     } catch (error) {
       ExceptionHandler.handleErrorException(error, 'Error sending register otp');
+    }
+  }
+
+  async sendForgotPasswordOtp(
+    email: string,
+    resetUrl: string,
+    firstName: string,
+    lastName: string,
+    expiresInMinutes: number,
+  ): Promise<void> {
+    try {
+      const url = `${INTERNAL_WORKER_API_URL}/mail/send-forgot-password-otp`;
+      await axios.post(url, {
+        email,
+        resetUrl,
+        firstName,
+        lastName,
+        expiresInMinutes,
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(
+        error,
+        'Error sending forgot password otp',
+      );
     }
   }
 

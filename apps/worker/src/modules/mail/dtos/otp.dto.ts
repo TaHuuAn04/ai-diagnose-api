@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { User } from 'apps/api/src/infrastructure/database/typeorm-nest/entities';
-import { IsEmail, IsNotEmpty, IsNumberString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumberString, IsString, IsNumber } from 'class-validator';
 
 export class LoginOtpDto {
   @IsNumberString()
@@ -21,4 +21,36 @@ export class RegisterOtpDto {
   @IsNumberString()
   @IsNotEmpty()
   otp: string;
+
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsNumber()
+  expiresInMinutes: number;
+}
+
+export class ForgotPasswordOtpDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  resetUrl: string;
+
+  @IsString()
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsNumber()
+  expiresInMinutes: number;
 }

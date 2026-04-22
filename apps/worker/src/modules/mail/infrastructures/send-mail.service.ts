@@ -7,7 +7,7 @@ import { AiInternalServerError, Exception } from '@app/core/exception';
 import { SendSupportEscalationTicketInputDto } from '../../escalation/dtos';
 import { TriggerNovuService } from '../../novu/novu-trigger.service';
 import { NovuService } from '../../novu/novu.service';
-import { LoginOtpDto, NovuUserDto, RegisterOtpDto } from '../dtos';
+import { LoginOtpDto, NovuUserDto, RegisterOtpDto, ForgotPasswordOtpDto } from '../dtos';
 import { ISendMailService } from '../use-cases/adapters';
 
 @Injectable()
@@ -23,15 +23,41 @@ export class SendMailService implements ISendMailService {
       // create subscriber
       await this.novuService.subscribers.identify(id, {
         email: input.email,
+        firstName: input.firstName,
+        lastName: input.lastName, 
       });
 
       // send OTP
       await this.novuService.sendRegisterOtpToSubscriber({
         otp: input.otp,
-        userName: 'new user',
         email: input.email,
-        userId: id,
+        firstName: input.firstName,
+        lastName: input.lastName,
+        expiresInMinutes: input.expiresInMinutes
       });
+    } catch (error) {
+      const message =
+        error instanceof Error && typeof error.message === 'string'
+          ? error.message
+          : 'An unexpected error occurred';
+
+      throw new AiInternalServerError(message);
+    }
+  }
+
+  async sendForgotPasswordOtp(input: ForgotPasswordOtpDto): Promise<void> {
+    try {
+      const id = uuidv4();
+
+      // create subscriber
+      await this.novuService.subscribers.identify(id, {
+        email: input.email,
+        firstName: input.firstName,
+        lastName: input.lastName,
+      });
+
+      // send OTP
+      await this.novuService.sendForgotPasswordOtpToSubscriber(input, id);
     } catch (error) {
       const message =
         error instanceof Error && typeof error.message === 'string'

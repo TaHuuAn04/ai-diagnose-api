@@ -1,4 +1,5 @@
 export enum AuthFunc {
   LOGIN = 'LOGIN',
   REGISTER = 'REGISTER',
+  FORGOT_PASSWORD = 'FORGOT_PASSWORD',
 }
