@@ -3,13 +3,13 @@ import { IQuery, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { INJECTION_TOKEN } from '@api/enums';
 
-import { GetTodayAppointmentsRequestDto, StaffDashboardStatisticsDto } from '../dtos';
+import { GetStaffDashboardRequestDto, StaffDashboardStatisticsDto } from '../dtos';
 import { IStaffService } from '../interfaces'
 
 export class GetStaffInfoDashboardQuery implements IQuery {
   constructor(
     public readonly staffId: string,
-    public readonly request: GetTodayAppointmentsRequestDto
+    public readonly request: GetStaffDashboardRequestDto
   ) { }
 }
 

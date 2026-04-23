@@ -23,6 +23,7 @@ import {
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto,
   GetScheduleResponseDto,
+  GetStaffDashboardRequestDto,
   GetStaffInfoResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
@@ -192,7 +193,7 @@ export class StaffController {
   @ApiResponse({ status: 500, description: "An error occurred during processing; failed to retrieve information." })
   async getStaffInfoDashboard(
     @CurrentUser() user: UserEntity,
-    @Query() input: GetTodayAppointmentsRequestDto
+    @Query() input: GetStaffDashboardRequestDto
   ): Promise<StaffDashboardStatisticsDto> {
     const query = new GetStaffInfoDashboardQuery(
       user.id,
