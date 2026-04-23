@@ -32,6 +32,7 @@ import {
   GetListAppointmentsResponseDto,
   GetScheduleRequestDto ,
   GetScheduleResponseDto,
+  GetStaffDashboardRequestDto,
   GetStaffInfoResponseDto,
   GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto,
@@ -231,7 +232,7 @@ export class StaffService implements IStaffService {
 
   async getStaffInfoDashboard(
     staffId: string,
-    request: GetTodayAppointmentsRequestDto
+    request: GetStaffDashboardRequestDto
   ): Promise<StaffDashboardStatisticsDto> {
     try {
       const staff = await this.admissionStaffRepository.findOne({

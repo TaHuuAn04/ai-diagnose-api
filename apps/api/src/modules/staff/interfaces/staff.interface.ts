@@ -9,7 +9,7 @@ import {
   GetActiveDoctorsResponseDto,
   GetListAppointmentsRequestDto,
   GetListAppointmentsResponseDto,
-  GetScheduleRequestDto, GetScheduleResponseDto, GetStaffInfoResponseDto, GetTodayAppointmentsRequestDto,
+  GetScheduleRequestDto, GetScheduleResponseDto, GetStaffDashboardRequestDto, GetStaffInfoResponseDto, GetTodayAppointmentsRequestDto,
   GetTodayAppointmentsResponseDto, ImportScheduleFromCSVRequestDto,
   StaffDashboardStatisticsDto,
   UpdateScheduleRequestDto,
@@ -33,7 +33,7 @@ export interface IStaffService {
 
   getStaffInfoDashboard(
     staffId: string,
-    request: GetTodayAppointmentsRequestDto
+    request: GetStaffDashboardRequestDto
   ): Promise<StaffDashboardStatisticsDto>;
 
   getScheduleInfo(
