@@ -139,11 +139,12 @@ export class AppointmentService implements IAppointmentService {
       }
 
       appointment.description = description ?? appointment.description;
-      if (images) {
-        await this.imageRepository.deleteMany({
-          referenceId: appointmentId,
-          referenceType: ImageReference.APPOINTMENT,
-        }); 
+      await this.imageRepository.deleteMany({
+        referenceId: appointmentId,
+        referenceType: ImageReference.APPOINTMENT,
+      }); 
+      
+      if (images && images.length > 0) {
         const newImages = filesToBase64(images);
         await this.imageRepository.createMany(
           newImages.map((img, index) => ({
