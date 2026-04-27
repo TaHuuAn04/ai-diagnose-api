@@ -12,7 +12,7 @@ import { ImageReference, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
-import { GetConsultationHistoryDto, GetConsultationResponseDto, GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto } from '../dtos';
+import { GetConsultationHistoryDto, GetConsultationResponseDto, GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto, PrescriptionItemDto } from '../dtos';
 import { IConsultationService } from '../interfaces';
 
 
@@ -50,6 +50,14 @@ export class ConsultationService implements IConsultationService {
           throw new NotFoundException('Appointment information is missing for consultation ID: ' + consultation.id);
         }
 
+        const prescription = consultation.diagnosisResult?.prescription?.map(p => plainToInstance(PrescriptionItemDto, {
+          name: p.name,
+          concentration: p.concentration,
+          quantity: p.quantity,
+          dosage: p.dosage,
+          duration: p.duration
+        })) ?? [];
+
         // Get images for the diagnosis result
         const imageEntities = await this.imageRepository.findAll({
             where: {
@@ -72,7 +80,7 @@ export class ConsultationService implements IConsultationService {
           room: consultation.appointment.metadata?.room,
           diseases: consultation.diagnosisResult?.diseases?.map((disease: { name: string }) => disease.name) ?? [],
           advices: consultation.diagnosisResult?.advices ?? '',
-          prescription: consultation.diagnosisResult?.prescription ?? '',
+          prescription,
           symptoms: consultation.diagnosisResult?.symstomsText ?? '',
           images: plainToInstance(ImageInfoDto, imageEntities.data)
         }
