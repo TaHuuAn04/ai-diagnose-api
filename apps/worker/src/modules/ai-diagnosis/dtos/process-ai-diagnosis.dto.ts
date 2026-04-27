@@ -1,4 +1,18 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { AiProviderType } from '@app/core/domain/enums';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+
+export class ModelConfigDto {
+  @IsEnum(AiProviderType)
+  @IsNotEmpty()
+  providerType: AiProviderType;
+
+  @IsString()
+  @IsNotEmpty()
+  nameModel: string;
+
+  @IsOptional()
+  accessToken?: string;
+}
 
 export class ProcessAiDiagnosisInputDto {
   @IsString()
@@ -8,6 +22,9 @@ export class ProcessAiDiagnosisInputDto {
   @IsUUID()
   @IsNotEmpty()
   diagnoseModelId: string;
+
+  @IsOptional()
+  modelConfig: ModelConfigDto;
 
   @IsString()
   @IsNotEmpty()

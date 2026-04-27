@@ -39,7 +39,7 @@ export class ChatMessageBlockDifyAiCommandHandler
         dto,
         httpService: this.httpService,
         headers: new AxiosHeaders({
-          'x-app-code': process.env.DIFY_AI_APP_ID ?? '',
+          'x-app-code': command.input.appCode ?? process.env.DIFY_AI_APP_ID ?? '',
           'x-app-passport': token,
         }),
       });
@@ -77,7 +77,7 @@ export class ChatMessageStreamDifyAiCommandHandler
         dto,
         httpService: this.httpService,
         headers: new AxiosHeaders({
-          'x-app-code': process.env.DIFY_AI_APP_ID ?? '',
+          'x-app-code': command.input.appCode ?? process.env.DIFY_AI_APP_ID ?? '',
           'x-app-passport': token,
         }),
       });

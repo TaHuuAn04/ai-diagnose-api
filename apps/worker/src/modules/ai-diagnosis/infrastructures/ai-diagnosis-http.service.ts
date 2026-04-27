@@ -23,6 +23,16 @@ export interface FullFlowResponseDto {
   };
 }
 
+export interface VisionOnlyResponseDto {
+  status: string;
+  data: {
+    top_prediction: {
+      disease: string;
+      percentage: number;
+    };
+  };
+}
+
 @Injectable()
 export class AiDiagnosisHttpService {
   private readonly logger = new Logger(AiDiagnosisHttpService.name);
@@ -59,8 +69,38 @@ export class AiDiagnosisHttpService {
 
       return response.data;
     } catch (error) {
-      this.logger.error(`Error calling AI service: ${error?.message}`);
-      throw new AiInternalServerError('Failed to call AI service');
+      this.logger.error(`Error calling AI service full flow: ${error?.message}`);
+      throw new AiInternalServerError('Failed to call AI service full flow');
+    }
+  }
+
+  async callVisionOnly(params: {
+    imageBase64: string;
+  }): Promise<VisionOnlyResponseDto> {
+    try {
+      const formData = new FormData();
+      
+      const buffer = Buffer.from(params.imageBase64, 'base64');
+      formData.append('file', buffer, {
+        filename: 'image.jpg',
+        contentType: 'image/jpeg',
+      });
+
+      const url = `${this.aiServiceConfig.baseUrl}/api/v1/model-ai/vision`;
+      
+      const response = await lastValueFrom(
+        this.httpService.post<VisionOnlyResponseDto>(url, formData, {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        }),
+      );
+
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Error calling AI service vision only: ${error?.message}`);
+      throw new AiInternalServerError('Failed to call AI service vision only');
     }
   }
 }
+

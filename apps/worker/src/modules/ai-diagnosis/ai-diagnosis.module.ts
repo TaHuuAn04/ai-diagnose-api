@@ -10,6 +10,7 @@ import { AiDiagnosisQueueConsumer } from './queues/ai-diagnosis-queue.consumer';
 import { AiDiagnosisQueueListener } from './queues/ai-diagnosis-queue.listener';
 import { AiDiagnosisQueueProvider } from './queues/ai-diagnosis-queue.provider';
 import { ProcessAiDiagnosisCommandHandler } from './use-cases';
+import { DifyAiModule } from 'apps/api/src/modules/dify-ai/dify-ai.module';
 
 const Handlers = [ProcessAiDiagnosisCommandHandler];
 
@@ -26,6 +27,7 @@ const Handlers = [ProcessAiDiagnosisCommandHandler];
         attempts: 1,
       },
     }),
+    DifyAiModule,
   ],
   controllers: [AiDiagnosisController],
   providers: [

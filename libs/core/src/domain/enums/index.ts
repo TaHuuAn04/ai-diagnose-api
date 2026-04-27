@@ -8,3 +8,4 @@ export * from './working-time.enum';
 export * from './http-method.enum';
 export * from './otp-type.enum';
 export * from './doctor-active.enum';
+export * from './ai-provider.enum';

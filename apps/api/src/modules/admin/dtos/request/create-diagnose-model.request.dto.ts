@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ModelConfigDto } from './model-config.dto';
 
 export class CreateDiagnoseModelRequestDto {
   @ApiProperty()
@@ -19,12 +21,13 @@ export class CreateDiagnoseModelRequestDto {
   isPublic?: boolean;
 
   @ApiProperty()
-  @IsString()
+  @ValidateNested()
+  @Type(() => ModelConfigDto)
   @IsNotEmpty()
-  keyModel: string;
+  modelConfig: ModelConfigDto;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsString()
-  @IsNotEmpty()
-  modelUrl: string;
+  @IsOptional()
+  modelUrl?: string;
 }

@@ -1,4 +1,16 @@
+import { AiProviderType } from '@app/core/domain/enums';
 import { Expose } from 'class-transformer';
+
+export class ModelConfigResponseDto {
+  @Expose()
+  providerType: AiProviderType;
+
+  @Expose()
+  nameModel: string;
+
+  @Expose()
+  accessToken: string;
+}
 
 export class DiagnoseModelResponseDto {
   @Expose()
@@ -14,7 +26,7 @@ export class DiagnoseModelResponseDto {
   isPublic: boolean;
 
   @Expose()
-  keyModel: string;
+  modelConfig: ModelConfigResponseDto;
 
   @Expose()
   modelUrl: string;

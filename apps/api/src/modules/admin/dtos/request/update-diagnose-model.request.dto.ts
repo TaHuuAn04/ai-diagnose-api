@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ModelConfigDto } from './model-config.dto';
 
 export class UpdateDiagnoseModelRequestDto {
   @ApiPropertyOptional()
@@ -19,9 +21,10 @@ export class UpdateDiagnoseModelRequestDto {
   isPublic?: boolean;
 
   @ApiPropertyOptional()
-  @IsString()
+  @ValidateNested()
+  @Type(() => ModelConfigDto)
   @IsOptional()
-  keyModel?: string;
+  modelConfig?: ModelConfigDto;
 
   @ApiPropertyOptional()
   @IsString()

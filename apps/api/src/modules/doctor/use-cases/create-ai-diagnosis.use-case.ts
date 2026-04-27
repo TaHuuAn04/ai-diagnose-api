@@ -49,6 +49,7 @@ export class CreateAiDiagnosisCommandHandler
       const workerPayload = {
         consultationId: payload.consultationId,
         diagnoseModelId: defaultModel.id,
+        modelConfig: defaultModel.modelConfig,
         description: payload.description,
         imageBase64,
       };

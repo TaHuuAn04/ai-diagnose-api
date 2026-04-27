@@ -60,6 +60,7 @@ export class ChatMessageDifyAiResponseDto extends BlockingModeResponseDto {
 export class ChatMessageDifyAiInputDto {
   body: ChatMessageDifyAiBodyDto;
   token: string;
+  appCode?: string;
 }
 
 export class PostChatMessageDifyAiDto extends HttpFetchDto {
