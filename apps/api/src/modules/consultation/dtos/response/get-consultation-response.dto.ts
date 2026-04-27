@@ -3,6 +3,27 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
 
 import { ImageInfoDto } from "@app/core/dtos";
+export class PrescriptionItemDto {
+  @Expose()
+  @ApiProperty()
+  name: string;
+
+  @Expose()
+  @ApiProperty()
+  concentration: string;
+
+  @Expose()
+  @ApiProperty()
+  quantity: string;
+
+  @Expose()
+  @ApiProperty()
+  dosage: string;
+
+  @Expose()
+  @ApiProperty()
+  duration: number;
+}
 
 @Exclude()
 export class GetConsultationResponseDto {
@@ -43,8 +64,8 @@ export class GetConsultationResponseDto {
   advices: string;
 
   @Expose()
-  @ApiProperty({ example: 'Lisinopril 10mg daily' })
-  prescription: string;
+  @ApiProperty({ type: [PrescriptionItemDto] })
+  prescription?: PrescriptionItemDto[] | [];
 
   @Expose()
   @ApiProperty({ example: 'Headache, dizziness' })
