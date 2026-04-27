@@ -29,3 +29,4 @@ export * from './request/get-doctor-patients.request.dto';
 export * from './response/doctor-patient-item.response.dto';
 export * from './response/patient-consultation-item.response.dto';
 export * from './response/top-disease-item.response.dto';
+export * from './request/test-dify-connection.request.dto';

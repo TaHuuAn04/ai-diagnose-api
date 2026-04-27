@@ -39,6 +39,7 @@ import {
   DoctorPatientItemResponseDto,
   GetDoctorPatientsRequestDto,
   PatientConsultationItemResponseDto,
+  TestDifyConnectionRequestDto,
 } from './dtos';
 import { DoctorPerformanceStatisticsResponseDto } from './dtos/response/doctor-performance-statistics.response.dto';
 import { GetDoctorPerformanceStatisticsRequestDto } from './dtos/request/get-doctor-performance-statistics.request.dto';
@@ -66,6 +67,8 @@ import {
 } from './use-cases';
 import { GetDoctorPerformanceStatisticsQuery } from './use-cases/get-doctor-performance-statistics.use-case';
 import { GetSystemOverviewQuery } from './use-cases/get-system-overview.use-case';
+import { GetPassportDifyAiCommand } from '../dify-ai/use-cases';
+import { ExternalServiceException } from '@app/core/exception';
 
 @ApiTags('Admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -370,5 +373,26 @@ export class AdminController {
   ): Promise<PatientConsultationItemResponseDto[]> {
     const q = new GetPatientConsultationsQuery(doctorId, patientId, query);
     return this.queryBus.execute(q);
+  }
+
+  @Post('dify/test-connection')
+  @ApiOperation({ summary: 'Test Dify API connection with the provided access token' })
+  @ApiResponse({ status: 200, description: 'Connection successful' })
+  @ApiResponse({ status: 400, description: 'Bad Request / Connection failed' })
+  async testDifyConnection(
+    @Body() request: TestDifyConnectionRequestDto,
+  ): Promise<{ success: boolean; message?: string }> {
+    const command = new GetPassportDifyAiCommand({
+      headers: { 'x-app-code': request.accessToken },
+      query: { user_id: 'admin-test-connection' },
+    });
+    const response = await this.commandBus.execute(command);
+    
+    if (response?.access_token) {
+      return { success: true, message: 'Connection successful' };
+    }
+    
+    // If we reach here without an exception but no token, throw explicitly
+    throw new ExternalServiceException('Invalid token or API error');
   }
 }
