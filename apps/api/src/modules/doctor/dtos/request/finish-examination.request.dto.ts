@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class MedicineDto {
   @ApiProperty()
@@ -10,6 +10,8 @@ export class MedicineDto {
   name: string;
 
   @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
   quantity: number;
 
   @ApiProperty()

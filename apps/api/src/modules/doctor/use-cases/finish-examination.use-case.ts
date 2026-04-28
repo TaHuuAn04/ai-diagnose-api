@@ -87,9 +87,9 @@ export class FinishExaminationCommandHandler
       // Save diagnosis result
       const diagnosisResult = await this.diagnosisResultRepository.create({
         consultationId: consultation.id,
-        description: payload.finalDiagnosis,
+        description: payload.currentCondition ?? '',
         department: payload.department,
-        symstomsText: payload.currentCondition ?? '',
+        symstomsText: payload.finalDiagnosis,
         prescription: payload.medicines?.map(m => ({
           name: m.name,
           concentration: '',
