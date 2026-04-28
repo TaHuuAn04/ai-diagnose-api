@@ -17,7 +17,8 @@ export interface FullFlowResponseDto {
         disease: string;
         percentage: number;
       };
-      // other fields omitted for brevity
+      image_with_bbox_base64?: string;
+      cropped_image_base64?: string;
     };
     ai_advice: string;
   };
@@ -30,6 +31,8 @@ export interface VisionOnlyResponseDto {
       disease: string;
       percentage: number;
     };
+    image_with_bbox_base64?: string;
+    cropped_image_base64?: string;
   };
 }
 
@@ -103,4 +106,3 @@ export class AiDiagnosisHttpService {
     }
   }
 }
-

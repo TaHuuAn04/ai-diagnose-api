@@ -3,6 +3,7 @@ import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 
+import { CacheModule } from 'apps/api/src/infrastructure/cache/cache.module';
 import { WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
 import { CoreTransformInterceptor } from '@app/core/interceptors';
@@ -15,6 +16,7 @@ import { modules } from '.';
 @Module({
   imports: [
     ConfigsModule,
+    CacheModule,
     ...modules,
     BullModule.forRootAsync({
       inject: [BullMqConfig.KEY],

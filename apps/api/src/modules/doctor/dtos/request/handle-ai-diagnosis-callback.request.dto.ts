@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
@@ -26,4 +26,14 @@ export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
   @IsString()
   aiAdvice: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  imageWithBbox?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  croppedImage?: string;
 }

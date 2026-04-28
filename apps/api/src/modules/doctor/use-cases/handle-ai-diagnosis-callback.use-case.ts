@@ -62,6 +62,7 @@ export class HandleAiDiagnosisCallbackCommandHandler
             suggestedDiagnosis: [{ diseaseName: payload.disease, accuracy: payload.probability }],
             aiAdvice: payload.aiAdvice,
             diagnoseModelId: payload.diagnoseModelId,
+            proof: JSON.stringify([payload.imageWithBbox, payload.croppedImage]),
           }
         );
       } else {
@@ -71,6 +72,7 @@ export class HandleAiDiagnosisCallbackCommandHandler
           suggestedDiagnosis: [{ diseaseName: payload.disease, accuracy: payload.probability }],
           aiAdvice: payload.aiAdvice,
           severityLevel: SeverityLevel.MODERATE,
+          proof: JSON.stringify([payload.imageWithBbox, payload.croppedImage]),
         });
       }
 

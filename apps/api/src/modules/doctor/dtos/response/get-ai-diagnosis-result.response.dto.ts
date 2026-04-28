@@ -31,6 +31,10 @@ export class GetAiDiagnosisResultResponseDto {
   @Expose()
   aiAdvice?: string;
 
+  @ApiPropertyOptional()
+  @Expose()
+  images?: string[];
+
   @ApiProperty({ enum: SeverityLevel, required: false, nullable: true })
   @Expose()
   severityLevel?: SeverityLevel | null;

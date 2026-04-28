@@ -2,16 +2,16 @@ import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
 import { CommandBus, CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
+import { ChatMessageBlockDifyAiCommand, GetPassportDifyAiCommand } from 'apps/api/src/modules/dify-ai/use-cases';
 import { lastValueFrom } from 'rxjs';
 
+import { AiProviderType } from '@app/core/domain/enums';
 import { API_CALLBACK_BASE_URL } from '@app/core/environments';
 import { AiInternalServerError, Exception } from '@app/core/exception';
-import { AiProviderType } from '@app/core/domain/enums';
 
 import { AiDiagnosisHttpService } from '../infrastructures/ai-diagnosis-http.service';
 import { AiDiagnosisJobData } from '../queues';
 
-import { GetPassportDifyAiCommand, ChatMessageBlockDifyAiCommand } from 'apps/api/src/modules/dify-ai/use-cases';
 
 export class ProcessAiDiagnosisCommand implements ICommand {
   constructor(public readonly input: AiDiagnosisJobData) {}
@@ -37,6 +37,8 @@ export class ProcessAiDiagnosisCommandHandler
       let disease: string;
       let probability: number;
       let aiAdvice: string;
+      let imageWithBbox: string | undefined;
+      let croppedImage: string | undefined;
 
       if (providerType === AiProviderType.INTERNAL) {
         this.logger.log(`Using INTERNAL AI service for consultation ${input.consultationId}`);
@@ -47,6 +49,8 @@ export class ProcessAiDiagnosisCommandHandler
         disease = aiResponse.full_flow_result.vision_analysis.top_prediction.disease;
         probability = aiResponse.full_flow_result.vision_analysis.top_prediction.percentage;
         aiAdvice = aiResponse.full_flow_result.ai_advice;
+        imageWithBbox = aiResponse.full_flow_result.vision_analysis.image_with_bbox_base64;
+        croppedImage = aiResponse.full_flow_result.vision_analysis.cropped_image_base64;
       } else if (providerType === AiProviderType.DIFY) {
         this.logger.log(`Using DIFY RAG for consultation ${input.consultationId}`);
         const visionResponse = await this.aiDiagnosisHttpService.callVisionOnly({
@@ -54,6 +58,8 @@ export class ProcessAiDiagnosisCommandHandler
         });
         disease = visionResponse.data.top_prediction.disease;
         probability = visionResponse.data.top_prediction.percentage;
+        imageWithBbox = visionResponse.data.image_with_bbox_base64;
+        croppedImage = visionResponse.data.cropped_image_base64;
 
         // 2. Call Dify CQRS Command
         const accessToken = input.modelConfig?.accessToken;
@@ -103,6 +109,8 @@ export class ProcessAiDiagnosisCommandHandler
         disease,
         probability,
         aiAdvice,
+        imageWithBbox,
+        croppedImage,
       };
 
       const url = `${API_CALLBACK_BASE_URL}/doctors/ai-diagnosis/callback`;

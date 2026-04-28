@@ -42,6 +42,7 @@ export class GetAiDiagnosisResultQueryHandler
       suggestedDiagnosis: result.proof ?? '',
       severityLevel: result.severityLevel ?? undefined,
       aiAdvice: result.aiAdvice ?? undefined,
+      images: result.proof ? JSON.parse(result.proof) : [],
       diseases:
         result.diseases?.map((d: AIResultDiseaseEntity) => plainToInstance(AiResultDiseaseDto, {
           diseaseId: d.diseaseId,

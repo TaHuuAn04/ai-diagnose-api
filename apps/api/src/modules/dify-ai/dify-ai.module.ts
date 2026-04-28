@@ -49,10 +49,6 @@ import { SetKnowledgeDocumentStatusDifyAiCommandHandler } from './use-cases/cons
 
 const Adapters = [
   {
-    provide: INJECTION_TOKEN.CACHE_SERVICE,
-    useClass: CacheService,
-  },
-  {
     provide: INJECTION_TOKEN.DIFY_CACHE_SERVICE,
     useClass: DifyCacheService,
   },
