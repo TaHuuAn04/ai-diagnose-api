@@ -37,18 +37,21 @@ export class GetAiDiagnosisResultQueryHandler
       );
     }
 
+    const diseases: AIResultDiseaseEntity[] = result.diseases || [];
+    const sortedDiseases = [...diseases].sort((a, b) => b.accuracy - a.accuracy);
+    const topDisease = sortedDiseases[0]?.disease?.name || 'Chẩn đoán AI';
+
     return plainToInstance(GetAiDiagnosisResultResponseDto, {
       consultationId: result.consultationId,
-      suggestedDiagnosis: result.proof ?? '',
+      suggestedDiagnosis: topDisease,
       severityLevel: result.severityLevel ?? undefined,
       aiAdvice: result.aiAdvice ?? undefined,
       images: result.proof ? JSON.parse(result.proof) : [],
-      diseases:
-        result.diseases?.map((d: AIResultDiseaseEntity) => plainToInstance(AiResultDiseaseDto, {
+      diseases: sortedDiseases.map((d) => plainToInstance(AiResultDiseaseDto, {
           diseaseId: d.diseaseId,
           diseaseName: d.disease?.name ?? 'Unknown',
           accuracy: d.accuracy,
-        })) ?? [],
+      })),
     });
   }
 }

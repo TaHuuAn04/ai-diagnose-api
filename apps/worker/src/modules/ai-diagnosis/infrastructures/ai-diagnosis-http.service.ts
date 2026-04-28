@@ -11,9 +11,12 @@ import { AiServiceConfig } from '../../../configs';
 
 export interface FullFlowResponseDto {
   status: string;
+  message?: string;
   full_flow_result: {
     vision_analysis: {
-      top_prediction: {
+      status: string;
+      message?: string;
+      top_prediction?: {
         disease: string;
         percentage: number;
       };
@@ -26,8 +29,11 @@ export interface FullFlowResponseDto {
 
 export interface VisionOnlyResponseDto {
   status: string;
+  message?: string;
   data: {
-    top_prediction: {
+    status?: string;
+    message?: string;
+    top_prediction?: {
       disease: string;
       percentage: number;
     };
