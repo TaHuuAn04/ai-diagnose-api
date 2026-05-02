@@ -10,6 +10,20 @@ export interface PrescriptionItem {
   duration: number;
 }
 
+export interface ClinicalInfo {
+  symptom?: string;
+  location?: string;
+  duration?: string;
+  skinType?: string[];
+  skinTypeNote?: string;
+  severity?: string;
+  allergy?: string;
+  history?: string;
+  gender?: string;
+  age?: number;
+  genetic?: string;
+}
+
 export class DiagnosisResultEntity extends BaseEntity {
   advices?: string | null;
 
@@ -22,6 +36,8 @@ export class DiagnosisResultEntity extends BaseEntity {
   feedBackAI?: string | null;
 
   symstomsText: string;
+
+  clinicalInfo?: ClinicalInfo | null;
 
   consultationId: string;
 

@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 
-import { PrescriptionItem } from '@app/core/domain/entities/diagnosis-result';
+import { ClinicalInfo, PrescriptionItem } from '@app/core/domain/entities/diagnosis-result';
 
 import { BaseEntity } from '../base.entity';
 
@@ -26,6 +26,9 @@ export class DiagnosisResult extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   feedBackAI?: string | null;
+
+  @Column({ type: 'jsonb', nullable: true, default: null })
+  clinicalInfo?: ClinicalInfo | null;
 
   @Column('uuid')
   consultationId: string;

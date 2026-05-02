@@ -90,6 +90,7 @@ export class FinishExaminationCommandHandler
         description: payload.currentCondition ?? '',
         department: payload.department,
         symstomsText: payload.finalDiagnosis,
+        clinicalInfo: payload.clinicalInfo ?? null,
         prescription: payload.medicines?.map(m => ({
           name: m.name,
           concentration: '',
