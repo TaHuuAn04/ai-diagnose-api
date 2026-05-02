@@ -1,5 +1,6 @@
+import { Expose, Type } from 'class-transformer';
+
 import { AiProviderType } from '@app/core/domain/enums';
-import { Expose } from 'class-transformer';
 
 export class ModelConfigResponseDto {
   @Expose()
@@ -26,6 +27,7 @@ export class DiagnoseModelResponseDto {
   isPublic: boolean;
 
   @Expose()
+  @Type(() => ModelConfigResponseDto)
   modelConfig: ModelConfigResponseDto;
 
   @Expose()
