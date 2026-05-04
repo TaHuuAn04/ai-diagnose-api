@@ -23,4 +23,10 @@ export interface IWorkingTimeRepository extends IGenericRepository<WorkingTimeEn
     currentDate: string,
     currentTime: string
   ): Promise<void>;
+
+  findWorkingTimeConflict(
+    patientId: string,
+    shiftId: string, 
+    date: string
+  ): Promise<WorkingTimeEntity | null>;
 }

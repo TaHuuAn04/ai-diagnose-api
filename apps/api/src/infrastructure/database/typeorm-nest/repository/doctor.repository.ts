@@ -57,7 +57,7 @@ export class DoctorRepository
 
     if (request.keyword) {
       queryBuilder.andWhere(
-        `CONCAT(user.firstName, ' ', user.lastName) ILIKE :keyword`,
+        '(user.firstName ILIKE :keyword OR user.lastName ILIKE :keyword OR doctor.doctorCode ILIKE :keyword )',
         { keyword: `%${request.keyword}%` },
       );
     }

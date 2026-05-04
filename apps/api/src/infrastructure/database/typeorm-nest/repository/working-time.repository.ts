@@ -7,7 +7,7 @@ import { plainToInstance } from "class-transformer";
 import { Repository } from "typeorm";
 
 import { ScheduleEntity , WorkingTimeEntity } from "@app/core/domain/entities";
-import { WorkingTimeStatus } from "@app/core/domain/enums";
+import { AppointmentStatus, WorkingTimeStatus } from "@app/core/domain/enums";
 
 import { WorkingTime } from "../entities";
 
@@ -103,5 +103,24 @@ export class WorkingTimeRepository
         )
       )`, { status: WorkingTimeStatus.AVAILABLE, currentDate, currentTime })
       .execute();
+  }
+
+  async findWorkingTimeConflict(
+    patientId: string,
+    shiftId: string,
+    date: string
+  ): Promise<WorkingTimeEntity | null> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('workingTime')
+      .where('workingTime.shiftId = :shiftId', { shiftId })
+      .andWhere('workingTime.date = :date', { date })
+      .leftJoinAndSelect('workingTime.appointment', 'appointment')
+      .andWhere('appointment.patientId = :patientId', { patientId })
+      .andWhere('appointment.status = :status', { status: AppointmentStatus.SCHEDULED })
+      .leftJoinAndSelect('workingTime.doctor', 'doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+    
+    const entity = await queryBuilder.getOne();
+    return entity ? this._mapper.toDomain(entity) : null;
   }
 }

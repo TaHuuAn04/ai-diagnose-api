@@ -150,6 +150,13 @@ export class ShiftService implements IShiftService {
         throw new BadRequestException('Patient profile is not fully completed. Please complete your profile before booking a shift.');
       }
 
+      //Check if the patient has already booked an appointment with another doctor on the same day at the same time
+      const conflictAppointment = await this.workingTimeRepository.findWorkingTimeConflict(patientId, shiftId, date);
+      if (conflictAppointment) {
+        const doctorName = `${conflictAppointment.doctor?.user?.firstName ?? ''} ${conflictAppointment.doctor?.user?.lastName ?? ''}`;
+        throw new BadRequestException(`You have already booked an appointment with doctor ${doctorName} on ${date} at the same time.`);
+      }
+
       const workingTime = await this.workingTimeRepository.findOne({
         where: { 
           doctorId: doctorId,

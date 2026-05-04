@@ -79,9 +79,9 @@ export class ConsultationRepository
     queryBuilder.leftJoinAndSelect('consultation.diagnosisResult', 'diagnosisResult')
                 .leftJoinAndSelect('diagnosisResult.diseases', 'resultDisease');
 
-    const sortField = 'updatedAt';
     const sortOrder = sortDirection ?? SortDirection.DESC;
-    queryBuilder.orderBy(`consultation.${sortField}`, sortOrder as 'ASC' | 'DESC');
+    queryBuilder.orderBy('workingTime.date', sortOrder as 'ASC' | 'DESC')
+      .addOrderBy('shift.from', sortOrder as 'ASC' | 'DESC');
 
     const [entities, total] = await queryBuilder.getManyAndCount();
 
