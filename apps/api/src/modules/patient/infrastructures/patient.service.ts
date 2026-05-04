@@ -5,7 +5,7 @@ import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
-import { ExceptionHandler, NotFoundException } from '@app/core/exception';
+import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
 import { CreatePatientResponseDto, PatientInfoDto, UpdatePatientDto } from '../dtos';
 import { IPatientService } from '../interfaces';
@@ -79,6 +79,12 @@ export class PatientService implements IPatientService {
     input: UpdatePatientDto):
   Promise<PatientInfoDto> {
     try {
+      const now = new Date(Date.now() + 7 * 60 * 60 * 1000); 
+      const currentDate = now.toISOString().split('T')[0];
+      if (input.dateOfBirth && input.dateOfBirth >= currentDate) {
+        throw new BadRequestException('Date of birth must be before current date');
+      }
+
       const existingPatient = await this.patientRepository.findOne({
         where: { userId },
         relations: ['user'],

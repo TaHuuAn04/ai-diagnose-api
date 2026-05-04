@@ -243,7 +243,7 @@ export class AppointmentRepository
       .andWhere('appointment.metadata->>\'doctorId\' = :doctorId', { doctorId })
       .andWhere('appointment.metadata->>\'date\' >= :startDate', { startDate })
       .andWhere('appointment.metadata->>\'date\' <= :endDate', { endDate })
-      .andWhere('appointment.status NOT IN (:...statuses)', { statuses: [AppointmentStatus.SCHEDULED, AppointmentStatus.CANCELLED] })
+      .andWhere('appointment.status != :status', { status: AppointmentStatus.CANCELLED })
 
     const rawResult = await queryBuilder.getRawOne();
     return rawResult ? parseInt(rawResult.count, 10) : 0;
