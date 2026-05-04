@@ -72,6 +72,10 @@ export class GetConsultationResponseDto {
   symptoms: string;
 
   @Expose()
+  @ApiProperty({ example: 'Patient condition description', required: false })
+  description?: string;
+
+  @Expose()
   @ApiProperty({ example: [{ base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...', order: 1 }] })
   images?: ImageInfoDto[] | [];
 }

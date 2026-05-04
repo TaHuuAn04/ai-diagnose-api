@@ -70,10 +70,17 @@ export class ConsultationService implements IConsultationService {
             },
         }); 
 
+        const doctorUser = consultation.doctor?.user;
+        const doctorName = doctorUser
+          ? `${doctorUser.firstName || ''} ${doctorUser.lastName || ''}`.trim()
+          : (consultation.appointment.metadata?.doctorName ?? '');
+
         const consultationMapping = {
           id: consultation.id,
-          doctorName: consultation.appointment.metadata?.doctorName,
-          department: consultation.appointment.metadata?.department,
+          doctorName,
+          department: consultation.doctor?.department
+            || consultation.appointment.metadata?.department
+            || '',
           date: consultation.appointment.metadata?.date,
           from: consultation.appointment.metadata?.from,
           to: consultation.appointment.metadata?.to,
@@ -82,6 +89,7 @@ export class ConsultationService implements IConsultationService {
           advices: consultation.diagnosisResult?.advices ?? '',
           prescription,
           symptoms: consultation.diagnosisResult?.symstomsText ?? '',
+          description: consultation.diagnosisResult?.description ?? '',
           images: plainToInstance(ImageInfoDto, imageEntities.data)
         }
         return plainToInstance(GetConsultationResponseDto, consultationMapping);

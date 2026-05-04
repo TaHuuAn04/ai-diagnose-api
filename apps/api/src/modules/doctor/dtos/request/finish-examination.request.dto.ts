@@ -119,4 +119,14 @@ export class FinishExaminationRequestDto {
   @ValidateNested()
   @Type(() => ClinicalInfoDto)
   clinicalInfo?: ClinicalInfoDto;
+
+  @ApiProperty({ type: [String], required: false, description: 'Array of base64 image strings (AI result images or doctor-uploaded images)' })
+  @IsArray()
+  @IsOptional()
+  images?: string[];
+
+  @ApiProperty({ required: false, description: 'Doctor advice for the patient' })
+  @IsString()
+  @IsOptional()
+  doctorAdvice?: string;
 }
