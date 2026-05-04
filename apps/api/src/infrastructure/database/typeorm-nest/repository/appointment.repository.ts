@@ -63,9 +63,17 @@ export class AppointmentRepository
       );
     }
 
-    const sortField = request.sort ?? 'updatedAt';
+    const sortField = request.sort;
     const sortOrder = request.sortDirection ?? SortDirection.DESC;
-    queryBuilder.orderBy(`appointment.${sortField}`, sortOrder as 'ASC' | 'DESC');
+
+    if (sortField && sortField !== 'date') {
+      queryBuilder.orderBy(`appointment.${sortField}`, sortOrder as 'ASC' | 'DESC');
+    } else {
+      queryBuilder.addSelect("appointment.metadata->>'date'", "sort_date")
+        .addSelect("appointment.metadata->>'from'", "sort_from")
+        .orderBy("sort_date", sortOrder as 'ASC' | 'DESC')
+        .addOrderBy("sort_from", sortOrder as 'ASC' | 'DESC');
+    }
 
     if (request.skip) {
       queryBuilder.skip(request.skip);
