@@ -574,7 +574,7 @@ export class DoctorService implements IDoctorService {
     request: UpdateDoctorInfoRequestDto
   ): Promise<UpdateOrDeleteResponseDto> {
     try {
-      const { firstName, lastName, phoneNumber, experience, description } = request;
+      const { firstName, lastName, phoneNumber, experience, description, avatarUrl } = request;
 
       const doctor = await this.doctorRepository.findOne({
         where: {
@@ -594,7 +594,8 @@ export class DoctorService implements IDoctorService {
       await this.userRepository.update(doctor.userId, {
         firstName: firstName,
         lastName: lastName,
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        avatarUrl: avatarUrl
       })
 
       return plainToInstance(UpdateOrDeleteResponseDto, {

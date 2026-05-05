@@ -1,9 +1,20 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "../../..",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": "apps/api/test/.*\\.e2e-spec\\.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@app/core(|/.*)$": "<rootDir>/libs/core/src/$1",
+    "^@app/utils(|/.*)$": "<rootDir>/libs/utils/src/$1",
+    "^@api/enums$": "<rootDir>/apps/api/src/common/enums",
+    "^@api/constants$": "<rootDir>/apps/api/src/common/constants",
+    "^@api/guards(|/.*)$": "<rootDir>/apps/api/src/common/guards/$1",
+    "^@api/core(|/.*)$": "<rootDir>/apps/api/src/core/$1",
+    "^@api/repository(|/.*)$": "<rootDir>/apps/api/src/core/repository/$1",
+    "^@api/config(|/.*)$": "<rootDir>/apps/api/src/config/$1",
+    "^apps/api/src/(.*)$": "<rootDir>/apps/api/src/$1"
   }
 }

@@ -27,4 +27,9 @@ export class UpdateDoctorInfoRequestDto {
   @IsString()
   @IsOptional()
   phoneNumber?: string;
+
+  @ApiProperty({ description: 'Avatar URL or base64 of doctor' })
+  @IsString()
+  @IsOptional()
+  avatarUrl?: string;
 }

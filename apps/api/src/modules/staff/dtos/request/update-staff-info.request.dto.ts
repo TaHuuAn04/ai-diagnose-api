@@ -22,4 +22,9 @@ export class UpdateStaffInfoRequestDto {
   @IsString()
   @IsOptional()
   phoneNumber?: string;
+
+  @ApiProperty({ description: 'Avatar URL or base64 of staff' })
+  @IsString()
+  @IsOptional()
+  avatarUrl?: string;
 }

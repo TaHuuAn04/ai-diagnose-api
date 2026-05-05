@@ -761,7 +761,7 @@ export class StaffService implements IStaffService {
     request: UpdateStaffInfoRequestDto
   ): Promise<UpdateOrDeleteResponseDto> {
     try {
-      const { firstName, lastName, phoneNumber, description } = request;
+      const { firstName, lastName, phoneNumber, description, avatarUrl } = request;
 
       const staff = await this.admissionStaffRepository.findOne({
         where: { userId: staffId },
@@ -778,7 +778,8 @@ export class StaffService implements IStaffService {
       await this.userRepository.update(staffId, {
         firstName: firstName,
         lastName: lastName,
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        avatarUrl: avatarUrl
       });
 
       return plainToInstance(UpdateOrDeleteResponseDto, {
