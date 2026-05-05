@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsArray, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { PageOptionsDto } from '@app/core/dtos';
 
@@ -15,11 +16,13 @@ export class GetListDoctorRequestDto extends PageOptionsDto {
   shiftId?: string;
 
   @ApiProperty({
-    description: 'Filter by department',
+    description: 'Filter by departments',
     required: false,
-    example: 'Cardiology',
+    example: '["Dermatology", "Neurology"]',
   })
   @IsOptional()
-  @IsString()
-  department?: string;
+  @Transform(({ value }) => (Array.isArray(value) ? (value as string[]) : [value as string]))
+  @IsArray()
+  @IsString({ each: true })
+  departments?: string[];
 }

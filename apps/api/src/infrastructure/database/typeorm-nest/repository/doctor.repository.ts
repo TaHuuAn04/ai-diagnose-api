@@ -47,8 +47,8 @@ export class DoctorRepository
         .andWhere('shift.id = :shiftId', { shiftId: request.shiftId });
     } 
 
-    if (request.department) {
-      queryBuilder.andWhere('doctor.department = :department', { department: request.department });
+    if (request.departments && request.departments.length > 0) {
+      queryBuilder.andWhere('doctor.department IN (:...departments)', { departments: request.departments });
     }
 
     const sortField = request.sort ?? 'user.firstName';
