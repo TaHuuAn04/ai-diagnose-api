@@ -31,6 +31,8 @@ import {
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UpdatePatientOnboardingRequestDto,
+  UpdatePatientOnboardingResponseDto,
   UserStatisticsResponseDto,
 } from '../dtos';
 
@@ -128,4 +130,9 @@ export interface IAdminService {
     patientId: string,
     query: GetDoctorPatientsRequestDto,
   ): Promise<PatientConsultationItemResponseDto[]>;
+
+  updatePatientOnboarding(
+    id: string,
+    payload: UpdatePatientOnboardingRequestDto,
+  ): Promise<UpdatePatientOnboardingResponseDto>;
 }

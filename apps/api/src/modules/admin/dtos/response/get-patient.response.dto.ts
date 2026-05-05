@@ -25,6 +25,15 @@ class UserInPatientResponseDto {
 
   @Expose()
   avatarUrl: string;
+
+  @Expose()
+  dateOfBirth!: string;
+
+  @Expose()
+  isOnBoardingCompleted!: boolean;
+
+  @Expose()
+  createdAt!: Date;
 }
 
 export class GetPatientResponseDto {

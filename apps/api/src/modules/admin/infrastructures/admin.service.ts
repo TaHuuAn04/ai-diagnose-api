@@ -54,6 +54,8 @@ import {
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UpdatePatientOnboardingRequestDto,
+  UpdatePatientOnboardingResponseDto,
   UserStatisticsResponseDto,
 } from '../dtos';
 import { IAdminService } from '../interfaces';
@@ -201,6 +203,27 @@ export class AdminService implements IAdminService {
       }),
       pageMetaDto,
     );
+  }
+
+  @Transactional()
+  async updatePatientOnboarding(
+    id: string,
+    payload: UpdatePatientOnboardingRequestDto,
+  ): Promise<UpdatePatientOnboardingResponseDto> {
+    const existingPatient = await this.patientRepository.findOne({
+      where: { userId: id },
+    });
+
+    if (!existingPatient) {
+      throw new NotFoundException('Patient account not found.');
+    }
+
+    await this.userRepository.update(id, {
+      isOnBoardingCompleted: payload.isOnBoardingCompleted,
+    });
+
+    this.logger.log(`Updated Patient Onboarding - UserID: ${id}, isOnBoardingCompleted: ${payload.isOnBoardingCompleted}`);
+    return plainToInstance(UpdatePatientOnboardingResponseDto, { success: true });
   }
 
   async getListStaffs(

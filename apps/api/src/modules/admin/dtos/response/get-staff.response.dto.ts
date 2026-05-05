@@ -23,6 +23,15 @@ class UserInStaffResponseDto {
 
   @Expose()
   avatarUrl: string;
+
+  @Expose()
+  dateOfBirth!: string;
+
+  @Expose()
+  isOnBoardingCompleted!: boolean;
+
+  @Expose()
+  createdAt!: Date;
 }
 
 export class GetStaffResponseDto {

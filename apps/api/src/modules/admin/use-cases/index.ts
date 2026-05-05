@@ -20,4 +20,5 @@ export * from './get-user-statistics.use-case';
 export * from './get-doctor-patients.use-case';
 export * from './get-patient-consultations.use-case';
 export * from './get-top-diseases.use-case';
+export * from './update-patient-onboarding.use-case';
 

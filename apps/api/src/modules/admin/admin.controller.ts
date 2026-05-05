@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiExtraModels, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -35,6 +35,8 @@ import {
   UpdateDiagnoseModelRequestDto,
   UpdateDoctorAccountRequestDto,
   UpdateDoctorAccountResponseDto,
+  UpdatePatientOnboardingRequestDto,
+  UpdatePatientOnboardingResponseDto,
   UserStatisticsResponseDto,
   DoctorPatientItemResponseDto,
   GetDoctorPatientsRequestDto,
@@ -64,6 +66,7 @@ import {
   UpdateChatbotModelCommand,
   UpdateDiagnoseModelCommand,
   UpdateDoctorAccountCommand,
+  UpdatePatientOnboardingCommand,
 } from './use-cases';
 import { GetDoctorPerformanceStatisticsQuery } from './use-cases/get-doctor-performance-statistics.use-case';
 import { GetSystemOverviewQuery } from './use-cases/get-system-overview.use-case';
@@ -244,6 +247,21 @@ export class AdminController {
   ): Promise<PageDto<GetPatientResponseDto>> {
     const q = new GetListPatientQuery(query);
     return this.queryBus.execute(q);
+  }
+
+  @Patch('patients/:id')
+  @ApiOperation({ summary: 'Update patient onboarding status (Admin only)' })
+  @ApiResponse({ status: 200, type: UpdatePatientOnboardingResponseDto })
+  @ApiResponse({ status: 404, description: 'Patient not found' })
+  async updatePatientOnboarding(
+    @Param('id') id: string,
+    @Body() request: UpdatePatientOnboardingRequestDto,
+  ): Promise<UpdatePatientOnboardingResponseDto> {
+    const command = new UpdatePatientOnboardingCommand(id, request);
+    return this.commandBus.execute<
+      UpdatePatientOnboardingCommand,
+      UpdatePatientOnboardingResponseDto
+    >(command);
   }
 
   @Post('ai-models')

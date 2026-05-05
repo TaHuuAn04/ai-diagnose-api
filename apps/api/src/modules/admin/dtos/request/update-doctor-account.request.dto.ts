@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsDateString, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 import { UserGender } from '@app/core/domain/enums';
 
@@ -55,4 +55,9 @@ export class UpdateDoctorAccountRequestDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isOnBoardingCompleted?: boolean;
 }

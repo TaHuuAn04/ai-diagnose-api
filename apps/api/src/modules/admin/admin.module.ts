@@ -26,6 +26,7 @@ import {
   UpdateChatbotModelCommandHandler,
   UpdateDiagnoseModelCommandHandler,
   UpdateDoctorAccountCommandHandler,
+  UpdatePatientOnboardingCommandHandler,
 } from './use-cases';
 import { GetDoctorPerformanceStatisticsQueryHandler } from './use-cases/get-doctor-performance-statistics.use-case';
 import { GetSystemOverviewQueryHandler } from './use-cases/get-system-overview.use-case';
@@ -53,6 +54,7 @@ const Handlers = [
   GetDoctorPatientsQueryHandler,
   GetPatientConsultationsQueryHandler,
   GetTopDiseasesQueryHandler,
+  UpdatePatientOnboardingCommandHandler,
 ];
 
 const Adapters = [

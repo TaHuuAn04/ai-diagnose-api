@@ -30,3 +30,5 @@ export * from './response/doctor-patient-item.response.dto';
 export * from './response/patient-consultation-item.response.dto';
 export * from './response/top-disease-item.response.dto';
 export * from './request/test-dify-connection.request.dto';
+export * from './request/update-patient-onboarding.request.dto';
+export * from './response/update-patient-onboarding.response.dto';
