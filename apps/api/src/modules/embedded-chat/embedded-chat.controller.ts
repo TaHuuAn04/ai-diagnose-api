@@ -28,7 +28,6 @@ import { memoryStorage } from 'multer';
 import { ApiResponseWrapper, CurrentUser, IsPublic } from '@app/core/decorators';
 import { UserEntity } from '@app/core/domain/entities';
 import { PageDto, PageMetaDto, PaginatedResult } from '@app/core/dtos';
-import { DIFY_AI_APP_ID } from '@app/core/environments';
 
 import {
   ChatMessageBlockBodyDto,
@@ -163,12 +162,7 @@ export class EmbeddedChatController {
       GetPassportResponseDto
     >(
       new GetEmbeddedChatPassportCommand({
-        xAppCode: DIFY_AI_APP_ID, // currently hard code here
-        ...{
-          name: user.firstName + ' ' + user.lastName,
-          email: user.email,
-          user_id: user.id,
-        },
+        user_id: user.id,
       }),
     );
 

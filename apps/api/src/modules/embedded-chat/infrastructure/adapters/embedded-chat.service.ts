@@ -9,22 +9,17 @@ import {
   ChatMessageDifyAiBodyDto,
   ChatMessageDifyAiInputDto,
   ChatMessageDifyAiResponseDto,
-  GetPassportDifyAiInputDto,
-  GetPassportDifyAiResponseDto,
   UploadFileChatDifyAiResponseDto,
 } from '../../../dify-ai/dtos';
 import {
   ChatMessageBlockDifyAiCommand,
   ChatMessageStreamDifyAiCommand,
-  GetPassportDifyAiCommand,
   UploadFileChatDifyAiCommand,
 } from '../../../dify-ai/use-cases';
 import {
   ChatMessageBlockInputDto,
   ChatMessageBlockResponseDto,
   ChatMessageStreamInputDto,
-  GetPassportInputDto,
-  GetPassportResponseDto,
   UploadFileChatInputDto,
 } from '../../dtos';
 import { IEmbeddedChatService } from '../../use-cases/adapters/embedded-chat.service.interface';
@@ -32,25 +27,6 @@ import { IEmbeddedChatService } from '../../use-cases/adapters/embedded-chat.ser
 @Injectable()
 export class EmbeddedChatService implements IEmbeddedChatService {
   constructor(private readonly commandBus: CommandBus) {}
-
-  async getPassport(input: GetPassportInputDto): Promise<GetPassportResponseDto> {
-    const passportInput: GetPassportDifyAiInputDto = {
-      headers: {
-        'x-app-code': input.xAppCode,
-      },
-      query: {
-        user_id: input.user_id,
-      },
-    };
-
-    const command = new GetPassportDifyAiCommand(passportInput);
-    const result: GetPassportDifyAiResponseDto =
-      await this.commandBus.execute(command);
-
-    return {
-      access_token: result.access_token,
-    };
-  }
 
   async chatMessageBlock(
     input: ChatMessageBlockInputDto,

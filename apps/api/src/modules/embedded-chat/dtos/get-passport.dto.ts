@@ -14,9 +14,7 @@ export class GetEmbeddedChatPassportQueryDto {
   user_id: string;
 }
 
-export class GetPassportInputDto extends GetEmbeddedChatPassportQueryDto {
-  xAppCode: string;
-}
+export class GetPassportInputDto extends GetEmbeddedChatPassportQueryDto {}
 
 export class GetPassportResponseDto {
   @ApiProperty({
