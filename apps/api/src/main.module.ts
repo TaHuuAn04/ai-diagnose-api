@@ -18,7 +18,7 @@ import { modules } from './modules';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 300 }]),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 10000 }]),
     PrometheusModule.register({
       defaultMetrics: { enabled: true },
     }),
