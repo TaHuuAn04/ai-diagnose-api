@@ -11,10 +11,13 @@ export const options = {
 
 export default function () {
   // Public: GET /doctors
-  const doctorsRes = http.get(`${BASE_URL}/doctors`, { headers: JSON_HEADERS });
+  const doctorsRes = http.get(`${BASE_URL}/doctors?page=1&take=10`, { headers: JSON_HEADERS });
+  console.log(`GET /doctors → status: ${doctorsRes.status}, body: ${doctorsRes.body ? doctorsRes.body.substring(0, 200) : 'empty'}`);
   check(doctorsRes, {
     'GET /doctors → 200': (r) => r.status === 200,
-    'GET /doctors → has data': (r) => r.json()?.data !== undefined,
+    'GET /doctors → has data': (r) => {
+      try { return r.json()?.data !== undefined; } catch (_) { return false; }
+    },
   });
 
   sleep(0.5);

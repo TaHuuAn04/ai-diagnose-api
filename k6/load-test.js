@@ -12,9 +12,11 @@ import {
 
 export const options = {
   stages: [
-    { duration: '2m', target: 10 },
-    { duration: '5m', target: 10 },
-    { duration: '1m', target: 0 },
+    { duration: '2m', target: 20 },
+    { duration: '3m', target: 50 },
+    { duration: '5m', target: 100 },
+    { duration: '5m', target: 100 },
+    { duration: '2m', target: 0 },
   ],
   thresholds,
 };
@@ -37,7 +39,7 @@ export default function () {
   if (rand < 0.60) {
     // 60%: Public endpoint - GET /doctors
     group('public - GET /doctors', () => {
-      const res = http.get(`${BASE_URL}/doctors`, { headers: JSON_HEADERS });
+      const res = http.get(`${BASE_URL}/doctors?page=1&take=10`, { headers: JSON_HEADERS });
       check(res, { 'status 200': (r) => r.status === 200 });
     });
   } else if (rand < 0.80) {

@@ -1,19 +1,20 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { plainToInstance } from 'class-transformer';
 
 import { IsPublic } from '@app/core/decorators';
 
 import {
+  ForgotPasswordRequestDto,
   LoginBodyDto,
   LoginResponseDto,
   RegisterRequestDto,
   RegisterResponseDto,
   RequestLoginDto,
   RequestOtpResponseDto,
-  ForgotPasswordRequestDto,
   ResetPasswordRequestDto,
   VerifyOtpRequestDto,
   VerifyOtpResponseDto,
@@ -80,6 +81,7 @@ export class AuthController {
     return await this.commandBus.execute(command);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   @IsPublic()
   async login(@Body() dto: LoginBodyDto): Promise<LoginResponseDto> {

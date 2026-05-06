@@ -1,14 +1,12 @@
-import { compare, genSalt, hash } from 'bcrypt';
+import { hash, verify } from '@node-rs/bcrypt';
 
 export const hashPassword = async (password: string): Promise<string> => {
-  const salt = await genSalt(10);
-  const result = await hash(password, salt);
-  return result;
+  return hash(password, 10);
 };
 
 export const comparePassword = async (
   password: string,
-  hash: string,
+  hashed: string,
 ): Promise<boolean> => {
-  return await compare(password, hash);
+  return verify(password, hashed);
 };

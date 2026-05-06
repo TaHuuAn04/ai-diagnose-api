@@ -1,5 +1,6 @@
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import {
   makeCounterProvider,
@@ -17,6 +18,7 @@ import { modules } from './modules';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 300 }]),
     PrometheusModule.register({
       defaultMetrics: { enabled: true },
     }),
@@ -57,6 +59,10 @@ import { modules } from './modules';
         });
       },
       inject: [Reflector],
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_GUARD,

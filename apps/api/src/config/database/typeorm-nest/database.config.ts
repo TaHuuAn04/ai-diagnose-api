@@ -31,6 +31,11 @@ export default registerAs<TypeOrmModuleOptions>(CONFIG_KEY.DATABASE, () => ({
   ],
   namingStrategy: new NamingStrategy(),
   synchronize: false,
+  extra: {
+    max: 30,
+    min: 5,
+    idleTimeoutMillis: 30000,
+  },
   migrationsTableName: '__migrations',
   migrations: [
     join(

@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import * as bodyParser from 'body-parser';
+import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 
@@ -17,6 +18,7 @@ async function bootstrap() {
 
   // app.setGlobalPrefix('api');
 
+  app.use(compression());
   app.use(cookieParser());
   app.enableVersioning();
 

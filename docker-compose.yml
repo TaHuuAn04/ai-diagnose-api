@@ -25,6 +25,8 @@ services:
       - '3000:3000'
     env_file:
       - .env
+    environment:
+      - UV_THREADPOOL_SIZE=16
     depends_on:
       redis:
         condition: service_healthy
