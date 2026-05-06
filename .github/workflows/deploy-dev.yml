@@ -31,6 +31,6 @@ jobs:
             # Build sequentially to reduce network spikes during npm install.
             docker compose build api
             docker compose build worker
-            docker compose up -d redis api worker
+            docker compose up -d redis api worker prometheus grafana
             
             docker image prune -f

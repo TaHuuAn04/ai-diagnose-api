@@ -18,6 +18,9 @@ export class CoreTransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<CorePaginateResult<T>> {
+    const request = context.switchToHttp().getRequest<{ url: string }>();
+    if (request.url === '/metrics') return next.handle();
+
     return next.handle().pipe(
       map((result) => {
         const response = {
