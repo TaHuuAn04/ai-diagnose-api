@@ -75,7 +75,7 @@ export class ShiftService implements IShiftService {
       
       const now = new Date(Date.now() + 7 * 60 * 60 * 1000); 
       const currentDate = now.toISOString().split('T')[0];
-      const currentTime = now.toISOString().split('T')[1].substring(0, 5); 
+      const currentTime = now.toISOString().split('T')[1].substring(0, 8) + '+07'; 
 
       await this.workingTimeRepository.updatePastWorkingTimesToUnavailable(currentDate, currentTime);
 

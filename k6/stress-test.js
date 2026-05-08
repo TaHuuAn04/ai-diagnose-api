@@ -20,7 +20,7 @@ export default function () {
   const rand = Math.random();
 
   if (rand < 0.7) {
-    const res = http.get(`${BASE_URL}/doctors`, { headers: JSON_HEADERS });
+    const res = http.get(`${BASE_URL}/doctors?page=1&take=10`, { headers: JSON_HEADERS });
     check(res, { 'status 200': (r) => r.status === 200 });
   } else {
     const res = http.get(`${BASE_URL}/shifts`, { headers: JSON_HEADERS });
