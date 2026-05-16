@@ -24,6 +24,17 @@ export class MedicineDto {
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
+  concentration: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  dosage: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
   usage: string;
 }
 

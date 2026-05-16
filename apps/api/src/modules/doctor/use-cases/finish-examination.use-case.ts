@@ -102,10 +102,10 @@ export class FinishExaminationCommandHandler
         advices: payload.doctorAdvice ?? null,
         prescription: payload.medicines?.map(m => ({
           name: m.name,
-          concentration: '',
+          concentration: m.concentration,
           quantity: m.quantity.toString(),
-          dosage: m.usage,
-          duration: 0,
+          dosage: m.dosage,
+          duration: m.usage,
         })) ?? []
       });
 

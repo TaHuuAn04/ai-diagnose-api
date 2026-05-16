@@ -7,7 +7,7 @@ export interface PrescriptionItem {
   concentration: string;
   quantity: string;
   dosage: string;
-  duration: number;
+  duration: string;
 }
 
 export interface ClinicalInfo {

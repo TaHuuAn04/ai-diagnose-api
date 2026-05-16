@@ -102,6 +102,7 @@ export class ConsultationRepository
     const queryBuilder = this.repository
       .createQueryBuilder('consultation')
       .where('consultation.doctorId = :doctorId', { doctorId })
+      .andWhere('consultation.endTime IS NOT NULL', {})
       .leftJoinAndSelect('consultation.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'user')
       .leftJoinAndSelect('consultation.aiResult', 'aiResult')
