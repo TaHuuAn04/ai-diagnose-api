@@ -131,10 +131,22 @@ export class FinishExaminationRequestDto {
   @Type(() => ClinicalInfoDto)
   clinicalInfo?: ClinicalInfoDto;
 
-  @ApiProperty({ type: [String], required: false, description: 'Array of base64 image strings (AI result images or doctor-uploaded images)' })
+  @ApiProperty({ type: [String], required: false, description: 'Array of base64 image strings (legacy)' })
   @IsArray()
   @IsOptional()
   images?: string[];
+
+  @ApiProperty({ type: [String], required: false, description: 'Array of AI generated base64 images' })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  aiImages?: string[];
+
+  @ApiProperty({ type: [String], required: false, description: 'Array of doctor uploaded base64 images' })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  doctorImages?: string[];
 
   @ApiProperty({ required: false, description: 'Doctor advice for the patient' })
   @IsString()

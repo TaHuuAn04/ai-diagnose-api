@@ -115,21 +115,52 @@ export class FinishExaminationCommandHandler
         name: disease.name
       });
 
-      // Save consultation images (AI-returned images or doctor-uploaded images)
-      if (payload.images && payload.images.length > 0) {
-        const imageEntities = payload.images.map((base64Data, index) => ({
+      // Save consultation images
+      let orderCounter = 1;
+
+      if (payload.doctorImages && payload.doctorImages.length > 0) {
+        const doctorImageEntities = payload.doctorImages.map((base64Data) => ({
           referenceId: consultation.id,
           referenceType: ImageReference.CONSULTATION,
-          fileName: `consultation_${consultation.id}_${index + 1}.png`,
+          fileName: `consultation_${consultation.id}_doctor_${orderCounter}.png`,
           base64: base64Data,
           type: ImageType.DOCTOR_SYMPTOMS,
-          order: index + 1,
-          description: null,
+          order: orderCounter++,
+          description: 'DOCTOR_UPLOADED',
           dataUrl: null,
         }));
+        await this.imageRepository.createMany(doctorImageEntities);
+        this.logger.log(`Saved ${doctorImageEntities.length} doctor images for consultation ${consultation.id}`);
+      }
 
+      if (payload.aiImages && payload.aiImages.length > 0) {
+        const aiImageEntities = payload.aiImages.map((base64Data) => ({
+          referenceId: consultation.id,
+          referenceType: ImageReference.CONSULTATION,
+          fileName: `consultation_${consultation.id}_ai_${orderCounter}.png`,
+          base64: base64Data,
+          type: ImageType.DOCTOR_SYMPTOMS,
+          order: orderCounter++,
+          description: 'AI_GENERATED',
+          dataUrl: null,
+        }));
+        await this.imageRepository.createMany(aiImageEntities);
+        this.logger.log(`Saved ${aiImageEntities.length} AI images for consultation ${consultation.id}`);
+      }
+
+      // Legacy support for older frontend clients
+      if (payload.images && payload.images.length > 0) {
+        const imageEntities = payload.images.map((base64Data) => ({
+          referenceId: consultation.id,
+          referenceType: ImageReference.CONSULTATION,
+          fileName: `consultation_${consultation.id}_legacy_${orderCounter}.png`,
+          base64: base64Data,
+          type: ImageType.DOCTOR_SYMPTOMS,
+          order: orderCounter++,
+          description: 'AI_GENERATED',
+          dataUrl: null,
+        }));
         await this.imageRepository.createMany(imageEntities);
-        this.logger.log(`Saved ${imageEntities.length} consultation images for consultation ${consultation.id}`);
       }
 
     } catch (error) {

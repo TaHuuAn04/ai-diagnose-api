@@ -100,4 +100,8 @@ export class GetConsultationDetailResponseDto {
   @Expose()
   @ApiProperty({ description: 'List of previous consultations for this patient', type: [DoctorConsultationHistoryItemDto] })
   pastConsultations: DoctorConsultationHistoryItemDto[];
+
+  @Expose()
+  @ApiPropertyOptional({ description: 'Consultation diagnosis images', type: [ImageInfoDto] })
+  consultationImages?: ImageInfoDto[];
 }

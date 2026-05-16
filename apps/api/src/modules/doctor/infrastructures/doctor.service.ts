@@ -529,6 +529,18 @@ export class DoctorService implements IDoctorService {
         appointmentImages = appointmentImagesResult.data.map(img => plainToInstance(ImageInfoDto, img));
       }
 
+      const consultationImagesResult = await this.imageRepository.findAll({
+        where: {
+          referenceId: consultation.id,
+          referenceType: ImageReference.CONSULTATION,
+        },
+        sort: { 
+          sortBy: 'order',
+          sortOrder: SortDirection.ASC
+        },
+      });
+      const consultationImages = consultationImagesResult.data.map(img => plainToInstance(ImageInfoDto, img));
+
       return plainToInstance(GetConsultationDetailResponseDto, {
         id: consultation.id,
         appointment: {
@@ -566,7 +578,8 @@ export class DoctorService implements IDoctorService {
           })) || [],
           clinicalInfo: consultation.diagnosisResult.clinicalInfo ?? null
         } : null,
-        pastConsultations
+        pastConsultations,
+        consultationImages
       });
     } catch (error) {
        ExceptionHandler.handleErrorException(error, 'Error getting consultation detail');
