@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { IAdmissionStaffRepository, IAppointmentRepository, IImageRepository, IScheduleRepository, IWorkingTimeRepository } from '@api/core/repository';
+import { IAdmissionStaffRepository, IAppointmentRepository, IConsultationRepository, IDoctorRepository, IImageRepository, IScheduleRepository, IWorkingTimeRepository } from '@api/core/repository';
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
 import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
@@ -31,6 +31,12 @@ export class AppointmentService implements IAppointmentService {
 
     @Inject(REPOSITORY_INJECTION_TOKEN.ADMISSION_STAFF_REPOSITORY)
     private readonly admissionStaffRepository: IAdmissionStaffRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.DOCTOR_REPOSITORY)
+    private readonly doctorRepository: IDoctorRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.CONSULTATION_REPOSITORY)
+    private readonly consultationRepository: IConsultationRepository,
   ) {}
 
   async getListAppointment(
@@ -195,10 +201,28 @@ export class AppointmentService implements IAppointmentService {
         if (!staff || appointment.metadata?.department !== staff.department) {
           throw new ForbiddenException(`You do not have permission to cancel appointment from other department`);
         }
+      } else if (role === UserRole.DOCTOR) {
+        const doctor = await this.doctorRepository.findOne({
+          where: { userId: userId },
+        });
+        if (!doctor || appointment.metadata?.doctorId !== doctor.userId) {
+          throw new ForbiddenException(`You do not have permission to cancel appointment from other doctor`);
+        }
+      } else {
+        throw new ForbiddenException(`You do not have permission to cancel this appointment`);
       }
 
       if (appointment.status !== AppointmentStatus.SCHEDULED) {
-        throw new BadRequestException('Only appointments with status SCHEDULED can be cancelled');
+        if (appointment.status === AppointmentStatus.EXAMINING && role === UserRole.DOCTOR) {
+          const existingConsultation = await this.consultationRepository.findOne({
+            where: { appointmentId }
+          });
+          if (existingConsultation) {
+            await this.consultationRepository.softDelete(existingConsultation.id);
+          }
+        } else {
+          throw new BadRequestException('Only appointments with status SCHEDULED can be cancelled');
+        }
       }
 
       const workingTime = await this.workingTimeRepository.updateMany(
