@@ -22,6 +22,7 @@ import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/c
 import { IDoctorService } from '../doctor.interface';
 import {
   AppointmentCalendarItemDto,
+  ClinicalInfoDto,
   ConsultationDiagnosisResultDto,
   DoctorConsultationHistoryItemDto,
   DoctorDashboardStatisticsDto,
@@ -444,7 +445,8 @@ export class DoctorService implements IDoctorService {
           diseases: entity.diagnosisResult.diseases?.map(d => plainToInstance(ResultDiseaseDto, {
             id: d.diseaseId,
             diseaseName: d.name || ''
-          })) || []
+          })) || [],
+          clinicalInfo: plainToInstance(ClinicalInfoDto, entity.diagnosisResult.clinicalInfo ?? null)
         } : null);
 
         return plainToInstance(GetDoctorConsultationHistoryResponseDto, {
@@ -498,7 +500,8 @@ export class DoctorService implements IDoctorService {
             diseases: plainToInstance(ResultDiseaseDto, entity.diagnosisResult.diseases?.map(d => ({
               id: d.diseaseId,
               diseaseName: d.name || ''
-            })) ?? [])
+            })) ?? []),
+            clinicalInfo: entity.diagnosisResult.clinicalInfo ?? null
           } : null)
         });
       });
@@ -559,7 +562,8 @@ export class DoctorService implements IDoctorService {
           diseases: consultation.diagnosisResult.diseases?.map(d => ({
             id: d.diseaseId,
             diseaseName: d.name || ''
-          })) || []
+          })) || [],
+          clinicalInfo: consultation.diagnosisResult.clinicalInfo ?? null
         } : null,
         pastConsultations
       });

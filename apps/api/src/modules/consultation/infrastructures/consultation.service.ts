@@ -12,7 +12,7 @@ import { ImageReference, SortDirection } from '@app/core/domain/enums';
 import { ImageInfoDto, PageDto, PageMetaDto } from '@app/core/dtos';
 import { BadRequestException, ExceptionHandler, NotFoundException } from '@app/core/exception';
 
-import { GetConsultationHistoryDto, GetConsultationResponseDto, GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto, PrescriptionItemDto } from '../dtos';
+import { ClinicalInfoDto, GetConsultationHistoryDto, GetConsultationResponseDto, GetMonthlyDiseasesRequestDto, GetMonthlyDiseasesResponseDto, PrescriptionItemDto } from '../dtos';
 import { IConsultationService } from '../interfaces';
 
 
@@ -90,7 +90,8 @@ export class ConsultationService implements IConsultationService {
           prescription,
           symptoms: consultation.diagnosisResult?.symstomsText ?? '',
           description: consultation.diagnosisResult?.description ?? '',
-          images: plainToInstance(ImageInfoDto, imageEntities.data)
+          images: plainToInstance(ImageInfoDto, imageEntities.data),
+          clinicalInfo: plainToInstance(ClinicalInfoDto,consultation.diagnosisResult?.clinicalInfo ?? null),
         }
         return plainToInstance(GetConsultationResponseDto, consultationMapping);
       }));

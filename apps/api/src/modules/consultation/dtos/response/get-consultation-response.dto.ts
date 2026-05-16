@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 import { Exclude, Expose } from "class-transformer";
 
+import { ClinicalInfo } from "@app/core/domain/entities/diagnosis-result";
 import { ImageInfoDto } from "@app/core/dtos";
 export class PrescriptionItemDto {
   @Expose()
@@ -22,7 +23,50 @@ export class PrescriptionItemDto {
 
   @Expose()
   @ApiProperty()
-  duration: number;
+  duration: string;
+}
+
+@Exclude()
+export class ClinicalInfoDto {
+  @Expose()
+  @ApiProperty({ example: 'Fever, cough, sore throat', required: false })
+  symptom?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'Chest, throat', required: false })
+  location?: string;
+
+  @Expose()
+  @ApiProperty({ example: '3 days', required: false })
+  duration?: string;
+
+  @Expose()
+  @ApiProperty({ example: ['rash', 'blisters'], required: false })
+  skinType?: string[];
+
+  @Expose()
+  @ApiProperty({ example: 'localized', required: false })
+  severity?: 'local' | 'spread' | 'systemic';
+
+  @Expose()
+  @ApiProperty({ example: 'Penicillin allergy', required: false })
+  allergy?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'No history of asthma', required: false })
+  history?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'MALE', required: false })
+  gender?: string;
+
+  @Expose()
+  @ApiProperty({ example: 30, required: false })
+  age?: number;
+
+  @Expose()
+  @ApiProperty({ example: 'no', required: false })
+  genetic?: string;
 }
 
 @Exclude()
@@ -78,4 +122,8 @@ export class GetConsultationResponseDto {
   @Expose()
   @ApiProperty({ example: [{ base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...', order: 1 }] })
   images?: ImageInfoDto[] | [];
+
+  @Expose()
+  @ApiProperty({ required: false })
+  clinicalInfo?: ClinicalInfoDto | null;
 }

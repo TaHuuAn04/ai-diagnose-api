@@ -2,6 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { Exclude, Expose } from 'class-transformer';
 
+import { ClinicalInfo } from '@app/core/domain/entities/diagnosis-result';
+import { ClinicalInfoDto } from '../request';
+
 export class SuggestedDiagnosisDto {
   @ApiProperty()
   diseaseName: string;
@@ -39,7 +42,7 @@ export class PrescriptionItemDto {
 
   @Expose()
   @ApiProperty()
-  duration: number;
+  duration: string;
 }
 
 export class ConsultationDiagnosisResultDto {
@@ -66,6 +69,10 @@ export class ConsultationDiagnosisResultDto {
   @Expose()
   @ApiPropertyOptional({ type: [ResultDiseaseDto] })
   diseases?: ResultDiseaseDto[];
+
+  @Expose()
+  @ApiPropertyOptional()
+  clinicalInfo?: ClinicalInfoDto | null;
 }
 
 @Exclude()
