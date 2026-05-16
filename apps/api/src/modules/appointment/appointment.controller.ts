@@ -17,7 +17,6 @@ import { CancelAppointmentCommand, TakeNoteAppointmentCommand, UpdateAppointment
 
 @ApiTags('Appointments')
 @UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
 @ApiBearerAuth('access-token')
 @Controller("appointments")
 export class AppointmentController {
@@ -27,6 +26,7 @@ export class AppointmentController {
   ) {}
 
   @Patch('/:appointmentId')
+  @UseGuards(RolesGuard)
   @Roles(UserRole.PATIENT)
   @ApiOperation({ summary: "Update an appointment" })
   @ApiParam({ name: 'appointmentId', description: "ID of the appointment to update", type: String })
@@ -50,7 +50,6 @@ export class AppointmentController {
   }
 
   @Patch('/:appointmentId/cancel')
-  @Roles(UserRole.PATIENT, UserRole.STAFF)
   @ApiOperation({ summary: "Cancel an appointment" })
   @ApiParam({ name: 'appointmentId', description: "ID of the appointment to cancel", type: String })
   @ApiResponse({ status: 200, description: "Appointment cancelled successfully." })
@@ -70,6 +69,7 @@ export class AppointmentController {
   }
 
   @Patch('/:appointmentId/note')
+  @UseGuards(RolesGuard)
   @Roles(UserRole.STAFF)
   @ApiOperation({ summary: "Update note for staff with appointment" })
   @ApiParam({ name: 'appointmentId', description: "ID of the appointment to update note", type: String })

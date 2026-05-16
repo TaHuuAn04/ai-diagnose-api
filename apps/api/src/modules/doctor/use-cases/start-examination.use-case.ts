@@ -61,6 +61,21 @@ export class StartExaminationCommandHandler
         throw new ForbiddenException('You are not assigned to examine this appointment.');
       }
 
+      const examiningAppointment = await this.appointmentRepository.findOne({
+        where: {
+          metadata: {
+            jsonContains: {
+              doctorId
+            },
+          },
+          status: AppointmentStatus.EXAMINING,
+        }
+      });
+
+      if (examiningAppointment && examiningAppointment.id !== appointmentId) {
+        throw new BadRequestException('There is an ongoing examination must be cancelled or completed');
+      }
+
       if (appointment.status === AppointmentStatus.EXAMINING) {
         const existingConsultation = await this.consultationRepository.findOne({
           where: { appointmentId }
