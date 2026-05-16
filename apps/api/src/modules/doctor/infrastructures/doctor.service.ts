@@ -23,6 +23,7 @@ import { IDoctorService } from '../doctor.interface';
 import {
   AppointmentCalendarItemDto,
   ClinicalInfoDto,
+  ClinicalInfoResponseDto,
   ConsultationDiagnosisResultDto,
   DoctorConsultationHistoryItemDto,
   DoctorDashboardStatisticsDto,
@@ -446,7 +447,7 @@ export class DoctorService implements IDoctorService {
             id: d.diseaseId,
             diseaseName: d.name || ''
           })) || [],
-          clinicalInfo: plainToInstance(ClinicalInfoDto, entity.diagnosisResult.clinicalInfo ?? null)
+          clinicalInfo: plainToInstance(ClinicalInfoResponseDto, entity.diagnosisResult.clinicalInfo)
         } : null);
 
         return plainToInstance(GetDoctorConsultationHistoryResponseDto, {

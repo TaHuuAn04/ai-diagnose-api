@@ -2,9 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { Exclude, Expose } from 'class-transformer';
 
-import { ClinicalInfo } from '@app/core/domain/entities/diagnosis-result';
-import { ClinicalInfoDto } from '../request';
-
 export class SuggestedDiagnosisDto {
   @ApiProperty()
   diseaseName: string;
@@ -45,6 +42,48 @@ export class PrescriptionItemDto {
   duration: string;
 }
 
+export class ClinicalInfoResponseDto {
+  @Expose()
+  @ApiProperty({ example: 'Fever, cough, sore throat', required: false })
+  symptom?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'Chest, throat', required: false })
+  location?: string;
+
+  @Expose()
+  @ApiProperty({ example: '3 days', required: false })
+  duration?: string;
+
+  @Expose()
+  @ApiProperty({ example: ['rash', 'blisters'], required: false })
+  skinType?: string[];
+
+  @Expose()
+  @ApiProperty({ example: 'localized', required: false })
+  severity?: 'local' | 'spread' | 'systemic';
+
+  @Expose()
+  @ApiProperty({ example: 'Penicillin allergy', required: false })
+  allergy?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'No history of asthma', required: false })
+  history?: string;
+
+  @Expose()
+  @ApiProperty({ example: 'MALE', required: false })
+  gender?: string;
+
+  @Expose()
+  @ApiProperty({ example: 30, required: false })
+  age?: number;
+
+  @Expose()
+  @ApiProperty({ example: 'no', required: false })
+  genetic?: string;
+}
+
 export class ConsultationDiagnosisResultDto {
   @Expose()
   @ApiPropertyOptional()
@@ -72,7 +111,7 @@ export class ConsultationDiagnosisResultDto {
 
   @Expose()
   @ApiPropertyOptional()
-  clinicalInfo?: ClinicalInfoDto | null;
+  clinicalInfo?: ClinicalInfoResponseDto | null;
 }
 
 @Exclude()
