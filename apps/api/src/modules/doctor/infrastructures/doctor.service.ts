@@ -433,7 +433,7 @@ export class DoctorService implements IDoctorService {
           concentration: p.concentration,
           quantity: p.quantity,
           dosage: p.dosage,
-          durationDays: p.duration
+          duration: p.duration
         })) || [];
 
         const diagnosisResult = plainToInstance(ConsultationDiagnosisResultDto, entity.diagnosisResult ? {
