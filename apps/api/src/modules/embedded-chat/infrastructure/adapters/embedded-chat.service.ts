@@ -60,11 +60,20 @@ export class EmbeddedChatService implements IEmbeddedChatService {
   async chatMessageStream(input: ChatMessageStreamInputDto): Promise<Readable> {
     const { token, query, conversation_id, parent_message_id, files } = input;
     
+      const getCurrentTimeVN = () => {
+        const date = new Date();
+        const utcOffset = 7;
+        date.setHours(date.getHours() + utcOffset);
+        return date.toISOString().replace('Z', '+07:00');
+      };
+
+      const currentTime = getCurrentTimeVN();
 
     const commandInput: ChatMessageDifyAiInputDto = {
       body: {
         inputs: {
-          patientId: 'ceb3dcf4-ccab-4ab6-9bf9-a9599fd8ef0b'
+          patientId: 'ceb3dcf4-ccab-4ab6-9bf9-a9599fd8ef0b',
+          currentTime: currentTime,
         },
         response_mode: 'streaming',
         query,
