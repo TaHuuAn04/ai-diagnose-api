@@ -430,7 +430,7 @@ export class DoctorService implements IDoctorService {
         })) || [];
 
         const prescription = entity.diagnosisResult?.prescription?.map(p => plainToInstance(PrescriptionItemDto, {
-          medicineName: p.name,
+          name: p.name,
           concentration: p.concentration,
           quantity: p.quantity,
           dosage: p.dosage,
