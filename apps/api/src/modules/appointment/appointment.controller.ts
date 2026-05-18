@@ -1,19 +1,19 @@
-import { Body, Controller, Param, Patch, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { JwtAuthGuard } from "@api/guards";
 import { FormDataRequest } from "nestjs-form-data";
 
-import { CurrentUser, Roles } from "@app/core/decorators";
+import { CurrentUser, IsPublic, Roles } from "@app/core/decorators";
 import { UserEntity } from "@app/core/domain/entities";
 import { UserRole } from "@app/core/domain/enums";
 import { RolesGuard } from "@app/core/guards";
 
 import { UpdateOrDeleteResponseDto } from "../../common/dtos";
 
-import { TakeNoteAppointmentDto, UpdateAppointmentDto } from "./dtos";
-import { CancelAppointmentCommand, TakeNoteAppointmentCommand, UpdateAppointmentCommand } from "./use-cases";
+import { CancelAppointmentPublicDto, GetAppointmentResponseDto, GetAppointmentsPublicDto, TakeNoteAppointmentDto, UpdateAppointmentDto } from "./dtos";
+import { CancelAppointmentCommand, CancelAppointmentPublicCommand, GetAppointmentsPublicQuery, TakeNoteAppointmentCommand, UpdateAppointmentCommand } from "./use-cases";
 
 @ApiTags('Appointments')
 @UseGuards(JwtAuthGuard)
@@ -65,6 +65,46 @@ export class AppointmentController {
       CancelAppointmentCommand, UpdateOrDeleteResponseDto
       >(command);
     
+    return result;
+  }
+
+  @Get('/public/:patientId')
+  @IsPublic()
+  @ApiOperation({ summary: "Get patient's appointments without auth (for chatbot)" })
+  @ApiParam({ name: 'patientId', description: "User ID of the patient", type: String })
+  @ApiResponse({ status: 200, description: "Appointments retrieved successfully.", type: [GetAppointmentResponseDto] })
+  async getAppointmentsPublic(
+    @Param('patientId') patientId: string,
+    @Query() query: GetAppointmentsPublicDto,
+  ): Promise<GetAppointmentResponseDto[]> {
+    const q = new GetAppointmentsPublicQuery(patientId, query.status);
+
+    const result = await this.queryBus.execute<
+      GetAppointmentsPublicQuery, GetAppointmentResponseDto[]
+    >(q);
+
+    return result;
+  }
+
+  @Post('/cancel-public')
+  @IsPublic()
+  @ApiOperation({ summary: "Cancel an appointment via chatbot (no auth required)" })
+  @ApiResponse({ status: 200, description: "Appointment cancelled successfully." })
+  @ApiResponse({ status: 400, description: "Appointment cannot be cancelled." })
+  @ApiResponse({ status: 403, description: "patientId does not match the appointment owner." })
+  @ApiResponse({ status: 404, description: "Appointment not found." })
+  async cancelAppointmentPublic(
+    @Body() input: CancelAppointmentPublicDto,
+  ): Promise<UpdateOrDeleteResponseDto> {
+    const command = new CancelAppointmentPublicCommand(
+      input.appointmentId,
+      input.patientId
+    );
+
+    const result = await this.commandBus.execute<
+      CancelAppointmentPublicCommand, UpdateOrDeleteResponseDto
+    >(command);
+
     return result;
   }
 

@@ -91,6 +91,45 @@ export class AppointmentService implements IAppointmentService {
     }
   }
 
+  async getAppointmentsPublic(
+    userId: string,
+    status?: AppointmentStatus,
+  ): Promise<GetAppointmentResponseDto[]> {
+    try {
+      const paginatedResult = await this.appointmentRepository.findListAppointments(userId, {
+        take: 100,
+        page: 1,
+        status,
+      } as GetListAppointmentDto);
+
+      return await Promise.all(paginatedResult.data.map(async appointment => {
+        if (!appointment.metadata) {
+          throw new InternalServerErrorException(`Metadata is lost for appointment with id ${appointment.id}`);
+        }
+
+        const imageEntities = await this.imageRepository.findAll({
+          where: { referenceId: appointment.id, referenceType: ImageReference.APPOINTMENT },
+          sort: { sortBy: 'order', sortOrder: SortDirection.DESC },
+        });
+
+        return plainToInstance(GetAppointmentResponseDto, {
+          ...appointment,
+          doctorName: appointment.metadata.doctorName,
+          department: appointment.metadata.department,
+          date: appointment.metadata.date,
+          from: appointment.metadata.from,
+          to: appointment.metadata.to,
+          room: appointment.metadata.room,
+          status: appointment.status,
+          description: appointment.description,
+          images: plainToInstance(ImageInfoDto, imageEntities.data),
+        });
+      }));
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error getting appointments for chatbot');
+    }
+  }
+
   async getUpcomingAppointment(
     userId: string
   ): Promise<GetAppointmentResponseDto | null> {
@@ -237,6 +276,50 @@ export class AppointmentService implements IAppointmentService {
         throw new BadRequestException('Failed to cancel appointment');
       }
       
+      appointment.status = AppointmentStatus.CANCELLED;
+      const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
+
+      return plainToInstance(UpdateOrDeleteResponseDto, {
+        isSuccess: true,
+        message: 'Appointment cancelled successfully',
+        at: updatedAppointment.updatedAt
+      });
+    } catch (error) {
+      ExceptionHandler.handleErrorException(error, 'Error cancelling appointment');
+    }
+  }
+
+  @Transactional()
+  async cancelAppointmentPublic(
+    appointmentId: string,
+    patientId: string
+  ): Promise<UpdateOrDeleteResponseDto> {
+    try {
+      const appointment = await this.appointmentRepository.findOne({
+        where: { id: appointmentId },
+      });
+
+      if (!appointment) {
+        throw new NotFoundException(`Appointment with id ${appointmentId} not found`);
+      }
+
+      if (appointment.patientId !== patientId) {
+        throw new ForbiddenException(`You do not have permission to cancel this appointment`);
+      }
+
+      if (appointment.status !== AppointmentStatus.SCHEDULED) {
+        throw new BadRequestException('Only appointments with status SCHEDULED can be cancelled');
+      }
+
+      const workingTime = await this.workingTimeRepository.updateMany(
+        { appointmentId },
+        { appointmentId: null, status: WorkingTimeStatus.AVAILABLE }
+      );
+
+      if (!workingTime) {
+        throw new BadRequestException('Failed to cancel appointment');
+      }
+
       appointment.status = AppointmentStatus.CANCELLED;
       const updatedAppointment = await this.appointmentRepository.update(appointmentId, appointment);
 

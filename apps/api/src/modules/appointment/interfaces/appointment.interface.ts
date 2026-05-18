@@ -1,4 +1,4 @@
-import { UserRole } from "@app/core/domain/enums";
+import { AppointmentStatus, UserRole } from "@app/core/domain/enums";
 import { PageDto } from "@app/core/dtos/page.dto";
 
 import { UpdateOrDeleteResponseDto } from "../../../common/dtos";
@@ -16,7 +16,17 @@ export interface IAppointmentService {
     userId: string,
     role: UserRole,
     appointmentId: string
-  ): Promise<UpdateOrDeleteResponseDto>; 
+  ): Promise<UpdateOrDeleteResponseDto>;
+
+  cancelAppointmentPublic(
+    appointmentId: string,
+    patientId: string
+  ): Promise<UpdateOrDeleteResponseDto>;
+
+  getAppointmentsPublic(
+    userId: string,
+    status?: AppointmentStatus,
+  ): Promise<GetAppointmentResponseDto[]>;
 
   updateAppointment(
     userId: string,
