@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+
+import { SeverityLevel } from '@app/core/domain/enums';
 
 export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
@@ -26,6 +28,11 @@ export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
   @IsString()
   aiAdvice: string;
+
+  @ApiPropertyOptional({ enum: SeverityLevel })
+  @IsEnum(SeverityLevel)
+  @IsOptional()
+  severityLevel?: SeverityLevel;
 
   @ApiPropertyOptional()
   @IsString()

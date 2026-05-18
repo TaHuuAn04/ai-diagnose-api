@@ -36,6 +36,7 @@ export class ProcessAiDiagnosisCommandHandler
       
       let disease = 'Không xác định được tổn thương';
       let probability = 0;
+      let severityLevel: string | undefined;
       let aiAdvice = 'Không có lời khuyên từ AI.';
       let imageWithBbox: string = input.imageBase64;
       let croppedImage: string = input.imageBase64;
@@ -48,16 +49,17 @@ export class ProcessAiDiagnosisCommandHandler
         });
 
         const visionAnalysis = aiResponse.full_flow_result?.vision_analysis;
-        
+
         if (visionAnalysis?.status === 'success' && visionAnalysis.top_prediction) {
           disease = visionAnalysis.top_prediction.disease || 'Unknown';
           probability = visionAnalysis.top_prediction.percentage || 0;
+          severityLevel = visionAnalysis.top_prediction.severity;
           imageWithBbox = visionAnalysis.image_with_bbox_base64 || input.imageBase64;
           croppedImage = visionAnalysis.cropped_image_base64 || input.imageBase64;
         } else {
           this.logger.warn(`INTERNAL AI vision warning: ${visionAnalysis?.message || 'No prediction'}`);
         }
-        
+
         aiAdvice = aiResponse.full_flow_result?.ai_advice || 'Không có lời khuyên từ AI.';
 
       } else if (providerType === AiProviderType.DIFY) {
@@ -71,6 +73,7 @@ export class ProcessAiDiagnosisCommandHandler
         if (visionResponse.status === 'success' && visionData?.top_prediction) {
           disease = visionData.top_prediction.disease || 'Unknown';
           probability = visionData.top_prediction.percentage || 0;
+          severityLevel = visionData.top_prediction.severity;
           imageWithBbox = visionData.image_with_bbox_base64 || input.imageBase64;
           croppedImage = visionData.cropped_image_base64 || input.imageBase64;
         } else {
@@ -126,6 +129,7 @@ export class ProcessAiDiagnosisCommandHandler
         diagnoseModelId: input.diagnoseModelId,
         disease,
         probability,
+        severityLevel,
         aiAdvice,
         imageWithBbox,
         croppedImage,

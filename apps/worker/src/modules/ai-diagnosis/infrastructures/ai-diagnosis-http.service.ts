@@ -19,6 +19,7 @@ export interface FullFlowResponseDto {
       top_prediction?: {
         disease: string;
         percentage: number;
+        severity: string;
       };
       image_with_bbox_base64?: string;
       cropped_image_base64?: string;
@@ -36,6 +37,7 @@ export interface VisionOnlyResponseDto {
     top_prediction?: {
       disease: string;
       percentage: number;
+      severity: string;
     };
     image_with_bbox_base64?: string;
     cropped_image_base64?: string;

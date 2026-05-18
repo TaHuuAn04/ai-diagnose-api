@@ -71,7 +71,7 @@ export class HandleAiDiagnosisCallbackCommandHandler
           diagnoseModelId: payload.diagnoseModelId,
           suggestedDiagnosis: [{ diseaseName: payload.disease, accuracy: payload.probability }],
           aiAdvice: payload.aiAdvice,
-          severityLevel: SeverityLevel.MODERATE,
+          severityLevel: payload.severityLevel ?? SeverityLevel.MINOR,
           proof: JSON.stringify([payload.imageWithBbox, payload.croppedImage]),
         });
       }
