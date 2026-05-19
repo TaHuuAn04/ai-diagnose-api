@@ -247,9 +247,7 @@ export class AppointmentService implements IAppointmentService {
         if (!doctor || appointment.metadata?.doctorId !== doctor.userId) {
           throw new ForbiddenException(`You do not have permission to cancel appointment from other doctor`);
         }
-      } else {
-        throw new ForbiddenException(`You do not have permission to cancel this appointment`);
-      }
+      } 
 
       if (appointment.status !== AppointmentStatus.SCHEDULED) {
         if (appointment.status === AppointmentStatus.EXAMINING && role === UserRole.DOCTOR) {
