@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 
 export class ChatFileDto {
   @IsString()
@@ -18,6 +18,10 @@ export class ChatFileDto {
 }
 
 export class ChatMessageStreamBodyDto {
+  @IsUUID()
+  @IsNotEmpty()
+  patientId!: string;
+
   @IsString()
   @IsNotEmpty()
   query: string;

@@ -58,7 +58,7 @@ export class EmbeddedChatService implements IEmbeddedChatService {
   }
 
   async chatMessageStream(input: ChatMessageStreamInputDto): Promise<Readable> {
-    const { token, query, conversation_id, parent_message_id, files } = input;
+    const { token, query, patientId, conversation_id, parent_message_id, files } = input;
     
       const getCurrentTimeVN = () => {
         const date = new Date();
@@ -72,7 +72,7 @@ export class EmbeddedChatService implements IEmbeddedChatService {
     const commandInput: ChatMessageDifyAiInputDto = {
       body: {
         inputs: {
-          patientId: 'ceb3dcf4-ccab-4ab6-9bf9-a9599fd8ef0b',
+          patientId,
           currentTime: currentTime,
         },
         response_mode: 'streaming',
