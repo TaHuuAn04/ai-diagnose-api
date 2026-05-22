@@ -81,7 +81,7 @@ export class AuthController {
     return await this.commandBus.execute(command);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  // @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   @IsPublic()
   async login(@Body() dto: LoginBodyDto): Promise<LoginResponseDto> {
