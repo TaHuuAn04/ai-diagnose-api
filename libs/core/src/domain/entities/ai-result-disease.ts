@@ -7,6 +7,8 @@ export class AIResultDiseaseEntity extends BaseEntityWithoutId {
 
   diseaseId: string;
 
+  lesionIndex: number;
+
   accuracy: number;
 
   disease?: DiseaseEntity | null;

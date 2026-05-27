@@ -9,7 +9,7 @@ import { AiProviderType } from '@app/core/domain/enums';
 import { API_CALLBACK_BASE_URL } from '@app/core/environments';
 import { AiInternalServerError, Exception } from '@app/core/exception';
 
-import { AiDiagnosisHttpService, AiPrediction } from '../infrastructures/ai-diagnosis-http.service';
+import { AiDiagnosisHttpService, LesionResult } from '../infrastructures/ai-diagnosis-http.service';
 import { AiDiagnosisJobData } from '../queues';
 
 
@@ -38,9 +38,8 @@ export class ProcessAiDiagnosisCommandHandler
       let probability = 0;
       let severityLevel: string | undefined;
       let aiAdvice = 'Không có lời khuyên từ AI.';
-      let imageWithBbox: string = input.imageBase64;
-      let croppedImage: string = input.imageBase64;
-      let allPredictions: AiPrediction[] = [];
+      let imageWithAllBboxes: string = input.imageBase64;
+      let lesions: LesionResult[] = [];
 
       if (providerType === AiProviderType.INTERNAL) {
         this.logger.log(`Using INTERNAL AI service for consultation ${input.consultationId}`);
@@ -51,13 +50,29 @@ export class ProcessAiDiagnosisCommandHandler
 
         const visionAnalysis = aiResponse.full_flow_result?.vision_analysis;
 
-        if (visionAnalysis?.status === 'success' && visionAnalysis.top_prediction) {
-          disease = visionAnalysis.top_prediction.disease || 'Unknown';
-          probability = visionAnalysis.top_prediction.percentage || 0;
-          severityLevel = visionAnalysis.top_prediction.severity;
-          imageWithBbox = visionAnalysis.image_with_bbox_base64 || input.imageBase64;
-          croppedImage = visionAnalysis.cropped_image_base64 || input.imageBase64;
-          allPredictions = visionAnalysis.all_predictions || [];
+        if (visionAnalysis?.status === 'success') {
+          imageWithAllBboxes = visionAnalysis.image_with_all_bboxes_base64
+            || visionAnalysis.image_with_bbox_base64
+            || input.imageBase64;
+
+          if (visionAnalysis.lesions?.length) {
+            lesions = visionAnalysis.lesions;
+            disease = lesions[0].top_prediction.disease;
+            probability = lesions[0].top_prediction.percentage;
+            severityLevel = lesions[0].top_prediction.severity;
+          } else if (visionAnalysis.top_prediction) {
+            // fallback: single-lesion response từ model cũ
+            disease = visionAnalysis.top_prediction.disease;
+            probability = visionAnalysis.top_prediction.percentage;
+            severityLevel = visionAnalysis.top_prediction.severity;
+            lesions = [{
+              index: 0,
+              bounding_box: visionAnalysis.bounding_box as number[] || [],
+              cropped_image_base64: visionAnalysis.cropped_image_base64 || input.imageBase64,
+              top_prediction: visionAnalysis.top_prediction,
+              all_predictions: visionAnalysis.all_predictions || [visionAnalysis.top_prediction],
+            }];
+          }
         } else {
           this.logger.warn(`INTERNAL AI vision warning: ${visionAnalysis?.message || 'No prediction'}`);
         }
@@ -72,13 +87,28 @@ export class ProcessAiDiagnosisCommandHandler
 
         const visionData = visionResponse.data;
 
-        if (visionResponse.status === 'success' && visionData?.top_prediction) {
-          disease = visionData.top_prediction.disease || 'Unknown';
-          probability = visionData.top_prediction.percentage || 0;
-          severityLevel = visionData.top_prediction.severity;
-          imageWithBbox = visionData.image_with_bbox_base64 || input.imageBase64;
-          croppedImage = visionData.cropped_image_base64 || input.imageBase64;
-          allPredictions = visionData.all_predictions || [];
+        if (visionResponse.status === 'success') {
+          imageWithAllBboxes = visionData.image_with_all_bboxes_base64
+            || visionData.image_with_bbox_base64
+            || input.imageBase64;
+
+          if (visionData.lesions?.length) {
+            lesions = visionData.lesions;
+            disease = lesions[0].top_prediction.disease;
+            probability = lesions[0].top_prediction.percentage;
+            severityLevel = lesions[0].top_prediction.severity;
+          } else if (visionData.top_prediction) {
+            disease = visionData.top_prediction.disease;
+            probability = visionData.top_prediction.percentage;
+            severityLevel = visionData.top_prediction.severity;
+            lesions = [{
+              index: 0,
+              bounding_box: [],
+              cropped_image_base64: visionData.cropped_image_base64 || input.imageBase64,
+              top_prediction: visionData.top_prediction,
+              all_predictions: visionData.all_predictions || [visionData.top_prediction],
+            }];
+          }
         } else {
           this.logger.warn(`DIFY AI vision warning: ${visionResponse.message || 'No prediction'}`);
         }
@@ -102,6 +132,13 @@ export class ProcessAiDiagnosisCommandHandler
         }
 
         try {
+          const diseaseList = lesions.map((l, idx) => {
+            const preds = l.all_predictions
+              .map(p => `${p.disease} (${p.percentage}%)`)
+              .join(', ');
+            return `Tổn thương ${idx + 1}: ${preds}`;
+          }).join('\n');
+
           const chatResponse = await this.commandBus.execute(
             new ChatMessageBlockDifyAiCommand({
               token: passportToken,
@@ -112,6 +149,7 @@ export class ProcessAiDiagnosisCommandHandler
                   description: input.description || 'Không có mô tả',
                   top_disease: String(disease),
                   confidence: String(probability),
+                  disease_list: diseaseList,
                 },
                 response_mode: 'blocking',
               },
@@ -134,12 +172,18 @@ export class ProcessAiDiagnosisCommandHandler
         probability,
         severityLevel,
         aiAdvice,
-        imageWithBbox,
-        croppedImage,
-        allPredictions: allPredictions.map(p => ({
-          disease: p.disease,
-          probability: p.percentage,
-          severity: p.severity,
+        imageWithAllBboxes,
+        lesions: lesions.map(l => ({
+          lesionIndex: l.index,
+          topDisease: l.top_prediction.disease,
+          topProbability: l.top_prediction.percentage,
+          severity: l.top_prediction.severity,
+          croppedImage: l.cropped_image_base64,
+          allPredictions: l.all_predictions.map(p => ({
+            disease: p.disease,
+            probability: p.percentage,
+            severity: p.severity,
+          })),
         })),
       };
 

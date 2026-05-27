@@ -8,7 +8,7 @@ import { plainToInstance } from 'class-transformer';
 import { AIResultDiseaseEntity } from '@app/core/domain/entities';
 import { NotFoundException } from '@app/core/exception';
 
-import { AiResultDiseaseDto, GetAiDiagnosisResultResponseDto } from '../dtos';
+import { AiResultDiseaseDto, GetAiDiagnosisResultResponseDto, LesionResultDto } from '../dtos';
 
 export class GetAiDiagnosisResultQuery implements IQuery {
   constructor(public readonly consultationId: string) {}
@@ -37,21 +37,48 @@ export class GetAiDiagnosisResultQueryHandler
       );
     }
 
-    const diseases: AIResultDiseaseEntity[] = result.diseases || [];
-    const sortedDiseases = [...diseases].sort((a, b) => b.accuracy - a.accuracy);
-    const topDisease = sortedDiseases[0]?.disease?.name || 'Chẩn đoán AI';
+    const allDiseases: AIResultDiseaseEntity[] = result.diseases || [];
+    const proofImages: string[] = result.proof ? JSON.parse(result.proof) : [];
+
+    // Group diseases by lesionIndex
+    const lesionMap = new Map<number, AIResultDiseaseEntity[]>();
+    for (const d of allDiseases) {
+      const idx = d.lesionIndex ?? 0;
+      if (!lesionMap.has(idx)) lesionMap.set(idx, []);
+      lesionMap.get(idx)!.push(d);
+    }
+
+    // proof[0] = imageWithAllBboxes, proof[1..N] = cropped images per lesion
+    const imageWithAllBboxes = proofImages[0] ?? undefined;
+
+    const suggestedDiagnoses = result.suggestedDiagnosis ?? [];
+    const lesions: LesionResultDto[] = Array.from(lesionMap.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([lesionIndex, diseaseRows], i) => {
+        const sorted = [...diseaseRows].sort((a, b) => b.accuracy - a.accuracy);
+        const topRow = sorted[0];
+        return plainToInstance(LesionResultDto, {
+          lesionIndex,
+          topDisease: suggestedDiagnoses[i]?.diseaseName ?? topRow?.disease?.name ?? 'Unknown',
+          severity: result.severityLevel ?? 'MINOR',
+          croppedImage: proofImages[i + 1] ?? undefined,
+          diseases: sorted.map(d => plainToInstance(AiResultDiseaseDto, {
+            diseaseId: d.diseaseId,
+            diseaseName: d.disease?.name ?? 'Unknown',
+            accuracy: d.accuracy,
+          })),
+        });
+      });
+
+    const overallTopDisease = lesions[0]?.topDisease ?? 'Chẩn đoán AI';
 
     return plainToInstance(GetAiDiagnosisResultResponseDto, {
       consultationId: result.consultationId,
-      suggestedDiagnosis: topDisease,
+      suggestedDiagnosis: overallTopDisease,
       severityLevel: result.severityLevel ?? undefined,
       aiAdvice: result.aiAdvice ?? undefined,
-      images: result.proof ? JSON.parse(result.proof) : [],
-      diseases: sortedDiseases.map((d) => plainToInstance(AiResultDiseaseDto, {
-          diseaseId: d.diseaseId,
-          diseaseName: d.disease?.name ?? 'Unknown',
-          accuracy: d.accuracy,
-      })),
+      imageWithAllBboxes,
+      lesions,
     });
   }
 }

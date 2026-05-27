@@ -16,18 +16,33 @@ export interface AiPrediction {
   severity: string;
 }
 
+export interface LesionResult {
+  index: number;
+  bounding_box: number[];
+  cropped_image_base64: string;
+  top_prediction: AiPrediction;
+  all_predictions: AiPrediction[];
+}
+
+export interface VisionAnalysis {
+  status: string;
+  message?: string;
+  // multi-lesion fields
+  lesions?: LesionResult[];
+  image_with_all_bboxes_base64?: string;
+  // backward-compat single-lesion fields
+  top_prediction?: AiPrediction;
+  all_predictions?: AiPrediction[];
+  bounding_box?: number[];
+  image_with_bbox_base64?: string;
+  cropped_image_base64?: string;
+}
+
 export interface FullFlowResponseDto {
   status: string;
   message?: string;
   full_flow_result: {
-    vision_analysis: {
-      status: string;
-      message?: string;
-      top_prediction?: AiPrediction;
-      all_predictions?: AiPrediction[];
-      image_with_bbox_base64?: string;
-      cropped_image_base64?: string;
-    };
+    vision_analysis: VisionAnalysis;
     ai_advice: string;
   };
 }
@@ -35,14 +50,7 @@ export interface FullFlowResponseDto {
 export interface VisionOnlyResponseDto {
   status: string;
   message?: string;
-  data: {
-    status?: string;
-    message?: string;
-    top_prediction?: AiPrediction;
-    all_predictions?: AiPrediction[];
-    image_with_bbox_base64?: string;
-    cropped_image_base64?: string;
-  };
+  data: VisionAnalysis;
 }
 
 @Injectable()

@@ -9,9 +9,12 @@ import { Disease } from './disease.entity';
 export class AIResultDisease extends BaseEntityWithoutId {
   @PrimaryColumn('uuid')
   resultId: string;
-    
+
   @PrimaryColumn('uuid')
   diseaseId: string;
+
+  @PrimaryColumn({ type: 'int', default: 0 })
+  lesionIndex: number;
 
   @Column({ type: 'float' })
   accuracy: number;

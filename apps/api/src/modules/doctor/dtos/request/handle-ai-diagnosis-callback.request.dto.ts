@@ -17,6 +17,30 @@ export class AiPredictionItemDto {
   severity?: string;
 }
 
+export class LesionCallbackDto {
+  @IsNumber()
+  lesionIndex: number;
+
+  @IsString()
+  topDisease: string;
+
+  @IsNumber()
+  topProbability: number;
+
+  @IsString()
+  @IsOptional()
+  severity?: string;
+
+  @IsString()
+  @IsOptional()
+  croppedImage?: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AiPredictionItemDto)
+  allPredictions: AiPredictionItemDto[];
+}
+
 export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
   @IsString()
@@ -63,4 +87,16 @@ export class HandleAiDiagnosisCallbackRequestDto {
   @Type(() => AiPredictionItemDto)
   @IsOptional()
   allPredictions?: AiPredictionItemDto[];
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  imageWithAllBboxes?: string;
+
+  @ApiPropertyOptional({ type: [LesionCallbackDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => LesionCallbackDto)
+  @IsOptional()
+  lesions?: LesionCallbackDto[];
 }

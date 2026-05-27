@@ -18,6 +18,28 @@ export class AiResultDiseaseDto {
   accuracy: number;
 }
 
+export class LesionResultDto {
+  @ApiProperty()
+  @Expose()
+  lesionIndex: number;
+
+  @ApiProperty()
+  @Expose()
+  topDisease: string;
+
+  @ApiProperty({ enum: SeverityLevel })
+  @Expose()
+  severity: string;
+
+  @ApiPropertyOptional()
+  @Expose()
+  croppedImage?: string;
+
+  @ApiProperty({ type: [AiResultDiseaseDto] })
+  @Expose()
+  diseases: AiResultDiseaseDto[];
+}
+
 export class GetAiDiagnosisResultResponseDto {
   @ApiProperty()
   @Expose()
@@ -33,13 +55,13 @@ export class GetAiDiagnosisResultResponseDto {
 
   @ApiPropertyOptional()
   @Expose()
-  images?: string[];
+  imageWithAllBboxes?: string;
+
+  @ApiProperty({ type: [LesionResultDto] })
+  @Expose()
+  lesions: LesionResultDto[];
 
   @ApiProperty({ enum: SeverityLevel, required: false, nullable: true })
   @Expose()
   severityLevel?: SeverityLevel | null;
-
-  @ApiProperty({ type: [AiResultDiseaseDto] })
-  @Expose()
-  diseases: AiResultDiseaseDto[];
 }
