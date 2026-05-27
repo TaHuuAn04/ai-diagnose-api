@@ -9,6 +9,13 @@ import { AiInternalServerError } from '@app/core/exception';
 
 import { AiServiceConfig } from '../../../configs';
 
+export interface AiPrediction {
+  disease: string;
+  probability: number;
+  percentage: number;
+  severity: string;
+}
+
 export interface FullFlowResponseDto {
   status: string;
   message?: string;
@@ -16,11 +23,8 @@ export interface FullFlowResponseDto {
     vision_analysis: {
       status: string;
       message?: string;
-      top_prediction?: {
-        disease: string;
-        percentage: number;
-        severity: string;
-      };
+      top_prediction?: AiPrediction;
+      all_predictions?: AiPrediction[];
       image_with_bbox_base64?: string;
       cropped_image_base64?: string;
     };
@@ -34,11 +38,8 @@ export interface VisionOnlyResponseDto {
   data: {
     status?: string;
     message?: string;
-    top_prediction?: {
-      disease: string;
-      percentage: number;
-      severity: string;
-    };
+    top_prediction?: AiPrediction;
+    all_predictions?: AiPrediction[];
     image_with_bbox_base64?: string;
     cropped_image_base64?: string;
   };

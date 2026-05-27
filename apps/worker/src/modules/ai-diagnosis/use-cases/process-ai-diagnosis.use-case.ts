@@ -9,7 +9,7 @@ import { AiProviderType } from '@app/core/domain/enums';
 import { API_CALLBACK_BASE_URL } from '@app/core/environments';
 import { AiInternalServerError, Exception } from '@app/core/exception';
 
-import { AiDiagnosisHttpService } from '../infrastructures/ai-diagnosis-http.service';
+import { AiDiagnosisHttpService, AiPrediction } from '../infrastructures/ai-diagnosis-http.service';
 import { AiDiagnosisJobData } from '../queues';
 
 
@@ -40,6 +40,7 @@ export class ProcessAiDiagnosisCommandHandler
       let aiAdvice = 'Không có lời khuyên từ AI.';
       let imageWithBbox: string = input.imageBase64;
       let croppedImage: string = input.imageBase64;
+      let allPredictions: AiPrediction[] = [];
 
       if (providerType === AiProviderType.INTERNAL) {
         this.logger.log(`Using INTERNAL AI service for consultation ${input.consultationId}`);
@@ -56,6 +57,7 @@ export class ProcessAiDiagnosisCommandHandler
           severityLevel = visionAnalysis.top_prediction.severity;
           imageWithBbox = visionAnalysis.image_with_bbox_base64 || input.imageBase64;
           croppedImage = visionAnalysis.cropped_image_base64 || input.imageBase64;
+          allPredictions = visionAnalysis.all_predictions || [];
         } else {
           this.logger.warn(`INTERNAL AI vision warning: ${visionAnalysis?.message || 'No prediction'}`);
         }
@@ -69,13 +71,14 @@ export class ProcessAiDiagnosisCommandHandler
         });
 
         const visionData = visionResponse.data;
-        
+
         if (visionResponse.status === 'success' && visionData?.top_prediction) {
           disease = visionData.top_prediction.disease || 'Unknown';
           probability = visionData.top_prediction.percentage || 0;
           severityLevel = visionData.top_prediction.severity;
           imageWithBbox = visionData.image_with_bbox_base64 || input.imageBase64;
           croppedImage = visionData.cropped_image_base64 || input.imageBase64;
+          allPredictions = visionData.all_predictions || [];
         } else {
           this.logger.warn(`DIFY AI vision warning: ${visionResponse.message || 'No prediction'}`);
         }
@@ -133,6 +136,11 @@ export class ProcessAiDiagnosisCommandHandler
         aiAdvice,
         imageWithBbox,
         croppedImage,
+        allPredictions: allPredictions.map(p => ({
+          disease: p.disease,
+          probability: p.percentage,
+          severity: p.severity,
+        })),
       };
 
       const url = `${API_CALLBACK_BASE_URL}/doctors/ai-diagnosis/callback`;

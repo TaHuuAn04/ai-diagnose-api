@@ -1,8 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 import { SeverityLevel } from '@app/core/domain/enums';
+
+export class AiPredictionItemDto {
+  @IsString()
+  disease: string;
+
+  @IsNumber()
+  probability: number;
+
+  @IsString()
+  @IsOptional()
+  severity?: string;
+}
 
 export class HandleAiDiagnosisCallbackRequestDto {
   @ApiProperty()
@@ -43,4 +56,11 @@ export class HandleAiDiagnosisCallbackRequestDto {
   @IsString()
   @IsOptional()
   croppedImage?: string;
+
+  @ApiPropertyOptional({ type: [AiPredictionItemDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AiPredictionItemDto)
+  @IsOptional()
+  allPredictions?: AiPredictionItemDto[];
 }
