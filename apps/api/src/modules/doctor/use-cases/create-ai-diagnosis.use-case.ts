@@ -4,7 +4,7 @@ import { CommandHandler, ICommand, ICommandHandler } from '@nestjs/cqrs';
 
 
 import { REPOSITORY_INJECTION_TOKEN } from '@api/enums';
-import { IDiagnoseModelRepository } from '@api/repository';
+import { IAIDiagnosisResultRepository, IDiagnoseModelRepository } from '@api/repository';
 import { lastValueFrom } from 'rxjs';
 
 import { INTERNAL_WORKER_API_URL } from '@app/core/environments';
@@ -29,6 +29,9 @@ export class CreateAiDiagnosisCommandHandler
     private readonly httpService: HttpService,
     @Inject(REPOSITORY_INJECTION_TOKEN.DIAGNOSE_MODEL_REPOSITORY)
     private readonly diagnoseModelRepository: IDiagnoseModelRepository,
+
+    @Inject(REPOSITORY_INJECTION_TOKEN.AI_DIAGNOSIS_RESULT_REPOSITORY)
+    private readonly aiDiagnosisResultRepository: IAIDiagnosisResultRepository,
   ) {}
 
   async execute(
@@ -36,6 +39,9 @@ export class CreateAiDiagnosisCommandHandler
   ): Promise<CreateAiDiagnosisResponseDto> {
     try {
       const { payload, imageBase64 } = command;
+
+      // Clear any previous AI result so the FE polling gets 404 until the new job completes
+      await this.aiDiagnosisResultRepository.deleteMany({ consultationId: payload.consultationId });
 
       // Find the default public model
       const defaultModel = await this.diagnoseModelRepository.findOne({
