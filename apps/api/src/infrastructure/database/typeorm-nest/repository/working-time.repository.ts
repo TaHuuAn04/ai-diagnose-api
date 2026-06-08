@@ -129,16 +129,17 @@ export class WorkingTimeRepository
     shiftId: string,
     date: string
   ): Promise<WorkingTimeEntity | null> {
-    const entity = await this.repository
-      .createQueryBuilder('workingTime')
-      .where('workingTime.doctorId = :doctorId', { doctorId })
-      .andWhere('workingTime.shiftId = :shiftId', { shiftId })
-      .andWhere('workingTime.date = :date', { date })
-      .leftJoinAndSelect('workingTime.doctor', 'doctor')
-      .leftJoinAndSelect('doctor.user', 'user')
-      .leftJoinAndSelect('workingTime.shift', 'shift')
-      .setLock('pessimistic_write')
-      .getOne();
+    const locked = await this.repository.query(
+      `SELECT doctor_id, shift_id, date FROM working_times WHERE doctor_id = $1 AND shift_id = $2 AND date = $3 FOR UPDATE`,
+      [doctorId, shiftId, date]
+    );
+
+    if (!locked || locked.length === 0) return null;
+
+    const entity = await this.repository.findOne({
+      where: { doctorId, shiftId, date },
+      relations: ['doctor', 'doctor.user', 'shift'],
+    });
 
     return entity ? this._mapper.toDomain(entity) : null;
   }
