@@ -123,4 +123,23 @@ export class WorkingTimeRepository
     const entity = await queryBuilder.getOne();
     return entity ? this._mapper.toDomain(entity) : null;
   }
+
+  async findOneForUpdate(
+    doctorId: string,
+    shiftId: string,
+    date: string
+  ): Promise<WorkingTimeEntity | null> {
+    const entity = await this.repository
+      .createQueryBuilder('workingTime')
+      .where('workingTime.doctorId = :doctorId', { doctorId })
+      .andWhere('workingTime.shiftId = :shiftId', { shiftId })
+      .andWhere('workingTime.date = :date', { date })
+      .leftJoinAndSelect('workingTime.doctor', 'doctor')
+      .leftJoinAndSelect('doctor.user', 'user')
+      .leftJoinAndSelect('workingTime.shift', 'shift')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    return entity ? this._mapper.toDomain(entity) : null;
+  }
 }

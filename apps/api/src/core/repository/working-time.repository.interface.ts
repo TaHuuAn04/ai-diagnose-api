@@ -29,4 +29,10 @@ export interface IWorkingTimeRepository extends IGenericRepository<WorkingTimeEn
     shiftId: string, 
     date: string
   ): Promise<WorkingTimeEntity | null>;
+
+  findOneForUpdate(
+    doctorId: string,
+    shiftId: string,
+    date: string
+  ): Promise<WorkingTimeEntity | null>;
 }

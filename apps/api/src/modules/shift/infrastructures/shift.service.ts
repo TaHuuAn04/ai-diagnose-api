@@ -157,14 +157,12 @@ export class ShiftService implements IShiftService {
         throw new BadRequestException(`You have already booked an appointment with doctor ${doctorName} on ${date} at the same time.`);
       }
 
-      const workingTime = await this.workingTimeRepository.findOne({
-        where: { 
-          doctorId: doctorId,
-          shiftId: shiftId,
-          date: date,
-        },
-        relations: ['doctor','doctor.user', 'shift'],
-      });
+      // Acquire a row-level lock (SELECT ... FOR UPDATE) to prevent concurrent double booking
+      const workingTime = await this.workingTimeRepository.findOneForUpdate(
+        doctorId,
+        shiftId,
+        date,
+      );
 
       if (!workingTime) {
         throw new BadRequestException('This shift is not available for the selected doctor');
